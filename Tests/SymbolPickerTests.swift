@@ -103,6 +103,58 @@ private final class MockInputEventTerminal: EditorTerminal, @unchecked Sendable 
         #expect(chosen == "⥀")
     }
 
+    @Test func testSymbolPickerMouseClickTabsAndSelection() {
+        var chosen: String? = nil
+        // cols = 80, rows = 24.
+        // dialogWidth = min(76, 76) = 76, dialogHeight = min(20, 20) = 20
+        // startRow = (24 - 20) / 2 = 2, startCol = (80 - 76) / 2 = 2
+        // tabRow = startRow + 1 = 3
+        // Category 0: "Arrows" (displayWidth 6 + 3 = 9, col range 4..<13)
+        // Category 1: "Steps" (col range 13..<21)
+        // Category 4: "GFM Callouts"
+        // Let's test clicking on Tab 2 (Steps) or clicking outside dialog to cancel
+        let terminalOutside = MockInputEventTerminal(events: [
+            .mouse(MouseEvent(action: .press(.left), col: 1, row: 1)), // Click outside dialog
+        ])
+        let pickerOutside = SymbolPickerView(terminal: terminalOutside, language: .en) { symbol in
+            chosen = symbol
+        }
+        pickerOutside.show()
+        #expect(chosen == nil)
+
+        // Test clicking item in grid:
+        // contentStartRow = startRow + 3 = 5
+        // contentColStart = startCol + 3 = 5
+        // colWidth = (76 - 6) / 4 = 17
+        // Clicking cell (row 5, col 6) is row 0, col 0 (index 0: "↺")
+        // First click selects, second click confirms and closes
+        var itemChosen: String? = nil
+        let terminalGridClick = MockInputEventTerminal(events: [
+            .mouse(MouseEvent(action: .press(.left), col: 6, row: 5)), // Select index 0
+            .mouse(MouseEvent(action: .press(.left), col: 6, row: 5)), // Confirm index 0
+        ])
+        let pickerGrid = SymbolPickerView(terminal: terminalGridClick, language: .en) { symbol in
+            itemChosen = symbol
+        }
+        pickerGrid.show()
+        #expect(itemChosen == "↺")
+
+        // Test clicking tab bar then clicking item in list:
+        // Clicking tab 4 (GFM Callouts):
+        // Tab row = 3.
+        var listChosen: String? = nil
+        let terminalTabClick = MockInputEventTerminal(events: [
+            .mouse(MouseEvent(action: .press(.left), col: 58, row: 3)), // Click GFM Callouts tab
+            .mouse(MouseEvent(action: .press(.left), col: 10, row: 5)), // Select first list item (> [!NOTE])
+            .mouse(MouseEvent(action: .press(.left), col: 10, row: 5)), // Confirm first list item
+        ])
+        let pickerTab = SymbolPickerView(terminal: terminalTabClick, language: .en) { symbol in
+            listChosen = symbol
+        }
+        pickerTab.show()
+        #expect(listChosen == "> [!NOTE]")
+    }
+
     @Test func testSymbolPickerEscapeCancelsSelection() {
         var chosen: String? = nil
         let terminal = MockInputEventTerminal(events: [

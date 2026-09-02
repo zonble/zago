@@ -622,13 +622,107 @@ final class SymbolPickerView {
                 }
 
             case .mouse(let mouse):
+                let (rows, cols) = terminal.getWindowSize()
+                let dialogWidth = min(cols - 4, 76)
+                let dialogHeight = min(rows - 4, 20)
+                let startRow = max(1, (rows - dialogHeight) / 2)
+                let startCol = max(1, (cols - dialogWidth) / 2)
+                let contentRows = dialogHeight - 6
+                let contentStartRow = startRow + 3
+                let items = currentCategoryItems()
+                let colsCount = gridColumnsCount()
+                let totalRows = (items.count + colsCount - 1) / colsCount
+
                 switch mouse.action {
                 case .scrollUp:
-                    moveSelectionInGrid(rowDelta: -1, colsCount: gridColumnsCount())
+                    moveSelectionInGrid(rowDelta: -1, colsCount: colsCount)
                     render()
                 case .scrollDown:
-                    moveSelectionInGrid(rowDelta: 1, colsCount: gridColumnsCount())
+                    moveSelectionInGrid(rowDelta: 1, colsCount: colsCount)
                     render()
+                case .press(.left):
+                    // 1. Click outside dialog -> cancel/close
+                    if mouse.row < startRow || mouse.row >= startRow + dialogHeight
+                        || mouse.col < startCol || mouse.col >= startCol + dialogWidth
+                    {
+                        terminal.clearScreen()
+                        return
+                    }
+
+                    // 2. Click on Tab Bar (row == startRow + 1)
+                    let tabRow = startRow + 1
+                    if mouse.row == tabRow {
+                        var currentTabCol = startCol + 2
+                        let l10n = editor?.l10n ?? L10n(language: language)
+                        for (idx, cat) in SymbolCategories.categories.enumerated() {
+                            let catName = l10n[cat.nameKey]
+                            let tabWidth = catName.displayWidth + 3
+                            if mouse.col >= currentTabCol && mouse.col < currentTabCol + tabWidth {
+                                if categoryIndex != idx {
+                                    setCategory(idx)
+                                    render()
+                                }
+                                break
+                            }
+                            currentTabCol += tabWidth
+                        }
+                        break
+                    }
+
+                    // 3. Click on scroll arrows on the right edge
+                    if totalRows > contentRows && mouse.col == startCol + dialogWidth - 1 {
+                        if scrollRowOffset > 0 && mouse.row == contentStartRow {
+                            moveSelectionInGrid(rowDelta: -1, colsCount: colsCount)
+                            render()
+                            break
+                        }
+                        if scrollRowOffset + contentRows < totalRows && mouse.row == contentStartRow + contentRows - 1 {
+                            moveSelectionInGrid(rowDelta: 1, colsCount: colsCount)
+                            render()
+                            break
+                        }
+                    }
+
+                    // 4. Click inside Content Area
+                    if mouse.row >= contentStartRow && mouse.row < contentStartRow + contentRows {
+                        let rowInView = mouse.row - contentStartRow
+                        let targetRow = scrollRowOffset + rowInView
+
+                        if case .list = currentCategoryLayout {
+                            if targetRow >= 0 && targetRow < items.count {
+                                if selectedIndex == targetRow {
+                                    // Click already-selected item -> select and close
+                                    let chosenSymbol = items[selectedIndex].symbol
+                                    onSelect(chosenSymbol)
+                                    terminal.clearScreen()
+                                    return
+                                } else {
+                                    selectedIndex = targetRow
+                                    render()
+                                }
+                            }
+                        } else {
+                            let colWidth = max(1, (dialogWidth - 6) / colsCount)
+                            let contentColStart = startCol + 3
+                            if mouse.col >= contentColStart && mouse.col < contentColStart + (colsCount * colWidth) {
+                                let colOffset = (mouse.col - contentColStart) / colWidth
+                                let targetIndex = (targetRow * colsCount) + colOffset
+                                if targetIndex >= 0 && targetIndex < items.count {
+                                    if selectedIndex == targetIndex {
+                                        // Click already-selected item -> select and close
+                                        let chosenSymbol = items[selectedIndex].symbol
+                                        onSelect(chosenSymbol)
+                                        terminal.clearScreen()
+                                        return
+                                    } else {
+                                        selectedIndex = targetIndex
+                                        render()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 default:
                     break
                 }
