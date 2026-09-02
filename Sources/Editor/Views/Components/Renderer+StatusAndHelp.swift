@@ -88,16 +88,16 @@ extension Renderer {
         }
 
         let modifiedBadgeStr = editor.buffer.isModified ? "\(editor.l10n.modified)" : ""
-        let rightText: String
-        if !modifiedBadgeStr.isEmpty && !branchTextStr.isEmpty {
-            rightText = "\(modifiedBadgeStr)\(branchTextStr)  "
-        } else if !modifiedBadgeStr.isEmpty {
-            rightText = "\(modifiedBadgeStr)  "
-        } else if !branchTextStr.isEmpty {
-            rightText = "\(branchTextStr)  "
+        let dirSortBadgeStr: String
+        if let dirBuf = editor.buffer as? DirectoryBuffer {
+            let sortLabel = editor.l10n["dirbuf.sort_label"]
+            dirSortBadgeStr = "[\(sortLabel): \(dirBuf.sortOption.displayName(language: editor.language))]"
         } else {
-            rightText = "  "
+            dirSortBadgeStr = ""
         }
+
+        let rightItems = [modifiedBadgeStr, branchTextStr.trimmingCharacters(in: .whitespaces), dirSortBadgeStr].filter { !$0.isEmpty }
+        let rightText = rightItems.isEmpty ? "  " : rightItems.joined(separator: " ") + "  "
 
         let leftW = leftText.displayWidth
         let centerW = centerText.displayWidth

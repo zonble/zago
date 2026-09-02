@@ -714,6 +714,19 @@ struct DirectoryBufferTests {
         #expect(dirBuf.sortOption.field == .creationDate && dirBuf.sortOption.order == .ascending)
     }
 
+    @Test func testDirectoryBufferSortModeVisibilityInTitleBarAndStatus() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let editor = Editor(filePath: tempDir.path)
+        defer { editor.stopFileWatcherForCurrentBuffer() }
+
+        #expect(editor.buffer.isDirectoryBuffer == true)
+        let modeIndicator = editor.modeIndicatorText()
+        #expect(modeIndicator.contains("Sort") || modeIndicator.contains("排序"))
+
+        let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
+        #expect(titleLine.contains("Sort") || titleLine.contains("排序"))
+    }
+
     private func submitCommandBar(_ text: String, editor: Editor) {
         editor.promptLogoMacro()
         for ch in text {
@@ -722,4 +735,5 @@ struct DirectoryBufferTests {
         editor.processKey(.enter)
     }
 }
+
 
