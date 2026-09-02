@@ -50,11 +50,11 @@ public struct DirectorySortOption: Sendable, Equatable {
         let fieldName: String
         switch field {
         case .name: fieldName = isZh ? "名稱" : "Name"
-        case .creationDate: fieldName = isZh ? "建立日期" : "Created"
-        case .modificationDate: fieldName = isZh ? "修改時間" : "Modified"
+        case .creationDate: fieldName = isZh ? "建立" : "Created"
+        case .modificationDate: fieldName = isZh ? "修改" : "Modified"
         }
-        let orderName = (order == .ascending) ? "ASC ▲" : "DESC ▼"
-        return "\(fieldName) \(orderName)"
+        let orderSymbol = (order == .ascending) ? "▲" : "▼"
+        return "\(fieldName) \(orderSymbol)"
     }
 }
 

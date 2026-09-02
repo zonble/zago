@@ -90,8 +90,7 @@ extension Renderer {
         let modifiedBadgeStr = editor.buffer.isModified ? "\(editor.l10n.modified)" : ""
         let dirSortBadgeStr: String
         if let dirBuf = editor.buffer as? DirectoryBuffer {
-            let sortLabel = editor.l10n["dirbuf.sort_label"]
-            dirSortBadgeStr = "[\(sortLabel): \(dirBuf.sortOption.displayName(language: editor.language))]"
+            dirSortBadgeStr = "[\(dirBuf.sortOption.displayName(language: editor.language))]"
         } else {
             dirSortBadgeStr = ""
         }
