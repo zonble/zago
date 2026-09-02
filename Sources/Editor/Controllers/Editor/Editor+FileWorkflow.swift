@@ -1,3 +1,4 @@
+import Config
 import Foundation
 import Git
 import TextEncoding
@@ -122,7 +123,8 @@ extension Editor {
         if buffer.isReadOnly {
             return reportOperationResult(.noOp(message: l10n["status.read_only"]))
         }
-        let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
+        let cleanPath = FilePathNormalizer.fileURLToPath(path)
+        let expandedPath = fileIOStrategy.normalizePath(cleanPath, isDirectory: false)
         let info = fileIOStrategy.fileInfo(at: expandedPath)
         if maxFileSizeBytes > 0 && info.size > maxFileSizeBytes {
             let error = EditorFileError.fileTooLarge(size: info.size, limit: maxFileSizeBytes)
@@ -145,7 +147,8 @@ extension Editor {
     func suggestedSafeSavePath(for originalPath: String?) -> String {
         let baseFilename: String
         if let originalPath, !originalPath.isEmpty {
-            let normalized = fileIOStrategy.normalizePath(originalPath, isDirectory: false)
+            let clean = FilePathNormalizer.fileURLToPath(originalPath)
+            let normalized = fileIOStrategy.normalizePath(clean, isDirectory: false)
             let lastComponent = URL(fileURLWithPath: normalized).lastPathComponent
             baseFilename = lastComponent.isEmpty ? "untitled.txt" : lastComponent
         } else {
@@ -175,7 +178,8 @@ extension Editor {
             _ = buffer.trimTrailingWhitespace()
         }
 
-        let expandedPath = fileIOStrategy.normalizePath(path, isDirectory: false)
+        let cleanPath = FilePathNormalizer.fileURLToPath(path)
+        let expandedPath = fileIOStrategy.normalizePath(cleanPath, isDirectory: false)
         let targetEncoding = forcedEncoding ?? buffer.fileEncoding
 
         if backup && fileIOStrategy.fileInfo(at: expandedPath).exists {

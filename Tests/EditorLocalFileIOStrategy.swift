@@ -18,7 +18,8 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
     }
 
     func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
-        let expanded = expandTilde(path)
+        let cleaned = FilePathNormalizer.fileURLToPath(path)
+        let expanded = expandTilde(cleaned)
         let absolutePath: String
         if isAbsolutePath(expanded) {
             absolutePath = expanded

@@ -492,7 +492,13 @@ struct Zago: ParsableCommand {
                     continue
                 }
             }
-            remaining.append(arg)
+
+            let (cleanPath, parsedLine, parsedCol) = FilePathNormalizer.parseLocation(from: arg)
+            if let line = parsedLine, targetLine == nil {
+                targetLine = line
+                targetCol = parsedCol
+            }
+            remaining.append(cleanPath)
         }
         files = remaining
         return (targetLine, targetCol)

@@ -1,3 +1,4 @@
+import Config
 import Editor
 import Foundation
 import TextEncoding
@@ -14,14 +15,15 @@ public final class WasiFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable
     }
 
     public func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
-        if path.hasPrefix("/") {
-            return (path as NSString).standardizingPath
+        let clean = FilePathNormalizer.fileURLToPath(path)
+        if clean.hasPrefix("/") {
+            return (clean as NSString).standardizingPath
         }
-        if path.isEmpty || path == "." {
+        if clean.isEmpty || clean == "." {
             return "/workspace"
         }
         let current = currentDirectoryPath()
-        return (current as NSString).appendingPathComponent(path)
+        return (current as NSString).appendingPathComponent(clean)
     }
 
     public func homeDirectoryPath() -> String {
