@@ -765,6 +765,18 @@ struct IPCServerTests {
         #endif
     }
 
+    @Test func testWindowsSessionLocatorFindsTokenFilesViaCandidateTemporaryDirectories() throws {
+        #if os(Windows)
+            let tempDir = FileManager.default.temporaryDirectory
+            let testTokenURL = tempDir.appendingPathComponent("zago-test-candidate-\(UUID().uuidString).token")
+            try Data("token".utf8).write(to: testTokenURL)
+            defer { try? FileManager.default.removeItem(at: testTokenURL) }
+
+            let sessions = WindowsZagoIPCSessionLocator().sessions()
+            #expect(sessions.contains(where: { $0.tokenPath == testTokenURL.path }))
+        #endif
+    }
+
     @Test func testZagoSkillCLIInstallerMethods() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(
             "zago-installer-test-\(UUID().uuidString)")
