@@ -29,7 +29,8 @@ let package = Package(
         .library(name: "SystemClipboard", targets: ["SystemClipboard"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
+        .package(url: "https://github.com/zonble/TmdSwift.git", from: "0.1.0"),
     ],
     targets: [
         .target(
@@ -124,6 +125,7 @@ let package = Package(
                 "LogoLocalization",
                 "SystemClipboard",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "TmdSwift", package: "TmdSwift"),
             ]
         ),
         .executableTarget(

@@ -151,6 +151,7 @@ public final class SyntaxHighlighter {
             AsciiDocSyntaxDefinition(),
             WikiSyntaxDefinition(),
             VhsSyntaxDefinition(),
+            TMDSyntaxDefinition(),
             CodeBlockPlainTextSyntaxDefinition(),
         ]
         for def in definitions {
