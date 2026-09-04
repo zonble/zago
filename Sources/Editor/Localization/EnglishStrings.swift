@@ -1469,25 +1469,33 @@ struct EnglishStrings {
             Intro:Piano@{ ... }
             Verse:AcousticGuitar@|0|{ ... }     (@|start_measure| offset)
 
-          5. Rhythm & Subdivisions
+          5. Rhythm & Base Subdivisions (Section)
           ----------------------------------------------------------------
-            <4*>                 Set base subdivision to 4 subdivisions per beat
-            <8*>                 8 subdivisions per beat
-            <16*>                16 subdivisions per beat
+            <4*>                 Quarter note base subdivision
+            <8*>                 Eighth note base subdivision
+            <16*>                Sixteenth note base subdivision
 
-          6. Numbered Notes & Modifiers
+          6. Musical Units (Numbered Notes & Modifiers)
           ----------------------------------------------------------------
-            1 2 3 4 5 6 7        Scale degrees (Do Re Mi Fa Sol La Ti)
+            1 2 3 4 5 6 7        Movable-Do scale degrees (Do Re Mi Fa Sol La Ti)
             0                    Rest
             -                    Extend previous note (tie / hold)
-            |                    Measure / barline separator
-            1'                   Octave up (single quote)
-            1''                  Two octaves up
-            1,                   Octave down (comma)
-            1,,                  Two octaves down
-            1# / 1b              Accidentals: sharp (#) / flat (b)
-            1_                   Underline (half duration)
-            1^                   Fermata / accented note
+            |                    Measure separator (ignored by parser)
+
+            Accidentals (directly following the degree):
+            1'                   Sharp Do
+            2,                   Flat Re
+
+            Octaves (^ or _, each symbol represents one octave):
+            1^                   One octave up
+            1^^                  Two octaves up
+            1_                   One octave down
+            1__                  Two octaves down
+            1'^                  Sharp Do, one octave up (accidental then octave)
+
+            Tuplets & Rhythm Groups:
+            (1 2 3)%(--)         Triplet occupying 2 base subdivision units
+            (7, 1)%(--)          Duplet occupying 2 base subdivision units
 
           7. Chords
           ----------------------------------------------------------------
