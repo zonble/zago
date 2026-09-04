@@ -1426,5 +1426,80 @@ struct EnglishStrings {
         "prompt.export_wav": "Export WAV to: ",
         "status.tmd_exported": "Exported %@ to: %@",
         "status.tmd_export_failed": "Failed to export %@: %@",
+        "status.tmd_snippet_inserted": "TMD snippet inserted",
+        "menu.tmd.snippet.score_template": "Score Template",
+        "menu.tmd.snippet.paragraph": "Paragraph (Verse)",
+        "menu.tmd.snippet.chords": "Chord Progression",
+        "menu.help.tmd_reference": "TMD Quick Reference",
+        "tmdview.reference_title": "  zago - TMD Quick Reference",
+        "tmdref.content": """
+
+          TMD (Text Music Description) Quick Reference
+          ================================================================
+
+          TMD is a lightweight, plain-text musical notation format for writing
+          melodies, chords, and multi-track scores.
+
+          1. Header & Score Structure
+          ----------------------------------------------------------------
+            ::SCORE::            Required header identifying a TMD score file
+            ** Song Title **     Title heading for the score
+
+          2. Global & Inline Directives
+          ----------------------------------------------------------------
+            != 120               Global tempo (BPM). e.g. != 90 or ! = 144
+            {!=140}              Inline tempo change within a section
+            {!+20}               Relative tempo increment
+            ?= C                 Global key signature (C, G, D, F, Bb, Am, etc.)
+            {?=F}                Inline key modulation
+            {?+1} / {?-1}        Semitone transposition
+            <4/4>                Time signature (e.g. <4/4>, <3/4>, <6/8>)
+            {<3/4>}              Inline meter change
+
+          3. Playback Order
+          ----------------------------------------------------------------
+            -> Intro             Play section 'Intro'
+            -> Verse             Play section 'Verse'
+            -> {?=D} Chorus      Inline modulation before playing section
+            -> #                 End of score / terminate playback
+
+          4. Section & Paragraph Declaration
+          ----------------------------------------------------------------
+            Section:Instrument { ... }
+            Intro:Piano { ... }
+            Verse:AcousticGuitar@|0| { ... }    (@|pan| or @vol/pan)
+
+          5. Rhythm & Subdivisions
+          ----------------------------------------------------------------
+            <4*>                 Set base subdivision to 4 subdivisions per beat
+            <8*>                 8 subdivisions per beat
+            <16*>                16 subdivisions per beat
+
+          6. Numbered Notes & Modifiers
+          ----------------------------------------------------------------
+            1 2 3 4 5 6 7        Scale degrees (Do Re Mi Fa Sol La Ti)
+            0                    Rest
+            -                    Extend previous note (tie / hold)
+            |                    Measure / barline separator
+            1'                   Octave up (single quote)
+            1''                  Two octaves up
+            1,                   Octave down (comma)
+            1,,                  Two octaves down
+            1# / 1b              Accidentals: sharp (#) / flat (b)
+            1_                   Underline (half duration)
+            1^                   Fermata / accented note
+
+          7. Chords
+          ----------------------------------------------------------------
+            [C]                  C Major triad
+            [Am]                 A minor triad
+            [G7]                 G dominant 7th
+            [Fmaj7]              F major 7th
+            [C/E]                Slash chord with bass note E
+
+          8. Comments
+          ----------------------------------------------------------------
+            /* Block comment */  Comments ignored by parser & synthesizer
+        """,
     ]
 }

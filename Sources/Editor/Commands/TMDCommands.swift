@@ -74,3 +74,26 @@ struct TMDExportWAVCommand: Command {
         return .prompting
     }
 }
+
+struct TMDReferenceCommand: Command {
+    let id: CommandID = .tmdReference
+    let name = "TMD Reference"
+    let description = "Show TMD music syntax and quick reference"
+    let commandBarAliases = ["help-tmd", "tmd-reference", "tmd"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        TextDocumentView(
+            terminal: editor.terminal,
+            title: editor.l10n["tmdview.reference_title"],
+            lines: TMDReferenceContent.lines(language: editor.language),
+            footer: editor.l10n["textview.footer"]
+        ).show()
+        editor.renderer.invalidateScreenCache()
+        editor.refreshScreen()
+        return .succeeded
+    }
+}
+

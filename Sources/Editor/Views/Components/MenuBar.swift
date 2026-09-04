@@ -392,6 +392,19 @@ final class MenuBar {
             tmdItems.append(MenuItem(titleKey: "menu.tmd.export_wav", hotkeyChar: "w", commandId: .tmdExportWAV))
         }
 
+        tmdItems.append(.divider)
+        for snippet in TMDSnippets.allSnippets {
+            tmdItems.append(
+                MenuItem(
+                    titleKey: snippet.titleKey,
+                    hotkeyChar: snippet.hotkeyChar,
+                    action: { editor in
+                        TMDSnippets.insertSnippet(snippet, into: editor)
+                    }
+                )
+            )
+        }
+
         baseCategories.append(
             MenuCategory(
                 titleKey: "menu.tmd",
@@ -410,6 +423,8 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.help.describe_command", hotkeyChar: "c", commandId: .helpDescribeCommand),
                     MenuItem(
                         titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference),
+                    MenuItem(
+                        titleKey: "menu.help.tmd_reference", hotkeyChar: "t", commandId: .tmdReference),
                     .divider,
                     MenuItem(
                         titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,

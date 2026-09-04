@@ -123,4 +123,39 @@ struct TMDExportTests {
         _ = editor.promptController.handleKey(.enter)
         #expect(editor.statusMessage.contains("Simulated export error"))
     }
+
+    @Test func testTMDSnippetsInMenuAndInsertion() {
+        let editor = makeEditor(filePath: "/path/to/song.tmd")
+        editor.menuBar.updateCategories(for: editor)
+        let tmdCategory = editor.menuBar.categories.first { $0.titleKey == "menu.tmd" }
+        #expect(tmdCategory != nil)
+
+        let snippetItem = tmdCategory?.items.first { $0.titleKey == "menu.tmd.snippet.score_template" }
+        #expect(snippetItem != nil)
+
+        // Test inserting snippet
+        TMDSnippets.insertSnippet(TMDSnippets.fullScoreTemplate, into: editor)
+        #expect(editor.buffer.isModified)
+        #expect(editor.buffer.lines.joined(separator: "\n").contains("::SCORE::"))
+        #expect(editor.buffer.lines.joined(separator: "\n").contains("Intro:Piano"))
+        #expect(editor.statusMessage == editor.l10n["status.tmd_snippet_inserted"])
+    }
+
+    @Test func testTMDReferenceInHelpMenuAndContent() {
+        let editor = makeEditor(filePath: "/path/to/song.tmd")
+        editor.menuBar.updateCategories(for: editor)
+        let helpCategory = editor.menuBar.categories.first { $0.titleKey == "menu.help" }
+        #expect(helpCategory != nil)
+
+        let refItem = helpCategory?.items.first { $0.commandId == .tmdReference }
+        #expect(refItem != nil)
+
+        let enLines = TMDReferenceContent.lines(language: .en)
+        #expect(enLines.joined(separator: "\n").contains("::SCORE::"))
+        #expect(enLines.joined(separator: "\n").contains("Text Music Description"))
+
+        let twLines = TMDReferenceContent.lines(language: .zh_TW)
+        #expect(twLines.joined(separator: "\n").contains("::SCORE::"))
+        #expect(twLines.joined(separator: "\n").contains("語法速查"))
+    }
 }

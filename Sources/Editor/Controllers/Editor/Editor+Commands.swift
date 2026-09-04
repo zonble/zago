@@ -132,6 +132,7 @@ extension Editor {
         commandRegistry.register(TMDExportLilyPondCommand())
         commandRegistry.register(TMDExportABCCommand())
         commandRegistry.register(TMDExportWAVCommand())
+        commandRegistry.register(TMDReferenceCommand())
 
         // AI Proposal Commands
         commandRegistry.register(AcceptProposalCommand())
