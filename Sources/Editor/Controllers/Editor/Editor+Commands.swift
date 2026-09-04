@@ -126,6 +126,13 @@ extension Editor {
         commandRegistry.register(DiagramMenuCommand())
         commandRegistry.register(ToggleCommentCommand())
 
+        // TMD Commands
+        commandRegistry.register(TMDExportMIDICommand())
+        commandRegistry.register(TMDExportMusicXMLCommand())
+        commandRegistry.register(TMDExportLilyPondCommand())
+        commandRegistry.register(TMDExportABCCommand())
+        commandRegistry.register(TMDExportWAVCommand())
+
         // AI Proposal Commands
         commandRegistry.register(AcceptProposalCommand())
         commandRegistry.register(RejectProposalCommand())

@@ -382,6 +382,25 @@ final class MenuBar {
             baseCategories.append(DiagramSnippets.makeMenuCategory(for: ed))
         }
 
+        var tmdItems = [
+            MenuItem(titleKey: "menu.tmd.export_midi", hotkeyChar: "m", commandId: .tmdExportMIDI),
+            MenuItem(titleKey: "menu.tmd.export_musicxml", hotkeyChar: "x", commandId: .tmdExportMusicXML),
+            MenuItem(titleKey: "menu.tmd.export_lilypond", hotkeyChar: "l", commandId: .tmdExportLilyPond),
+            MenuItem(titleKey: "menu.tmd.export_abc", hotkeyChar: "a", commandId: .tmdExportABC),
+        ]
+        if editor?.tmdExportDelegate.isWAVExportSupported ?? true {
+            tmdItems.append(MenuItem(titleKey: "menu.tmd.export_wav", hotkeyChar: "w", commandId: .tmdExportWAV))
+        }
+
+        baseCategories.append(
+            MenuCategory(
+                titleKey: "menu.tmd",
+                hotkeyChar: "m",
+                items: tmdItems,
+                isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".tmd") == true }
+            )
+        )
+
         baseCategories.append(
             MenuCategory(
                 titleKey: "menu.help", hotkeyChar: "h",

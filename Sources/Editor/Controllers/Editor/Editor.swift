@@ -209,6 +209,7 @@ public final class Editor: @unchecked Sendable {
     var backupDir: String? = nil
     var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
+    public let tmdExportDelegate: any TMDExportDelegate
     let proposalQueue = ProposalQueue()
     public let historyStore: any AIHistoryStoring
     private let editorLoopRequests = EditorLoopRequestQueue()
@@ -335,6 +336,7 @@ public final class Editor: @unchecked Sendable {
         self.gitCoordinator = GitCoordinator(gitService: dependencies.gitService)
         self.historyStore = dependencies.historyStore
         self.clipboardCoordinator = ClipboardCoordinator(strategy: dependencies.clipboardStrategy)
+        self.tmdExportDelegate = dependencies.tmdExportDelegate
         self.configProvider = configSource.reload
 
         let resolved = Self.resolveConfig(options: options, config: configSource.initial)

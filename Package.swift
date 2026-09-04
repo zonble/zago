@@ -126,6 +126,11 @@ let package = Package(
                 "SystemClipboard",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "TmdSwift", package: "TmdSwift"),
+                .product(name: "TmdMIDI", package: "TmdSwift"),
+                .product(name: "TmdMusicXML", package: "TmdSwift"),
+                .product(name: "TmdLilyPond", package: "TmdSwift"),
+                .product(name: "TmdABC", package: "TmdSwift"),
+                .product(name: "TmdAudio", package: "TmdSwift", condition: .when(platforms: [.macOS])),
             ]
         ),
         .executableTarget(

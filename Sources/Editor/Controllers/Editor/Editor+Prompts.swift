@@ -385,4 +385,38 @@ extension Editor {
     ) -> EditorOperationResult {
         saveBufferContent(to: path, forcedEncoding: forcedEncoding, onSuccess: onSuccess)
     }
+
+    /// Prompts user for export target path for TMD format.
+    func promptTMDExport(format: TMDExportFormat) {
+        let currentPath = buffer.filePath ?? ""
+        let defaultPath: String
+        if !currentPath.isEmpty {
+            let ns = currentPath as NSString
+            let basePath = ns.deletingPathExtension
+            defaultPath = "\(basePath).\(format.fileExtension)"
+        } else {
+            defaultPath = "score.\(format.fileExtension)"
+        }
+
+        promptInputText = defaultPath
+        currentPromptMode = .tmdExport(format: format, completion: { [weak self] targetPath in
+            guard let self else { return }
+            guard let targetPath, !targetPath.isEmpty else {
+                self.reportOperationResult(.cancelled(message: self.l10n["status.cancelled"]))
+                return
+            }
+            self.executeTMDExport(format: format, toPath: targetPath)
+        })
+    }
+
+    /// Dispatches TMD export via delegate and reports outcome.
+    func executeTMDExport(format: TMDExportFormat, toPath targetPath: String) {
+        let sourceText = buffer.lines.joined(separator: "\n")
+        do {
+            try tmdExportDelegate.exportTMD(sourceText: sourceText, format: format, toPath: targetPath)
+            reportOperationResult(.succeeded(message: String(format: l10n["status.tmd_exported"], format.displayName, targetPath)))
+        } catch {
+            reportOperationResult(.failed(error.localizedDescription, message: String(format: l10n["status.tmd_export_failed"], format.displayName, error.localizedDescription)))
+        }
+    }
 }

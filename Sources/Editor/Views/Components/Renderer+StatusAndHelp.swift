@@ -270,7 +270,7 @@ extension Renderer {
 
         case .saveFilePath, .insertFilePath, .openFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
             .gotoLine, .spellCheck,
-            .logoReadWord, .logoReadChar:
+            .logoReadWord, .logoReadChar, .tmdExport:
             if editor?.keymapManager.activePreset == .modern {
                 rawItems1 = [
                     ("Enter", tr("help.confirm")), ("^G", tr("help.cancel")), ("^X", tr("help.cut_text")),
@@ -683,6 +683,11 @@ extension Renderer {
             let p =
                 prompt.isEmpty ? editor.l10n["prompt.logo_read_key"] : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
             promptPrefix = p
+            isConfirmation = false
+        case .tmdExport(let format, _):
+            let formatKey = "prompt.export_\(format.rawValue)"
+            let prefix = editor.l10n[formatKey]
+            promptPrefix = prefix != formatKey ? prefix : "Export \(format.displayName) to: "
             isConfirmation = false
         case .none:
             return RenderedPrompt(text: "", cursorCol: 1)

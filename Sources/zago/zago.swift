@@ -191,7 +191,8 @@ struct Zago: ParsableCommand {
             fileIOStrategy: fileIOStrategy,
             terminal: terminal,
             gitService: gitService,
-            clipboardStrategy: clipboardStrategy
+            clipboardStrategy: clipboardStrategy,
+            tmdExportDelegate: ZagoTMDExporter()
         )
         let configProvider = { ConfigLoader(provider: LocalConfigFileProvider()).loadConfig() }
         let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)

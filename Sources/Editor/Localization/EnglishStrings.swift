@@ -1411,5 +1411,20 @@ struct EnglishStrings {
         "describe_command.examples": "Examples:",
         "describe_command.not_found": "Not Found",
         "describe_command.not_found_desc": "No command, procedure or primitive found matching '%@'.",
+
+        // TMD Menu & Commands
+        "menu.tmd": "TMD",
+        "menu.tmd.export_midi": "Export MIDI",
+        "menu.tmd.export_musicxml": "Export MusicXML",
+        "menu.tmd.export_lilypond": "Export LilyPond",
+        "menu.tmd.export_abc": "Export ABC",
+        "menu.tmd.export_wav": "Export WAV",
+        "prompt.export_midi": "Export MIDI to: ",
+        "prompt.export_musicxml": "Export MusicXML to: ",
+        "prompt.export_lilypond": "Export LilyPond to: ",
+        "prompt.export_abc": "Export ABC to: ",
+        "prompt.export_wav": "Export WAV to: ",
+        "status.tmd_exported": "Exported %@ to: %@",
+        "status.tmd_export_failed": "Failed to export %@: %@",
     ]
 }

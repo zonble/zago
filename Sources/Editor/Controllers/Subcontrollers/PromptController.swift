@@ -36,6 +36,7 @@ final class PromptController: KeyInputHandler {
         case describeKey(completion: (Key) -> Void)
         case logoReadWord(prompt: String)
         case logoReadChar(prompt: String)
+        case tmdExport(format: TMDExportFormat, completion: (String?) -> Void)
 
         func cancel(in editor: Editor?) {
             switch self {
@@ -57,7 +58,8 @@ final class PromptController: KeyInputHandler {
                 .logoMacro(let completion),
                 .fillText(let completion),
                 .tableDimensions(let completion),
-                .gotoLine(let completion):
+                .gotoLine(let completion),
+                .tmdExport(_, let completion):
                 completion(nil)
             case .confirmReplace(_, _, let completion):
                 completion(.cancel)
@@ -374,8 +376,8 @@ extension PromptController {
                 }
             }
 
-        case .fillText(let completion), .tableDimensions(let completion), .gotoLine(let completion):
-            processTextInputPromptKey(key, trimWhitespace: false, completion: completion)
+        case .fillText(let completion), .tableDimensions(let completion), .gotoLine(let completion), .tmdExport(_, let completion):
+            processTextInputPromptKey(key, trimWhitespace: true, completion: completion)
 
         case .logoReadWord:
             switch key {
@@ -449,7 +451,8 @@ extension PromptController {
         case .saveFilePath, .search, .replaceSearch, .replaceWith, .insertFilePath, .openFilePath, .spellCheck, .logoMacro, .fillText,
             .tableDimensions,
             .gotoLine,
-            .logoReadWord:
+            .logoReadWord,
+            .tmdExport:
             return true
         case .none, .confirmExitSave, .confirmExternalReload, .confirmEncodingFallback, .confirmBackupFailure,
             .confirmReplace, .describeKey,
@@ -747,7 +750,7 @@ extension PromptController {
             return [("^C", tr("help.cancel")), ("^M", tr("help.set_search")), ("^R", tr("help.replace"))]
         case .saveFilePath, .insertFilePath, .openFilePath:
             return [("^C", tr("help.cancel")), ("Tab", tr("help.complete")), ("^M", tr("help.confirm"))]
-        case .gotoLine, .tableDimensions, .fillText, .spellCheck:
+        case .gotoLine, .tableDimensions, .fillText, .spellCheck, .tmdExport:
             return [("^C", tr("help.cancel")), ("^M", tr("help.confirm"))]
         case .logoMacro:
             return [

@@ -163,6 +163,13 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case diagramMenu = "diagram.menu"
     case symbolPicker = "symbol.picker"
 
+    // TMD Export
+    case tmdExportMIDI = "tmd.export.midi"
+    case tmdExportMusicXML = "tmd.export.musicxml"
+    case tmdExportLilyPond = "tmd.export.lilypond"
+    case tmdExportABC = "tmd.export.abc"
+    case tmdExportWAV = "tmd.export.wav"
+
     // Test & Custom
     case testCmd = "test.cmd"
     case customMacro = "custom.macro"

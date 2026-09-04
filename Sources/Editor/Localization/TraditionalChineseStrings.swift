@@ -1399,5 +1399,20 @@ struct TraditionalChineseStrings {
         "describe_command.examples": "範例：",
         "describe_command.not_found": "找不到符合項目",
         "describe_command.not_found_desc": "找不到名為 '%@' 的指令、程序或內建語法",
+
+        // TMD Menu & Commands
+        "menu.tmd": "TMD",
+        "menu.tmd.export_midi": "匯出 MIDI",
+        "menu.tmd.export_musicxml": "匯出 MusicXML",
+        "menu.tmd.export_lilypond": "匯出 Lily",
+        "menu.tmd.export_abc": "匯出 ABC",
+        "menu.tmd.export_wav": "匯出 WAV",
+        "prompt.export_midi": "匯出 MIDI 至：",
+        "prompt.export_musicxml": "匯出 MusicXML 至：",
+        "prompt.export_lilypond": "匯出 LilyPond 至：",
+        "prompt.export_abc": "匯出 ABC 至：",
+        "prompt.export_wav": "匯出 WAV 至：",
+        "status.tmd_exported": "已成功匯出 %@ 至：%@",
+        "status.tmd_export_failed": "匯出 %@ 失敗：%@",
     ]
 }
