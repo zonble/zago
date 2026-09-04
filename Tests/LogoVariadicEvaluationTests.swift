@@ -118,6 +118,7 @@ struct LogoVariadicEvaluationTests {
         let engine = LogoEngine()
         #if os(Linux) || os(Windows)
         for name in ["DETECT.URL", "DETECT.EMAIL", "DETECT.PHONE", "DETECT.DATE", "DETECT.ADDRESS"] {
+            let engine = LogoEngine()
             #expect(evaluate("(\(name) \"Visit https://apple.com today)", engine: engine) == "")
             #expect(engine.lastError?.message == "[LOGO Error: \(name) is not supported on this platform]")
         }
