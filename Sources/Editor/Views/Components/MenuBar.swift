@@ -424,7 +424,8 @@ final class MenuBar {
                     MenuItem(
                         titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference),
                     MenuItem(
-                        titleKey: "menu.help.tmd_reference", hotkeyChar: "t", commandId: .tmdReference),
+                        titleKey: "menu.help.tmd_reference", hotkeyChar: "t", commandId: .tmdReference,
+                        isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".tmd") == true }),
                     .divider,
                     MenuItem(
                         titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,

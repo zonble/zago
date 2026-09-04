@@ -151,6 +151,12 @@ struct TMDExportTests {
         let refItem = helpCategory?.items.first { $0.commandId == .tmdReference }
         #expect(refItem != nil)
 
+        let txtEditor = makeEditor(filePath: "/path/to/notes.txt")
+        txtEditor.menuBar.updateCategories(for: txtEditor)
+        let txtHelpCategory = txtEditor.menuBar.categories.first { $0.titleKey == "menu.help" }
+        let txtRefItem = txtHelpCategory?.items.first { $0.commandId == .tmdReference }
+        #expect(txtRefItem == nil)
+
         let enLines = TMDReferenceContent.lines(language: .en)
         #expect(enLines.joined(separator: "\n").contains("::SCORE::"))
         #expect(enLines.joined(separator: "\n").contains("Text Music Description"))

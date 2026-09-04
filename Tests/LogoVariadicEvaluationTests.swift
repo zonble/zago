@@ -116,10 +116,17 @@ struct LogoVariadicEvaluationTests {
 
     @Test func testParenthesizedDetectPrimitives() {
         let engine = LogoEngine()
+        #if os(Linux) || os(Windows)
+        for name in ["DETECT.URL", "DETECT.EMAIL", "DETECT.PHONE", "DETECT.DATE", "DETECT.ADDRESS"] {
+            #expect(evaluate("(\(name) \"Visit https://apple.com today)", engine: engine) == "")
+            #expect(engine.lastError?.message == "[LOGO Error: \(name) is not supported on this platform]")
+        }
+        #else
         #expect(!evaluate("(DETECT.URL \"Visit https://apple.com today)", engine: engine).isEmpty)
         #expect(!evaluate("(DETECT.EMAIL \"Contact me at test@example.com)", engine: engine).isEmpty)
         #expect(!evaluate("(DETECT.PHONE \"Call 123-456-7890 now)", engine: engine).isEmpty)
         #expect(!evaluate("(DETECT.DATE \"Meet on 2026-09-03 please)", engine: engine).isEmpty)
         #expect(!evaluate("(DETECT.ADDRESS \"1 Infinite Loop Cupertino CA)", engine: engine).isEmpty)
+        #endif
     }
 }
