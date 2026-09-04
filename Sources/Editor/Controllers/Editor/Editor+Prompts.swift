@@ -9,6 +9,7 @@ extension Editor {
     /// Prompts user to input file path for saving (^O / ^S / F3).
     func promptWriteFilePath() {
         promptInputText = buffer.filePath ?? ""
+        promptCursorIndex = promptInputText.count
         currentPromptMode = .saveFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
                 self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
@@ -399,6 +400,7 @@ extension Editor {
         }
 
         promptInputText = defaultPath
+        promptCursorIndex = promptInputText.count
         currentPromptMode = .tmdExport(format: format, completion: { [weak self] targetPath in
             guard let self else { return }
             guard let targetPath, !targetPath.isEmpty else {
