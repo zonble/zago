@@ -115,6 +115,9 @@ documents.
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and
   Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload.
+- TMD (Text Music Description) score editing: syntax highlighting, section
+  outline navigation (`M+\`), score templates, and one-click export to
+  MIDI, MusicXML, LilyPond, ABC, and WAV audio.
 - Natural command prompt: press `Esc` and run editing commands such as
   `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
 - Lightweight automation: reuse command sequences with variables, loops,

@@ -34,17 +34,17 @@ public enum TMDSnippets {
 -> Chorus
 -> #
 
-Intro:Piano {
+Intro:Piano@|0|{
     <4*>
     [C] 1 3 5 1' | [G] 5, 7, 2 5 | [Am] 6, 1 3 6 | [F] 4, 6, 1 4 |
 }
 
-Verse:Piano {
+Verse:Piano@|0|{
     <4*>
     [C] 1 - 3 - | [G] 5 - 7 - | [Am] 6 - 1' - | [F] 4 - 6 - |
 }
 
-Chorus:Piano {
+Chorus:Piano@|0|{
     <4*>
     [F] 4 6 1' - | [G] 5 7 2' - | [Em] 3 5 7 - | [Am] 6 1' 3' - |
     [Dm] 2 4 6 - | [G] 5 7 2' - | [C] 1' - - - |
@@ -57,7 +57,7 @@ Chorus:Piano {
         titleKey: "menu.tmd.snippet.paragraph",
         hotkeyChar: "p",
         templateText: """
-Verse:Piano {
+Verse:Piano@|0|{
     <4*>
     [C] 1 3 5 1' | [G] 5, 7, 2 5 | [Am] 6, 1 3 6 | [F] 4, 6, 1 4 |
 }
@@ -69,7 +69,7 @@ Verse:Piano {
         titleKey: "menu.tmd.snippet.chords",
         hotkeyChar: "c",
         templateText: """
-Chorus:Piano {
+Chorus:Piano@|0|{
     <4*>
     [F] 4 - - - | [G] 5 - - - | [Em] 3 - - - | [Am] 6 - - - |
     [Dm7] 2 - - - | [G7] 5 - - - | [C] 1 - - - |

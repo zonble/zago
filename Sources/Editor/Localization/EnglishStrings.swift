@@ -1465,9 +1465,9 @@ struct EnglishStrings {
 
           4. Section & Paragraph Declaration
           ----------------------------------------------------------------
-            Section:Instrument { ... }
-            Intro:Piano { ... }
-            Verse:AcousticGuitar@|0| { ... }    (@|pan| or @vol/pan)
+            Section:Instrument@{ ... }
+            Intro:Piano@{ ... }
+            Verse:AcousticGuitar@|0|{ ... }     (@|start_measure| offset)
 
           5. Rhythm & Subdivisions
           ----------------------------------------------------------------
@@ -1500,6 +1500,9 @@ struct EnglishStrings {
           8. Comments
           ----------------------------------------------------------------
             /* Block comment */  Comments ignored by parser & synthesizer
+
+          ----------------------------------------------------------------
+          In memory of Chen, Chih-Han / aguai (阿怪, 1974–2019).
         """,
     ]
 }

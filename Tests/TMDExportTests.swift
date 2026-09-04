@@ -3,6 +3,7 @@ import Testing
 
 @testable import Config
 @testable import Editor
+@testable import zago
 
 private final class MockTMDExportDelegate: TMDExportDelegate, @unchecked Sendable {
     var lastSourceText: String?
@@ -153,9 +154,41 @@ struct TMDExportTests {
         let enLines = TMDReferenceContent.lines(language: .en)
         #expect(enLines.joined(separator: "\n").contains("::SCORE::"))
         #expect(enLines.joined(separator: "\n").contains("Text Music Description"))
+        #expect(enLines.joined(separator: "\n").contains("In memory of Chen, Chih-Han / aguai (阿怪, 1974–2019)."))
 
         let twLines = TMDReferenceContent.lines(language: .zh_TW)
         #expect(twLines.joined(separator: "\n").contains("::SCORE::"))
         #expect(twLines.joined(separator: "\n").contains("語法速查"))
+        #expect(twLines.joined(separator: "\n").contains("In memory of Chen, Chih-Han / aguai (阿怪, 1974–2019)."))
+    }
+
+    @Test func testRealZagoTMDExporterWithSnippets() throws {
+        let exporter = ZagoTMDExporter()
+        let sourceText = TMDSnippets.fullScoreTemplate.templateText
+
+        let tempDir = FileManager.default.temporaryDirectory
+        let midiURL = tempDir.appendingPathComponent("test_export.mid")
+        let xmlURL = tempDir.appendingPathComponent("test_export.xml")
+        let lyURL = tempDir.appendingPathComponent("test_export.ly")
+        let abcURL = tempDir.appendingPathComponent("test_export.abc")
+
+        defer {
+            try? FileManager.default.removeItem(at: midiURL)
+            try? FileManager.default.removeItem(at: xmlURL)
+            try? FileManager.default.removeItem(at: lyURL)
+            try? FileManager.default.removeItem(at: abcURL)
+        }
+
+        try exporter.exportTMD(sourceText: sourceText, format: .midi, toPath: midiURL.path)
+        #expect(FileManager.default.fileExists(atPath: midiURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .musicxml, toPath: xmlURL.path)
+        #expect(FileManager.default.fileExists(atPath: xmlURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .lilypond, toPath: lyURL.path)
+        #expect(FileManager.default.fileExists(atPath: lyURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .abc, toPath: abcURL.path)
+        #expect(FileManager.default.fileExists(atPath: abcURL.path))
     }
 }

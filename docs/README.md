@@ -27,6 +27,7 @@ This directory holds the detailed user, language, architecture, and development 
 
 ## Features
 
+- [TMD (Text Music Description) Music Support](features/tmd_support.md): TMD score editing, syntax highlighting, section outline, snippets, and multi-format export (MIDI, MusicXML, LilyPond, ABC, WAV).
 - [Diagram snippets & menu rules](features/diagram_snippets.md): trigger conditions, code block context detection, filtering rules, and Editor LOGO `DIAGRAM` command usage.
 - [Git Integration & Diff Gutter Specification](features/git_integration.md): title bar branch status, real-time diff against `HEAD`, and line number gutter colors.
 - [Spell Checker Architecture & Specification](features/spell_checker.md): platform engines, Markdown context filtering, and `.zagorc` language directives.
