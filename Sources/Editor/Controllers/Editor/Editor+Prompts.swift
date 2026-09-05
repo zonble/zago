@@ -393,7 +393,15 @@ extension Editor {
         let defaultPath: String
         if !currentPath.isEmpty {
             let ns = currentPath as NSString
+            // Export target defaults are also displayed and passed to the
+            // format-specific exporters. Keep their separators portable so
+            // a Windows-normalized source path does not turn a POSIX-style
+            // path into `\\workspace\\...` in the prompt.
+            #if os(Windows)
+            let basePath = ns.deletingPathExtension.replacingOccurrences(of: "\\", with: "/")
+            #else
             let basePath = ns.deletingPathExtension
+            #endif
             defaultPath = "\(basePath).\(format.fileExtension)"
         } else {
             defaultPath = "score.\(format.fileExtension)"
