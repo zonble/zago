@@ -19,6 +19,8 @@ import demoLogo from "./templates/demo.logo?raw";
 import architectureLogo from "./templates/architecture.logo?raw";
 import exampleDiagram from "./templates/diagram.txt?raw";
 import game2048Logo from "./templates/game_2048.logo?raw";
+import 三天三夜 from "./templates/三天三夜.tmd?raw";
+import legacy from "./templates/legacy.tmd?raw";
 
 export class VirtualOSStorage {
   /**
@@ -81,31 +83,26 @@ export class VirtualOSStorage {
           mtime: now,
           size: game2048Logo.length,
         },
+        {
+          path: "/workspace/tmd/三天三夜.tmd",
+          name: "三天三夜.tmd",
+          isDirectory: false,
+          content: encoder.encode(三天三夜),
+          mtime: now,
+          size: 三天三夜.length,
+        },
+        {
+          path: "/workspace/tmd/legacy.tmd",
+          name: "legacy.tmd",
+          isDirectory: false,
+          content: encoder.encode(legacy),
+          mtime: now,
+          size: legacy.length,
+        },
       ];
 
       for (const node of defaults) {
         await set(VFS_PREFIX + node.path, node);
-      }
-    }
-
-    // Add newly shipped examples to existing workspaces without overwriting
-    // files the user may already have edited or removed intentionally.
-    const newExamples = [
-      { path: "/workspace/examples/game_2048.logo", name: "game_2048.logo", content: game2048Logo },
-      { path: "/workspace/examples/architecture.logo", name: "architecture.logo", content: architectureLogo },
-    ];
-    for (const ex of newExamples) {
-      if (!(await get<VFSNode>(VFS_PREFIX + ex.path))) {
-        const encoder = new TextEncoder();
-        const now = Date.now();
-        await set(VFS_PREFIX + ex.path, {
-          path: ex.path,
-          name: ex.name,
-          isDirectory: false,
-          content: encoder.encode(ex.content),
-          mtime: now,
-          size: ex.content.length,
-        } satisfies VFSNode);
       }
     }
   }
