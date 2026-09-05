@@ -354,6 +354,7 @@ async function main() {
 
           case "download": {
             const { filename, data: fileBytes } = event.data;
+            console.log("[Main] Received download message:", filename, fileBytes?.byteLength);
             if (filename && fileBytes) {
               const mimeMap: Record<string, string> = {
                 mid: "audio/midi",
@@ -368,12 +369,15 @@ async function main() {
               const blob = new Blob([fileBytes], { type: mimeType });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
+              a.style.display = "none";
               a.href = url;
               a.download = filename;
               document.body.appendChild(a);
               a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
+              setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }, 1500);
             }
             break;
           }

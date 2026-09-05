@@ -191,11 +191,31 @@ async function startWasm(
     const chunk = stdoutDecoder.decode(unshared, { stream: true });
     stdoutPending += chunk;
 
-    const downloadRegex = /\x1b\]zago:download;([^\x07\x1b]+)(?:\x07|\x1b\\)/g;
+    const downloadRegex = /\x1b\]zago:download;([^\x07\x1b;]+)(?:;([^\x07\x1b]*))?(?:\x07|\x1b\\)/g;
     let match;
     while ((match = downloadRegex.exec(stdoutPending)) !== null) {
       const filename = match[1];
-      triggerFileDownload(filename);
+      const base64Data = match[2];
+      if (base64Data && base64Data.length > 0) {
+        try {
+          const binaryStr = atob(base64Data);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          console.log("[Worker] Emitting download with inline base64 bytes:", filename, bytes.length);
+          self.postMessage({
+            type: "download",
+            filename: filename.split("/").pop() || filename,
+            data: bytes,
+          });
+        } catch (err) {
+          console.error("[Worker] Failed to decode inline base64 for download:", err);
+          triggerFileDownload(filename);
+        }
+      } else {
+        triggerFileDownload(filename);
+      }
     }
     stdoutPending = stdoutPending.replace(downloadRegex, "");
 
