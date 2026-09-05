@@ -229,18 +229,13 @@ test.describe("web editor smoke tests", () => {
     expect(termText).toContain("welcome.en.md");
     expect(termText).toContain("welcome.zh-TW.md");
 
-    // In DirectoryBuffer:
-    // line 0: Directory: /workspace
-    // line 1: Instructions...
-    // line 2: (empty)
-    // line 3: .. (up a dir)
-    // line 4: ▸ examples/ (directories first)
-    // line 5: welcome.en.md
-    // line 6: welcome.zh-TW.md
-    // Cursor starts at line 3 (".. (up a dir)")
-    // Move down past 'examples/' to 'welcome.en.md' (ArrowDown x 2)
-    await page.keyboard.press("ArrowDown");
-    await page.keyboard.press("ArrowDown");
+    // DirectoryBuffer puts all folders before regular files. The workspace can
+    // gain more folders over time, so locate the first regular file instead of
+    // assuming that `examples/` is the only folder.
+    const directoryCount = (termText.match(/▸ .*\//g) ?? []).length;
+    for (let i = 0; i <= directoryCount; i++) {
+      await page.keyboard.press("ArrowDown");
+    }
     await page.keyboard.press("Enter");
 
     // Verify welcome.en.md is opened and its content is rendered
