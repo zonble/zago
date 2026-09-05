@@ -407,6 +407,11 @@ extension Editor {
             defaultPath = "score.\(format.fileExtension)"
         }
 
+        guard tmdExportDelegate.shouldPromptForPath else {
+            executeTMDExport(format: format, toPath: defaultPath)
+            return
+        }
+
         promptInputText = defaultPath
         promptCursorIndex = promptInputText.count
         currentPromptMode = .tmdExport(format: format, completion: { [weak self] targetPath in
@@ -424,7 +429,9 @@ extension Editor {
         let sourceText = buffer.lines.joined(separator: "\n")
         do {
             try tmdExportDelegate.exportTMD(sourceText: sourceText, format: format, toPath: targetPath)
-            reportOperationResult(.succeeded(message: String(format: l10n["status.tmd_exported"], format.displayName, targetPath)))
+            let statusKey = tmdExportDelegate.shouldPromptForPath ? "status.tmd_exported" : "status.tmd_exported_web"
+            let displayTarget = tmdExportDelegate.shouldPromptForPath ? targetPath : (targetPath as NSString).lastPathComponent
+            reportOperationResult(.succeeded(message: String(format: l10n[statusKey], format.displayName, displayTarget)))
         } catch {
             reportOperationResult(.failed(error.localizedDescription, message: String(format: l10n["status.tmd_export_failed"], format.displayName, error.localizedDescription)))
         }

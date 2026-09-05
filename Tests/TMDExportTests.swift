@@ -4,6 +4,7 @@ import Testing
 @testable import Config
 @testable import Editor
 @testable import zago
+@testable import zagoweb
 
 private final class MockTMDExportDelegate: TMDExportDelegate, @unchecked Sendable {
     var lastSourceText: String?
@@ -11,6 +12,11 @@ private final class MockTMDExportDelegate: TMDExportDelegate, @unchecked Sendabl
     var lastTargetPath: String?
     var shouldFail: Bool = false
     var isWAVExportSupported: Bool = true
+    var mockShouldPromptForPath: Bool = true
+
+    var shouldPromptForPath: Bool {
+        mockShouldPromptForPath
+    }
 
     func exportTMD(
         sourceText: String,
@@ -196,5 +202,65 @@ struct TMDExportTests {
 
         try exporter.exportTMD(sourceText: sourceText, format: .abc, toPath: abcURL.path)
         #expect(FileManager.default.fileExists(atPath: abcURL.path))
+    }
+
+    @Test func testInstantTMDExportWhenShouldPromptForPathIsFalse() {
+        let mockDelegate = MockTMDExportDelegate()
+        mockDelegate.mockShouldPromptForPath = false
+        let editor = makeEditor(filePath: "/workspace/web_song.tmd", delegate: mockDelegate)
+        editor.buffer.lines = [
+            "::SCORE::",
+            "** Web Song **",
+            "!= 120",
+            "?= C",
+            "<4/4>",
+            "Intro:Piano@{ <4*> 1 2 3 4 }",
+            "-> Intro ->#",
+        ]
+
+        // 1. Dispatch TMD Export MIDI
+        _ = editor.commandRegistry.dispatch(id: .tmdExportMIDI, editor: editor)
+
+        // 2. Prompt controller should NOT be active since prompt was bypassed
+        #expect(!editor.promptController.isActive)
+        #expect(mockDelegate.lastFormat == .midi)
+        #expect(mockDelegate.lastTargetPath == "/workspace/web_song.mid")
+        #expect(editor.statusMessage.contains("web_song.mid"))
+    }
+
+    @Test func testWasiTMDExporterExecution() throws {
+        let exporter = WasiTMDExporter()
+        #expect(!exporter.shouldPromptForPath)
+        #expect(!exporter.isWAVExportSupported)
+
+        let sourceText = TMDSnippets.fullScoreTemplate.templateText
+        let tempDir = FileManager.default.temporaryDirectory
+        let midiURL = tempDir.appendingPathComponent("wasi_test.mid")
+        let xmlURL = tempDir.appendingPathComponent("wasi_test.xml")
+        let lyURL = tempDir.appendingPathComponent("wasi_test.ly")
+        let abcURL = tempDir.appendingPathComponent("wasi_test.abc")
+
+        defer {
+            try? FileManager.default.removeItem(at: midiURL)
+            try? FileManager.default.removeItem(at: xmlURL)
+            try? FileManager.default.removeItem(at: lyURL)
+            try? FileManager.default.removeItem(at: abcURL)
+        }
+
+        try exporter.exportTMD(sourceText: sourceText, format: .midi, toPath: midiURL.path)
+        #expect(FileManager.default.fileExists(atPath: midiURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .musicxml, toPath: xmlURL.path)
+        #expect(FileManager.default.fileExists(atPath: xmlURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .lilypond, toPath: lyURL.path)
+        #expect(FileManager.default.fileExists(atPath: lyURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .abc, toPath: abcURL.path)
+        #expect(FileManager.default.fileExists(atPath: abcURL.path))
+
+        #expect(throws: TMDExportError.self) {
+            try exporter.exportTMD(sourceText: sourceText, format: .wav, toPath: "/tmp/invalid.wav")
+        }
     }
 }

@@ -352,6 +352,32 @@ async function main() {
             if (mode === "editor" && data) term.write(data);
             break;
 
+          case "download": {
+            const { filename, data: fileBytes } = event.data;
+            if (filename && fileBytes) {
+              const mimeMap: Record<string, string> = {
+                mid: "audio/midi",
+                midi: "audio/midi",
+                musicxml: "application/vnd.recordare.musicxml+xml",
+                xml: "application/xml",
+                ly: "text/x-lilypond",
+                abc: "text/vnd.abc",
+              };
+              const ext = filename.split(".").pop()?.toLowerCase() || "";
+              const mimeType = mimeMap[ext] || "application/octet-stream";
+              const blob = new Blob([fileBytes], { type: mimeType });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }
+            break;
+          }
+
           case "status":
             if (statusText) {
               statusText.textContent =

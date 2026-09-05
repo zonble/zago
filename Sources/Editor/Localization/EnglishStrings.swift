@@ -1425,6 +1425,7 @@ struct EnglishStrings {
         "prompt.export_abc": "Export ABC to: ",
         "prompt.export_wav": "Export WAV to: ",
         "status.tmd_exported": "Exported %@ to: %@",
+        "status.tmd_exported_web": "Exported %@ and started download: %@",
         "status.tmd_export_failed": "Failed to export %@: %@",
         "status.tmd_snippet_inserted": "TMD snippet inserted",
         "menu.tmd.snippet.score_template": "Score Template",

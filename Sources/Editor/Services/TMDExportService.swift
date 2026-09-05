@@ -34,6 +34,10 @@ public enum TMDExportFormat: String, CaseIterable, Sendable {
 /// Abstract delegate protocol implemented by app targets (e.g. zago CLI)
 /// to perform TMD parsing and compilation without coupling the Editor module to TmdSwift.
 public protocol TMDExportDelegate: AnyObject, Sendable {
+    /// Whether the editor should prompt the user for an export path before running export.
+    /// Defaults to `true` on CLI targets; WebAssembly / browser targets can return `false` to trigger instant download.
+    var shouldPromptForPath: Bool { get }
+
     /// Whether WAV audio export is supported in current platform environment.
     var isWAVExportSupported: Bool { get }
 
@@ -43,6 +47,10 @@ public protocol TMDExportDelegate: AnyObject, Sendable {
         format: TMDExportFormat,
         toPath targetPath: String
     ) throws
+}
+
+public extension TMDExportDelegate {
+    var shouldPromptForPath: Bool { true }
 }
 
 /// Default no-op delegate when no TMD compiler is injected (e.g. headless/test environments).

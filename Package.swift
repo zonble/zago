@@ -141,6 +141,11 @@ let package = Package(
                 "Editor",
                 "Git",
                 "LogoEngine",
+                .product(name: "TmdSwift", package: "TmdSwift"),
+                .product(name: "TmdMIDI", package: "TmdSwift"),
+                .product(name: "TmdMusicXML", package: "TmdSwift"),
+                .product(name: "TmdLilyPond", package: "TmdSwift"),
+                .product(name: "TmdABC", package: "TmdSwift"),
             ],
             path: "Sources/zagoweb"
         ),
