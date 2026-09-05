@@ -82,6 +82,8 @@ documents.
     - [1. Interactive Editor \& System `$EDITOR` Mode](#1-interactive-editor--system-editor-mode)
     - [2. Headless Scripting \& Unix Pipe Filter](#2-headless-scripting--unix-pipe-filter)
     - [Command-Line Options](#command-line-options)
+  - [Extra: zago Supports TMD](#extra-zago-supports-tmd)
+    - [What You Can Do with TMD in zago](#what-you-can-do-with-tmd-in-zago)
   - [FAQ, Sort Of](#faq-sort-of)
     - [How do I preview rendered HTML?](#how-do-i-preview-rendered-html)
     - [Why a TUI app when Electron apps exist?](#why-a-tui-app-when-electron-apps-exist)
@@ -115,7 +117,7 @@ documents.
 - Dynamic softwrap, visual paragraph reflow, syntax highlighting, and
   Nano `.nanorc` syntax loading.
 - Multi-buffer editing, file auto-reload.
-- TMD (Text Music Description) score editing: syntax highlighting, section
+- TMD (Timebase Markdown) score editing: syntax highlighting, section
   outline navigation (`M+\`), score templates, and one-click export to
   MIDI, MusicXML, LilyPond, ABC, and WAV audio.
 - Natural command prompt: press `Esc` and run editing commands such as
@@ -500,6 +502,23 @@ zago --run generate_architecture.logo | pbcopy
 | `--syntax <true/false>`          |      | Enable or disable syntax highlighting.                                  |
 | `--lang <en/zh_TW>`              |      | Set interface language.                                                 |
 | `--spell-lang <lang>`            |      | Set spell checker language (e.g. en_US, de_DE, fr_FR).                  |
+
+## Extra: zago Supports TMD
+
+Beyond Markdown documents and terminal diagrams, `zago` includes built-in support for **TMD (Timebase Markdown)**—a human-readable, plain-text score format for writing numbered musical notation (簡譜 / Jianpu), chord charts, and multi-track musical arrangements.
+
+### What You Can Do with TMD in zago
+
+- **Syntax Highlighting & Structure**: Full syntax coloring for notes (`1`–`7`), octave shifts (`'`, `,`), duration modifiers (`_`, `^`), chord symbols (e.g., `[C]`, `[Am7]`, `[G/B]`), time signatures (`<4/4>`), key and tempo directives (`?= C`, `!= 120`), and block comments.
+- **Section Outline Jump**: Press `M+\` (or `Esc \`) to open the Document Outline popover and jump directly between song sections (`[Verse]`, `[Chorus]`, instrument parts).
+- **Ready-to-Use Snippets**: Insert complete score templates, verse blocks, or chord progressions via the top menu bar (`TMD -> Snippets`).
+- **One-Click Export**: Easily convert your text score to standard music formats from the interactive menu bar or commands:
+  - **MIDI** (`.mid`) for DAWs and synthesizers
+  - **MusicXML** (`.xml`) for notation software like MuseScore, Sibelius, or Finale
+  - **LilyPond** (`.ly`) for publication-grade sheet music typesetting
+  - **ABC** (`.abc`) for folk and traditional music workflows
+  - **WAV audio** (`.wav`) via native audio synthesis (macOS)
+- **Web & Terminal Parity**: In both the desktop CLI and the WebAssembly browser edition, TMD files can be edited and exported directly (with automatic browser file downloads in web mode).
 
 ## FAQ, Sort Of
 
