@@ -70,7 +70,7 @@ final class TextDocumentView {
                     break
                 }
 
-            case .openFile:
+            case .openFile, .playTMD:
                 break
             }
         }

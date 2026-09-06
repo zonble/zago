@@ -731,6 +731,9 @@ public final class Editor: @unchecked Sendable {
                                 openNewBuffer(filePath: path)
                             }
                             renderer.invalidateScreenCache()
+                        case .playTMD:
+                            activeBoundaryDragState = nil
+                            playCurrentTMDScore()
                         }
                         break
                     }
@@ -757,6 +760,9 @@ public final class Editor: @unchecked Sendable {
                     openNewBuffer(filePath: path)
                 }
                 renderer.invalidateScreenCache()
+            case .playTMD:
+                activeBoundaryDragState = nil
+                playCurrentTMDScore()
             }
         }
     }

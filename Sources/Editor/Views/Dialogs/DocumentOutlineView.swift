@@ -92,7 +92,7 @@ final class DocumentOutlineView {
                     break
                 }
 
-            case .openFile:
+            case .openFile, .playTMD:
                 break
             }
         }

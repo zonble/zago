@@ -727,7 +727,7 @@ final class SymbolPickerView {
                     break
                 }
 
-            case .openFile:
+            case .openFile, .playTMD:
                 break
             }
         }

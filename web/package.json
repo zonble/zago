@@ -24,7 +24,8 @@
     "jszip": "^3.10.1",
     "jzz": "^1.9.6",
     "jzz-midi-smf": "^1.9.9",
-    "jzz-synth-tiny": "^1.4.4"
+    "jzz-synth-tiny": "^1.4.4",
+    "soundfont-player": "^0.12.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

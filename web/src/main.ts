@@ -944,6 +944,11 @@ async function main() {
       onResume: () => {
         if (playerBtnPause) playerBtnPause.textContent = "⏸";
       },
+      onLoadingStatus: (status) => {
+        if (status && playerTime) {
+          playerTime.textContent = status;
+        }
+      },
       onStop: () => {
         if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
         if (playerBtnPause) playerBtnPause.textContent = "⏸";
@@ -968,7 +973,7 @@ async function main() {
   if (btnPlayTMD) {
     btnPlayTMD.addEventListener("click", () => {
       if (mode === "editor") {
-        writeStdin("\x1b:play-tmd\r");
+        writeStdin("\x1b]zago:play-tmd\x07");
       }
     });
   }
@@ -1026,6 +1031,15 @@ async function main() {
     playerProgress.addEventListener("change", commitSeek);
     playerProgress.addEventListener("mouseup", commitSeek);
     playerProgress.addEventListener("touchend", commitSeek);
+  }
+
+  const synthSelect = document.getElementById("synth-select") as HTMLSelectElement | null;
+  if (synthSelect) {
+    synthSelect.value = tmdPlayer.getSynthType();
+    synthSelect.addEventListener("change", async () => {
+      const selected = synthSelect.value as "piano" | "tiny" | "webmidi";
+      await tmdPlayer.setSynthType(selected);
+    });
   }
 
   // Copy Buttons for Quick Install

@@ -279,6 +279,14 @@
               <span id="player-time" class="player-time">00:00 / 00:00</span>
             </div>
             <input type="range" id="player-progress" class="player-slider" min="0" max="100" value="0" step="0.1" title="Seek" />
+            <div class="player-synth-wrapper">
+              <label for="synth-select" class="visually-hidden" data-i18n="synthSelectLabel">Synth</label>
+              <select id="synth-select" class="player-synth-select" title="Change SoundFont / Synthesizer" data-i18n-title="synthSelectTitle">
+                <option value="piano" data-i18n="synthOptionPiano">🎹 Grand Piano (FluidR3)</option>
+                <option value="tiny" data-i18n="synthOptionTiny">⚡ Tiny Synth (Chiptune)</option>
+                <option value="webmidi" data-i18n="synthOptionWebMidi">🎛 System MIDI Out</option>
+              </select>
+            </div>
             <div class="player-controls">
               <button id="player-btn-pause" class="player-ctrl-btn" title="Pause / Resume">⏸</button>
               <button id="player-btn-stop" class="player-ctrl-btn" title="Stop">⏹</button>
