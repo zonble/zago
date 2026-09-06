@@ -1414,6 +1414,7 @@ struct EnglishStrings {
 
         // TMD Menu & Commands
         "menu.tmd": "TMD",
+        "menu.tmd.play": "Play Score",
         "menu.tmd.export_midi": "Export MIDI",
         "menu.tmd.export_musicxml": "Export MusicXML",
         "menu.tmd.export_lilypond": "Export LilyPond",
@@ -1426,6 +1427,7 @@ struct EnglishStrings {
         "prompt.export_wav": "Export WAV to: ",
         "status.tmd_exported": "Exported %@ to: %@",
         "status.tmd_exported_web": "Exported %@ and started download: %@",
+        "status.tmd_playing": "Playing score: %@...",
         "status.tmd_export_failed": "Failed to export %@: %@",
         "status.tmd_snippet_inserted": "TMD snippet inserted",
         "menu.tmd.snippet.score_template": "Score Template",

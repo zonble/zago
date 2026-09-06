@@ -41,16 +41,28 @@ public protocol TMDExportDelegate: AnyObject, Sendable {
     /// Whether WAV audio export is supported in current platform environment.
     var isWAVExportSupported: Bool { get }
 
+    /// Whether real-time score playback/preview is supported in this environment (e.g. Web edition).
+    var isPlaybackSupported: Bool { get }
+
     /// Exports TMD source text to the specified format and writes to target path.
     func exportTMD(
         sourceText: String,
         format: TMDExportFormat,
         toPath targetPath: String
     ) throws
+
+    /// Plays/previews TMD source text in the host environment (e.g. Web Audio synthesizer).
+    func playTMD(sourceText: String, title: String) throws
+
+    /// Notifies the host environment that the editor's active buffer changed.
+    func notifyActiveBuffer(filePath: String?)
 }
 
 public extension TMDExportDelegate {
     var shouldPromptForPath: Bool { true }
+    var isPlaybackSupported: Bool { false }
+    func playTMD(sourceText: String, title: String) throws {}
+    func notifyActiveBuffer(filePath: String?) {}
 }
 
 /// Default no-op delegate when no TMD compiler is injected (e.g. headless/test environments).

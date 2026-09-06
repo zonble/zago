@@ -32,6 +32,7 @@ export const zhTW: TranslationSchema = {
   fontSelectLabel: "字體",
   fontSelectTitle: "切換終端機字體",
   fontOptionDefault: "預設字體 (系統等寬)",
+  btnPlayTMD: "試聽樂譜",
   btnImport: "匯入",
   btnExportZip: "匯出 ZIP",
   btnResetVFS: "重設工作區",

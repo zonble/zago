@@ -191,6 +191,7 @@ async function startWasm(
     const chunk = stdoutDecoder.decode(unshared, { stream: true });
     stdoutPending += chunk;
 
+    // 1. zago:download;<filename>;<base64>
     const downloadRegex = /\x1b\]zago:download;([^\x07\x1b;]+)(?:;([^\x07\x1b]*))?(?:\x07|\x1b\\)/g;
     let match;
     while ((match = downloadRegex.exec(stdoutPending)) !== null) {
@@ -219,7 +220,43 @@ async function startWasm(
     }
     stdoutPending = stdoutPending.replace(downloadRegex, "");
 
-    const partialDownloadIndex = stdoutPending.lastIndexOf("\x1b]zago:download");
+    // 2. zago:play;<title>;<base64>
+    const playRegex = /\x1b\]zago:play;([^\x07\x1b;]+);([^\x07\x1b]+)(?:\x07|\x1b\\)/g;
+    while ((match = playRegex.exec(stdoutPending)) !== null) {
+      const title = match[1];
+      const base64Data = match[2];
+      try {
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        console.log("[Worker] Emitting play_midi:", title, bytes.length);
+        self.postMessage({
+          type: "play_midi",
+          title,
+          data: bytes,
+        });
+      } catch (err) {
+        console.error("[Worker] Failed to decode base64 for playback:", err);
+      }
+    }
+    stdoutPending = stdoutPending.replace(playRegex, "");
+
+    // 3. zago:active-buffer;<isTMD:1|0>;<filename>
+    const activeBufferRegex = /\x1b\]zago:active-buffer;([01]);([^\x07\x1b]*)(?:\x07|\x1b\\)/g;
+    while ((match = activeBufferRegex.exec(stdoutPending)) !== null) {
+      const isTMD = match[1] === "1";
+      const filename = match[2];
+      self.postMessage({
+        type: "active_buffer",
+        isTMD,
+        filename,
+      });
+    }
+    stdoutPending = stdoutPending.replace(activeBufferRegex, "");
+
+    const partialDownloadIndex = stdoutPending.lastIndexOf("\x1b]zago:");
     if (
       partialDownloadIndex !== -1 &&
       !stdoutPending.slice(partialDownloadIndex).includes("\x07") &&

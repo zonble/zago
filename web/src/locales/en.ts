@@ -30,6 +30,7 @@ export const en = {
   fontSelectLabel: "Font",
   fontSelectTitle: "Change Terminal Font",
   fontOptionDefault: "Default (System Mono)",
+  btnPlayTMD: "Play Score",
   btnImport: "Import",
   btnExportZip: "Export ZIP",
   btnResetVFS: "Reset VFS",

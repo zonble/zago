@@ -102,6 +102,7 @@ extension Editor {
         }
         startFileWatcherForCurrentBuffer()
         renderer.invalidateScreenCache()
+        tmdExportDelegate.notifyActiveBuffer(filePath: buffer.filePath)
     }
 
     func nextBuffer() {
@@ -129,6 +130,7 @@ extension Editor {
         loadCurrentViewSettingsFromBuffer()
         startFileWatcherForCurrentBuffer()
         renderer.invalidateScreenCache()
+        tmdExportDelegate.notifyActiveBuffer(filePath: buffer.filePath)
     }
 
     func closeCurrentBuffer() {
@@ -151,5 +153,6 @@ extension Editor {
             startFileWatcherForCurrentBuffer()
         }
         renderer.invalidateScreenCache()
+        tmdExportDelegate.notifyActiveBuffer(filePath: buffer.filePath)
     }
 }

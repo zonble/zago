@@ -1,5 +1,20 @@
 import Foundation
 
+struct TMDPlayScoreCommand: Command {
+    let id: CommandID = .tmdPlay
+    let name = "Play TMD Score"
+    let description = "Preview/play current TMD score using Web Audio synthesizer"
+    let commandBarAliases = ["play", "play-tmd", "preview"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.playCurrentTMDScore()
+        return .succeeded
+    }
+}
+
 struct TMDExportMIDICommand: Command {
     let id: CommandID = .tmdExportMIDI
     let name = "Export MIDI"

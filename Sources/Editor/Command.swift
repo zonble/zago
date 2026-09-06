@@ -164,6 +164,7 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case symbolPicker = "symbol.picker"
 
     // TMD
+    case tmdPlay = "tmd.play"
     case tmdExportMIDI = "tmd.export.midi"
     case tmdExportMusicXML = "tmd.export.musicxml"
     case tmdExportLilyPond = "tmd.export.lilypond"

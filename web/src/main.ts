@@ -8,6 +8,7 @@ import "@xterm/xterm/css/xterm.css";
 import { VirtualOSStorage, isBinaryData, resolveAvailableFilename } from "./vfs";
 import { SharedStdin, SharedFileChannel } from "./shared-stdin";
 import { detectLanguage, applyI18n, translations } from "./i18n";
+import { tmdPlayer } from "./midi-player";
 
 async function main() {
   const currentLang = detectLanguage();
@@ -382,6 +383,20 @@ async function main() {
             break;
           }
 
+          case "play_midi": {
+            const { title, data: midiBytes } = event.data;
+            if (midiBytes && midiBytes.length > 0) {
+              startMidiPlayback(midiBytes, title || "score.mid");
+            }
+            break;
+          }
+
+          case "active_buffer": {
+            const { isTMD } = event.data;
+            updateTMDButtonVisibility(Boolean(isTMD));
+            break;
+          }
+
           case "status":
             if (statusText) {
               statusText.textContent =
@@ -410,6 +425,8 @@ async function main() {
 
           case "exit":
             hideLoading();
+            tmdPlayer.stop();
+            updateTMDButtonVisibility(false);
             if (currentWorker === worker) {
               currentWorker.terminate();
               currentWorker = null;
@@ -861,6 +878,63 @@ async function main() {
 
   if (btnCloseHelp && helpDialog) {
     btnCloseHelp.addEventListener("click", () => helpDialog.close());
+  }
+
+  // TMD Player Bar & Controls
+  const btnPlayTMD = document.getElementById("btn-play-tmd");
+  const tmdPlayerBar = document.getElementById("tmd-player-bar");
+  const playerTitle = document.getElementById("player-title");
+  const playerBtnPause = document.getElementById("player-btn-pause");
+  const playerBtnStop = document.getElementById("player-btn-stop");
+
+  function updateTMDButtonVisibility(isTMD: boolean) {
+    if (btnPlayTMD) {
+      btnPlayTMD.style.display = isTMD ? "inline-flex" : "none";
+    }
+  }
+
+  function startMidiPlayback(midiBytes: Uint8Array, title: string) {
+    if (playerTitle) playerTitle.textContent = title;
+    if (tmdPlayerBar) tmdPlayerBar.style.display = "flex";
+    if (playerBtnPause) playerBtnPause.textContent = "⏸";
+
+    tmdPlayer.play(midiBytes, title, {
+      onPause: () => {
+        if (playerBtnPause) playerBtnPause.textContent = "▶";
+      },
+      onResume: () => {
+        if (playerBtnPause) playerBtnPause.textContent = "⏸";
+      },
+      onStop: () => {
+        if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+        if (playerBtnPause) playerBtnPause.textContent = "⏸";
+      },
+      onEnd: () => {
+        if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+        if (playerBtnPause) playerBtnPause.textContent = "⏸";
+      },
+    });
+  }
+
+  if (btnPlayTMD) {
+    btnPlayTMD.addEventListener("click", () => {
+      if (mode === "editor") {
+        writeStdin("\x1b:play-tmd\r");
+      }
+    });
+  }
+
+  if (playerBtnPause) {
+    playerBtnPause.addEventListener("click", () => {
+      tmdPlayer.togglePause();
+    });
+  }
+
+  if (playerBtnStop) {
+    playerBtnStop.addEventListener("click", () => {
+      tmdPlayer.stop();
+      if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+    });
   }
 
   // Copy Buttons for Quick Install

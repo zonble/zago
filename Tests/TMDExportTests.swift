@@ -13,9 +13,17 @@ private final class MockTMDExportDelegate: TMDExportDelegate, @unchecked Sendabl
     var shouldFail: Bool = false
     var isWAVExportSupported: Bool = true
     var mockShouldPromptForPath: Bool = true
+    var mockIsPlaybackSupported: Bool = false
+    var lastPlayedSourceText: String?
+    var lastPlayedTitle: String?
+    var lastNotifiedBufferPath: String?
 
     var shouldPromptForPath: Bool {
         mockShouldPromptForPath
+    }
+
+    var isPlaybackSupported: Bool {
+        mockIsPlaybackSupported
     }
 
     func exportTMD(
@@ -29,6 +37,18 @@ private final class MockTMDExportDelegate: TMDExportDelegate, @unchecked Sendabl
         lastSourceText = sourceText
         lastFormat = format
         lastTargetPath = targetPath
+    }
+
+    func playTMD(sourceText: String, title: String) throws {
+        if shouldFail {
+            throw TMDExportError.custom("Simulated playback error")
+        }
+        lastPlayedSourceText = sourceText
+        lastPlayedTitle = title
+    }
+
+    func notifyActiveBuffer(filePath: String?) {
+        lastNotifiedBufferPath = filePath
     }
 }
 
@@ -262,5 +282,51 @@ struct TMDExportTests {
         #expect(throws: TMDExportError.self) {
             try exporter.exportTMD(sourceText: sourceText, format: .wav, toPath: "/tmp/invalid.wav")
         }
+    }
+
+    @Test func testTMDPlayScoreCommandAndMenuVisibility() {
+        let mockDelegate = MockTMDExportDelegate()
+        mockDelegate.mockIsPlaybackSupported = false
+        let editor = makeEditor(filePath: "/workspace/song.tmd", delegate: mockDelegate)
+
+        // 1. When playback is not supported, menu.tmd.play should NOT appear
+        editor.menuBar.updateCategories(for: editor)
+        let tmdCat = editor.menuBar.categories.first { $0.titleKey == "menu.tmd" }
+        #expect(tmdCat?.items.contains { $0.commandId == .tmdPlay } == false)
+
+        // 2. When playback is supported (Web environment), menu.tmd.play should appear
+        mockDelegate.mockIsPlaybackSupported = true
+        editor.menuBar.updateCategories(for: editor)
+        let tmdCatWeb = editor.menuBar.categories.first { $0.titleKey == "menu.tmd" }
+        #expect(tmdCatWeb?.items.contains { $0.commandId == .tmdPlay } == true)
+
+        // 3. Dispatch TMD Play command
+        editor.buffer.lines = [
+            "::SCORE::",
+            "** Live Play **",
+            "!= 120",
+            "?= C",
+            "<4/4>",
+            "Intro:Piano@{ <4*> 1 2 3 4 }",
+            "-> Intro ->#",
+        ]
+        _ = editor.commandRegistry.dispatch(id: .tmdPlay, editor: editor)
+        #expect(mockDelegate.lastPlayedTitle == "song.tmd")
+        #expect(mockDelegate.lastPlayedSourceText?.contains("::SCORE::") == true)
+        #expect(editor.statusMessage.contains("song.tmd"))
+
+        // 4. Buffer notification check
+        #expect(mockDelegate.lastNotifiedBufferPath == "/workspace/song.tmd")
+    }
+
+    @Test func testWasiTMDExporterPlayAndNotifyBuffer() throws {
+        let exporter = WasiTMDExporter()
+        #expect(exporter.isPlaybackSupported)
+
+        let sourceText = TMDSnippets.fullScoreTemplate.templateText
+        try exporter.playTMD(sourceText: sourceText, title: "mysong.tmd")
+
+        exporter.notifyActiveBuffer(filePath: "/workspace/mysong.tmd")
+        exporter.notifyActiveBuffer(filePath: "/workspace/notes.txt")
     }
 }

@@ -436,4 +436,16 @@ extension Editor {
             reportOperationResult(.failed(error.localizedDescription, message: String(format: l10n["status.tmd_export_failed"], format.displayName, error.localizedDescription)))
         }
     }
+
+    /// Plays/previews the current buffer TMD score in host environment (e.g. Web Audio synthesizer).
+    func playCurrentTMDScore() {
+        let sourceText = buffer.lines.joined(separator: "\n")
+        let title = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? "score.mid"
+        do {
+            try tmdExportDelegate.playTMD(sourceText: sourceText, title: title)
+            reportOperationResult(.succeeded(message: String(format: l10n["status.tmd_playing"], title)))
+        } catch {
+            reportOperationResult(.failed(error.localizedDescription, message: error.localizedDescription))
+        }
+    }
 }

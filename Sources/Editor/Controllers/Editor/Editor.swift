@@ -473,6 +473,7 @@ public final class Editor: @unchecked Sendable {
         }
 
         startFileWatcherForCurrentBuffer()
+        tmdExportDelegate.notifyActiveBuffer(filePath: buffer.filePath)
     }
 
     deinit {

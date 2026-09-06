@@ -127,6 +127,7 @@ extension Editor {
         commandRegistry.register(ToggleCommentCommand())
 
         // TMD Commands
+        commandRegistry.register(TMDPlayScoreCommand())
         commandRegistry.register(TMDExportMIDICommand())
         commandRegistry.register(TMDExportMusicXMLCommand())
         commandRegistry.register(TMDExportLilyPondCommand())

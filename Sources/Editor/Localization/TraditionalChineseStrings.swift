@@ -1402,6 +1402,7 @@ struct TraditionalChineseStrings {
 
         // TMD Menu & Commands
         "menu.tmd": "TMD",
+        "menu.tmd.play": "試聽樂譜",
         "menu.tmd.export_midi": "匯出 MIDI",
         "menu.tmd.export_musicxml": "匯出 MusicXML",
         "menu.tmd.export_lilypond": "匯出 Lily",
@@ -1414,6 +1415,7 @@ struct TraditionalChineseStrings {
         "prompt.export_wav": "匯出 WAV 至：",
         "status.tmd_exported": "已成功匯出 %@ 至：%@",
         "status.tmd_exported_web": "已成功匯出 %@ 並觸發下載：%@",
+        "status.tmd_playing": "正在試聽：%@...",
         "status.tmd_export_failed": "匯出 %@ 失敗：%@",
         "status.tmd_snippet_inserted": "已插入 TMD 範本",
         "menu.tmd.snippet.score_template": "完整樂譜範本",

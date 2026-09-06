@@ -11,9 +11,11 @@ import TmdABC
 #endif
 
 /// WebAssembly implementation of `TMDExportDelegate` that compiles TMD text using `TmdSwift`,
-/// writes output to VFS, and emits an ANSI OSC sequence (`\u{001B}]zago:download;<filename>;<base64>\u{0007}`)
-/// so the host browser can immediately trigger a file download.
+/// writes output to VFS, and emits ANSI OSC sequences for browser file download
+/// and real-time Web Audio MIDI playback.
 public final class WasiTMDExporter: TMDExportDelegate, @unchecked Sendable {
+    private var lastEmittedBufferPath: String? = nil
+
     public init() {}
 
     public var shouldPromptForPath: Bool {
@@ -22,6 +24,10 @@ public final class WasiTMDExporter: TMDExportDelegate, @unchecked Sendable {
 
     public var isWAVExportSupported: Bool {
         false
+    }
+
+    public var isPlaybackSupported: Bool {
+        true
     }
 
     public func exportTMD(
@@ -90,6 +96,33 @@ public final class WasiTMDExporter: TMDExportDelegate, @unchecked Sendable {
         // Format: ESC ] zago:download;<filename>;<base64> BEL
         let base64 = targetData.base64EncodedString()
         let osc = "\u{001B}]zago:download;\(filename);\(base64)\u{0007}"
+        if let oscData = osc.data(using: .utf8) {
+            emitStdout(oscData)
+        }
+    }
+
+    /// Compiles current TMD source to MIDI in-memory and emits OSC sequence for web playback.
+    /// Format: ESC ] zago:play;<title>;<base64> BEL
+    public func playTMD(sourceText: String, title: String) throws {
+        let sheet = try TmdParser.parseThrowing(string: sourceText)
+        let midiData = TMDMIDIGenerator.generateMIDI(from: sheet)
+        let base64 = midiData.base64EncodedString()
+        let osc = "\u{001B}]zago:play;\(title);\(base64)\u{0007}"
+        if let oscData = osc.data(using: .utf8) {
+            emitStdout(oscData)
+        }
+    }
+
+    /// Emits active buffer change notification to host web UI.
+    /// Format: ESC ] zago:active-buffer;<isTMD:1|0>;<filename> BEL
+    public func notifyActiveBuffer(filePath: String?) {
+        let isTMD = filePath?.lowercased().hasSuffix(".tmd") == true ? "1" : "0"
+        let filename = filePath.map { ($0 as NSString).lastPathComponent } ?? ""
+        let currentKey = "\(isTMD):\(filename)"
+        guard currentKey != lastEmittedBufferPath else { return }
+        lastEmittedBufferPath = currentKey
+
+        let osc = "\u{001B}]zago:active-buffer;\(isTMD);\(filename)\u{0007}"
         if let oscData = osc.data(using: .utf8) {
             emitStdout(oscData)
         }

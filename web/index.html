@@ -247,6 +247,9 @@
                 <option value="'Courier New', 'Noto Sans Mono CJK TC', monospace">Courier New</option>
               </select>
             </div>
+            <button id="btn-play-tmd" class="action-btn tmd-play-btn" style="display: none;" title="Play TMD Score">
+              <span class="btn-icon">▶</span> <span class="btn-text" data-i18n="btnPlayTMD">Play Score</span>
+            </button>
             <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
               <span class="btn-icon">📁</span> <span class="btn-text" data-i18n="btnImport">Import</span>
             </button>
@@ -267,6 +270,16 @@
         <!-- Terminal Workspace Container -->
         <div id="terminal-wrapper" class="terminal-wrapper">
           <div id="terminal-container"></div>
+
+          <!-- TMD Floating Mini Player Bar -->
+          <div id="tmd-player-bar" class="tmd-player-bar" style="display: none;">
+            <span class="player-icon pulse">🎵</span>
+            <span id="player-title" class="player-title">score.mid</span>
+            <div class="player-controls">
+              <button id="player-btn-pause" class="player-ctrl-btn" title="Pause / Resume">⏸</button>
+              <button id="player-btn-stop" class="player-ctrl-btn" title="Stop">⏹</button>
+            </div>
+          </div>
 
           <!-- WASM Loading Progress Overlay -->
           <div id="wasm-loading-overlay" class="loading-overlay">
