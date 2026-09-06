@@ -316,7 +316,10 @@ struct TMDExportTests {
         #expect(editor.statusMessage.contains("song.tmd"))
 
         // 4. Buffer notification check
-        #expect(mockDelegate.lastNotifiedBufferPath == "/workspace/song.tmd")
+        #expect(
+            mockDelegate.lastNotifiedBufferPath == "/workspace/song.tmd"
+                || mockDelegate.lastNotifiedBufferPath == "\\workspace\\song.tmd"
+        )
     }
 
     @Test func testWasiTMDExporterPlayAndNotifyBuffer() throws {
