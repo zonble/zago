@@ -884,10 +884,24 @@ async function main() {
   const btnPlayTMD = document.getElementById("btn-play-tmd");
   const tmdPlayerBar = document.getElementById("tmd-player-bar");
   const playerTitle = document.getElementById("player-title");
+  const playerTime = document.getElementById("player-time");
+  const playerProgress = document.getElementById("player-progress") as HTMLInputElement | null;
   const playerBtnPause = document.getElementById("player-btn-pause");
   const playerBtnStop = document.getElementById("player-btn-stop");
+  const playerBtnClose = document.getElementById("player-btn-close");
+
+  let isCurrentBufferTMD = false;
+  let isSeeking = false;
+
+  function formatTime(seconds: number): string {
+    if (isNaN(seconds) || seconds < 0) seconds = 0;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
 
   function updateTMDButtonVisibility(isTMD: boolean) {
+    isCurrentBufferTMD = isTMD;
     if (btnPlayTMD) {
       btnPlayTMD.style.display = isTMD ? "inline-flex" : "none";
     }
@@ -895,10 +909,35 @@ async function main() {
 
   function startMidiPlayback(midiBytes: Uint8Array, title: string) {
     if (playerTitle) playerTitle.textContent = title;
+    if (playerTime) playerTime.textContent = "00:00 / 00:00";
+    if (playerProgress) {
+      playerProgress.value = "0";
+      playerProgress.max = "100";
+    }
     if (tmdPlayerBar) tmdPlayerBar.style.display = "flex";
     if (playerBtnPause) playerBtnPause.textContent = "⏸";
 
     tmdPlayer.play(midiBytes, title, {
+      onStart: (_title, durationSec) => {
+        if (playerProgress) {
+          playerProgress.max = Math.max(1, durationSec).toString();
+          playerProgress.value = "0";
+        }
+        if (playerTime) {
+          playerTime.textContent = `00:00 / ${formatTime(durationSec)}`;
+        }
+      },
+      onProgress: (currentSec, totalSec) => {
+        if (playerTime) {
+          playerTime.textContent = `${formatTime(currentSec)} / ${formatTime(totalSec)}`;
+        }
+        if (playerProgress && !isSeeking) {
+          if (playerProgress.max !== totalSec.toString()) {
+            playerProgress.max = Math.max(1, totalSec).toString();
+          }
+          playerProgress.value = currentSec.toString();
+        }
+      },
       onPause: () => {
         if (playerBtnPause) playerBtnPause.textContent = "▶";
       },
@@ -908,10 +947,20 @@ async function main() {
       onStop: () => {
         if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
         if (playerBtnPause) playerBtnPause.textContent = "⏸";
+        if (playerProgress) playerProgress.value = "0";
+        // Ensure play button in toolbar remains visible if the current buffer is TMD
+        if (btnPlayTMD) {
+          btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+        }
       },
       onEnd: () => {
         if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
         if (playerBtnPause) playerBtnPause.textContent = "⏸";
+        if (playerProgress) playerProgress.value = "0";
+        // Ensure play button in toolbar remains visible if the current buffer is TMD
+        if (btnPlayTMD) {
+          btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+        }
       },
     });
   }
@@ -934,7 +983,49 @@ async function main() {
     playerBtnStop.addEventListener("click", () => {
       tmdPlayer.stop();
       if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+      if (btnPlayTMD) {
+        btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+      }
     });
+  }
+
+  if (playerBtnClose) {
+    playerBtnClose.addEventListener("click", () => {
+      tmdPlayer.stop();
+      if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+      if (btnPlayTMD) {
+        btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+      }
+    });
+  }
+
+  if (playerProgress) {
+    playerProgress.addEventListener("mousedown", () => {
+      isSeeking = true;
+    });
+    playerProgress.addEventListener("touchstart", () => {
+      isSeeking = true;
+    }, { passive: true });
+
+    playerProgress.addEventListener("input", () => {
+      const targetSec = parseFloat(playerProgress.value);
+      const totalSec = tmdPlayer.getDuration();
+      if (playerTime) {
+        playerTime.textContent = `${formatTime(targetSec)} / ${formatTime(totalSec)}`;
+      }
+    });
+
+    const commitSeek = () => {
+      if (isSeeking) {
+        const targetSec = parseFloat(playerProgress.value);
+        tmdPlayer.seek(targetSec);
+        isSeeking = false;
+      }
+    };
+
+    playerProgress.addEventListener("change", commitSeek);
+    playerProgress.addEventListener("mouseup", commitSeek);
+    playerProgress.addEventListener("touchend", commitSeek);
   }
 
   // Copy Buttons for Quick Install

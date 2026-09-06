@@ -9,6 +9,7 @@ const JZZ: any = JZZModule;
 
 export interface TMDPlayerCallbacks {
   onStart?: (title: string, durationSec: number) => void;
+  onProgress?: (currentSec: number, totalSec: number) => void;
   onPause?: () => void;
   onResume?: () => void;
   onStop?: () => void;
@@ -21,6 +22,7 @@ export class TMDMidiPlayer {
   private currentTitle: string = "";
   private callbacks: TMDPlayerCallbacks = {};
   private isPausedState: boolean = false;
+  private progressTimer: any = null;
 
   constructor() {
     try {
@@ -45,6 +47,53 @@ export class TMDMidiPlayer {
     return this.currentTitle;
   }
 
+  public getDuration(): number {
+    if (!this.currentPlayer) return 0;
+    try {
+      return (this.currentPlayer.durationMS() || 0) / 1000;
+    } catch {
+      return 0;
+    }
+  }
+
+  public getPosition(): number {
+    if (!this.currentPlayer) return 0;
+    try {
+      return (this.currentPlayer.positionMS() || 0) / 1000;
+    } catch {
+      return 0;
+    }
+  }
+
+  public seek(seconds: number) {
+    if (!this.currentPlayer) return;
+    try {
+      const ms = Math.max(0, seconds * 1000);
+      this.currentPlayer.jumpMS(ms);
+      if (this.callbacks.onProgress) {
+        this.callbacks.onProgress(this.getPosition(), this.getDuration());
+      }
+    } catch (err) {
+      console.warn("[TMDMidiPlayer] Seek failed:", err);
+    }
+  }
+
+  private startProgressTimer() {
+    this.stopProgressTimer();
+    this.progressTimer = setInterval(() => {
+      if (this.currentPlayer && !this.isPausedState && this.callbacks.onProgress) {
+        this.callbacks.onProgress(this.getPosition(), this.getDuration());
+      }
+    }, 150);
+  }
+
+  private stopProgressTimer() {
+    if (this.progressTimer !== null) {
+      clearInterval(this.progressTimer);
+      this.progressTimer = null;
+    }
+  }
+
   public play(bytes: Uint8Array, title: string, callbacks?: TMDPlayerCallbacks) {
     this.stop();
     this.callbacks = callbacks || {};
@@ -61,6 +110,7 @@ export class TMDMidiPlayer {
       player.connect(this.synth);
 
       player.onEnd = () => {
+        this.stopProgressTimer();
         this.isPausedState = false;
         this.currentPlayer = null;
         if (this.callbacks.onEnd) {
@@ -71,9 +121,13 @@ export class TMDMidiPlayer {
       const durationMs = player.durationMS() || 0;
       this.currentPlayer = player;
       player.play();
+      this.startProgressTimer();
 
       if (this.callbacks.onStart) {
         this.callbacks.onStart(title, durationMs / 1000);
+      }
+      if (this.callbacks.onProgress) {
+        this.callbacks.onProgress(0, durationMs / 1000);
       }
     } catch (err) {
       console.error("[TMDMidiPlayer] Failed to play MIDI:", err);
@@ -86,6 +140,7 @@ export class TMDMidiPlayer {
       try {
         this.currentPlayer.pause();
         this.isPausedState = true;
+        this.stopProgressTimer();
         if (this.callbacks.onPause) {
           this.callbacks.onPause();
         }
@@ -100,6 +155,7 @@ export class TMDMidiPlayer {
       try {
         this.currentPlayer.resume();
         this.isPausedState = false;
+        this.startProgressTimer();
         if (this.callbacks.onResume) {
           this.callbacks.onResume();
         }
@@ -118,6 +174,7 @@ export class TMDMidiPlayer {
   }
 
   public stop() {
+    this.stopProgressTimer();
     if (this.currentPlayer) {
       try {
         this.currentPlayer.stop();

@@ -256,6 +256,7 @@ extension Editor {
                 }
             }
             startFileWatcherForCurrentBuffer()
+            tmdExportDelegate.notifyActiveBuffer(filePath: buffer.filePath)
             let message: String
             if forcedEncoding == .utf8 && buffer.fileEncoding == .utf8 {
                 message = l10n["status.saved_as_utf8"]
