@@ -791,6 +791,11 @@ struct IPCServerTests {
                 tempDir.appendingPathComponent(".codex/skills/zago/SKILL.md").path
             )
         )
+        #expect(
+            skillPaths.contains(
+                tempDir.appendingPathComponent(".codex/skills/tmd/SKILL.md").path
+            )
+        )
 
         for path in skillPaths {
             #expect(FileManager.default.fileExists(atPath: path))

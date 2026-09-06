@@ -30,7 +30,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
-        .package(url: "https://github.com/zonble/TmdSwift.git", from: "0.1.1"),
+        .package(url: "https://github.com/zonble/TmdSwift.git", from: "0.1.3"),
     ],
     targets: [
         .target(
@@ -75,7 +75,10 @@ let package = Package(
         ),
         .target(
             name: "Config",
-            dependencies: ["Drawing"]
+            dependencies: [
+                "Drawing",
+                .product(name: "TmdSkill", package: "TmdSwift"),
+            ]
         ),
         .target(
             name: "IPCServer",
