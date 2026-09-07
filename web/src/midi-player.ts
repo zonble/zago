@@ -88,7 +88,7 @@ export class TMDMidiPlayer {
       const cbs = { ...this.callbacks };
       const wasPaused = this.isPausedState;
 
-      this.stop();
+      this.stop(false);
       this.play(bytes, title, cbs);
       if (currentPos > 0) {
         this.seek(currentPos);
@@ -257,7 +257,7 @@ export class TMDMidiPlayer {
   }
 
   public async play(bytes: Uint8Array, title: string, callbacks?: TMDPlayerCallbacks) {
-    this.stop();
+    this.stop(false);
     this.callbacks = callbacks || {};
     this.currentTitle = title;
     this.currentBytes = bytes;
@@ -372,7 +372,7 @@ export class TMDMidiPlayer {
     }
   }
 
-  public stop() {
+  public stop(notifyCallback: boolean = true) {
     this.stopProgressTimer();
     this.stopActiveNotes();
     if (this.currentPlayer) {
@@ -382,7 +382,7 @@ export class TMDMidiPlayer {
       this.currentPlayer = null;
     }
     this.isPausedState = false;
-    if (this.callbacks.onStop) {
+    if (notifyCallback && this.callbacks.onStop) {
       this.callbacks.onStop();
     }
   }
