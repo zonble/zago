@@ -66,7 +66,7 @@ struct RuntimeConfig: Sendable, Equatable {
         ipcEnabled: Bool = false,
         enableMouse: Bool = true,
         isZeroMode: Bool = false,
-        showIndicator: Bool = false
+        showIndicator: Bool = true
     ) {
         self.showRuler = showRuler
         self.showLineNumbers = showLineNumbers

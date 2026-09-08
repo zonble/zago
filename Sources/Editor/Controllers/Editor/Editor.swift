@@ -228,6 +228,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     public var activeBoundaryDragState: BoundaryDragScrollState?
+    public var isDraggingScrollbar: Bool = false
 
     public struct MouseClickTracker: Sendable {
         public var lastClickTime: Date?

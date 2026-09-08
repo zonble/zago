@@ -531,6 +531,7 @@ import TextMetrics
 
 @Test func testCanvasModeHorizontalRenderingOffset() throws {
     let editor = Editor()
+    editor.displayConfig.showIndicator = false
     editor.buffer.lines = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
     editor.switchToCanvasMode()
     editor.canvasVisualColumn = 12
