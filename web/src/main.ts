@@ -717,6 +717,54 @@ async function main() {
   if (tabDemo) tabDemo.addEventListener("click", switchToDemo);
   if (btnJumpDemo) btnJumpDemo.addEventListener("click", switchToDemo);
 
+  // Desktop Sidebar Toggle
+  const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+  const btnCollapseSidebar = document.getElementById("btn-collapse-sidebar");
+  const SIDEBAR_STORAGE_KEY = "zago_sidebar_collapsed";
+
+  const updateSidebarState = (collapsed: boolean) => {
+    if (collapsed) {
+      docsPanel?.classList.add("collapsed");
+      btnToggleSidebar?.setAttribute("title", t.btnExpandSidebar);
+      btnToggleSidebar?.setAttribute("aria-label", t.btnExpandSidebar);
+      btnToggleSidebar?.classList.add("collapsed");
+    } else {
+      docsPanel?.classList.remove("collapsed");
+      btnToggleSidebar?.setAttribute("title", t.btnCollapseSidebar);
+      btnToggleSidebar?.setAttribute("aria-label", t.btnCollapseSidebar);
+      btnToggleSidebar?.classList.remove("collapsed");
+    }
+  };
+
+  const toggleSidebar = () => {
+    const isCollapsed = docsPanel?.classList.contains("collapsed") ?? false;
+    const nextState = !isCollapsed;
+    updateSidebarState(nextState);
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
+    } catch {}
+    setTimeout(() => {
+      fitAndNotifyEditor();
+      term.focus();
+    }, 50);
+  };
+
+  if (btnToggleSidebar) {
+    btnToggleSidebar.addEventListener("click", toggleSidebar);
+  }
+  if (btnCollapseSidebar) {
+    btnCollapseSidebar.addEventListener("click", toggleSidebar);
+  }
+
+  // Restore desktop sidebar collapsed preference if saved
+  if (window.innerWidth > 900) {
+    try {
+      if (localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true") {
+        updateSidebarState(true);
+      }
+    } catch {}
+  }
+
   // Resize handling
   const handleResize = () => {
     if (window.innerWidth < 600) {

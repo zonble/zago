@@ -246,4 +246,47 @@ test.describe("web editor smoke tests", () => {
       .poll(() => getTerminalText(page), { timeout: 10_000 })
       .not.toContain("Error opening file");
   });
+
+  test("allows collapsing and expanding documentation sidebar on desktop to make editor full width", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    const docsPanel = page.locator("#docs-panel");
+    const demoPanel = page.locator("#demo-panel");
+    const btnToggleSidebar = page.locator("#btn-toggle-sidebar");
+    const btnCollapseSidebar = page.locator("#btn-collapse-sidebar");
+
+    // Initially, docs panel should be visible
+    await expect(docsPanel).toBeVisible();
+    await expect(btnToggleSidebar).toBeVisible();
+    await expect(btnCollapseSidebar).toBeVisible();
+
+    const initialDemoWidth = await demoPanel.evaluate((el) => el.getBoundingClientRect().width);
+    expect(initialDemoWidth).toBeLessThan(1000);
+
+    // Click collapse button in docs panel
+    await btnCollapseSidebar.click();
+
+    // Docs panel should now be hidden
+    await expect(docsPanel).toBeHidden();
+
+    // Demo panel should now expand to full width
+    await expect.poll(async () => {
+      return await demoPanel.evaluate((el) => el.getBoundingClientRect().width);
+    }).toBeGreaterThan(1200);
+
+    // Click toggle button in toolbar to restore sidebar
+    await btnToggleSidebar.click();
+
+    // Docs panel should be visible again
+    await expect(docsPanel).toBeVisible();
+
+    // Demo panel returns to partial width
+    await expect.poll(async () => {
+      return await demoPanel.evaluate((el) => el.getBoundingClientRect().width);
+    }).toBeLessThan(1000);
+
+    // Toggle button in toolbar can also collapse it
+    await btnToggleSidebar.click();
+    await expect(docsPanel).toBeHidden();
+  });
 });

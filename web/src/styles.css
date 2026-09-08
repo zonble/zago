@@ -205,6 +205,29 @@ body {
   margin-bottom: 8px;
 }
 
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.collapse-sidebar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  cursor: pointer;
+  background-color: #ffffff;
+  border-color: #d0d7de;
+  color: #57606a;
+}
+
+.collapse-sidebar-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #afb8c1;
+  color: #0969da;
+}
+
 .hero-title {
   font-size: 28px;
   font-weight: 800;
@@ -445,6 +468,31 @@ body {
   background-color: var(--panel-bg);
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sidebar-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.sidebar-toggle-btn:hover {
+  color: var(--text-main);
+  background-color: var(--btn-hover);
+}
+
+.sidebar-toggle-btn.collapsed {
+  color: var(--accent-color);
 }
 
 .toolbar-title {
@@ -788,9 +836,23 @@ body {
 }
 
 /* ==========================================================================
+   Desktop Sidebar Collapsed State (> 900px)
+   ========================================================================== */
+@media (min-width: 901px) {
+  .docs-panel.collapsed {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
    Responsive Breakpoint (< 900px)
    ========================================================================== */
 @media (max-width: 900px) {
+  .sidebar-toggle-btn,
+  .collapse-sidebar-btn {
+    display: none !important;
+  }
+
   #app.demo-active {
     height: 100vh;
   }
