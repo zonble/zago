@@ -935,11 +935,87 @@ async function main() {
   const playerTime = document.getElementById("player-time");
   const playerProgress = document.getElementById("player-progress") as HTMLInputElement | null;
   const playerBtnPause = document.getElementById("player-btn-pause");
-  const playerBtnStop = document.getElementById("player-btn-stop");
   const playerBtnClose = document.getElementById("player-btn-close");
 
   let isCurrentBufferTMD = false;
   let isSeeking = false;
+
+  function makeDraggable(element: HTMLElement) {
+    let isDragging = false;
+    let startPointerX = 0;
+    let startPointerY = 0;
+    let startElementX = 0;
+    let startElementY = 0;
+
+    element.addEventListener("pointerdown", (e: PointerEvent) => {
+      // Ignore clicks on inputs, buttons, selects, or other interactive elements
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("button, input, select, a")) {
+        return;
+      }
+
+      // Only respond to primary mouse click or touch
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+
+      isDragging = true;
+      startPointerX = e.clientX;
+      startPointerY = e.clientY;
+
+      const rect = element.getBoundingClientRect();
+      const parentRect = element.offsetParent
+        ? (element.offsetParent as HTMLElement).getBoundingClientRect()
+        : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+
+      startElementX = rect.left - parentRect.left;
+      startElementY = rect.top - parentRect.top;
+
+      // Reset right/bottom positioning to explicit top/left
+      element.style.right = "auto";
+      element.style.bottom = "auto";
+      element.style.left = `${startElementX}px`;
+      element.style.top = `${startElementY}px`;
+
+      element.classList.add("dragging");
+      element.setPointerCapture(e.pointerId);
+    });
+
+    element.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!isDragging) return;
+
+      const deltaX = e.clientX - startPointerX;
+      const deltaY = e.clientY - startPointerY;
+
+      const parentEl = (element.offsetParent as HTMLElement) || document.body;
+      const parentWidth = parentEl.clientWidth;
+      const parentHeight = parentEl.clientHeight;
+
+      const rect = element.getBoundingClientRect();
+      const maxX = Math.max(0, parentWidth - rect.width);
+      const maxY = Math.max(0, parentHeight - rect.height);
+
+      const newX = Math.min(Math.max(0, startElementX + deltaX), maxX);
+      const newY = Math.min(Math.max(0, startElementY + deltaY), maxY);
+
+      element.style.left = `${newX}px`;
+      element.style.top = `${newY}px`;
+    });
+
+    const stopDrag = (e: PointerEvent) => {
+      if (!isDragging) return;
+      isDragging = false;
+      element.classList.remove("dragging");
+      if (element.hasPointerCapture(e.pointerId)) {
+        element.releasePointerCapture(e.pointerId);
+      }
+    };
+
+    element.addEventListener("pointerup", stopDrag);
+    element.addEventListener("pointercancel", stopDrag);
+  }
+
+  if (tmdPlayerBar) {
+    makeDraggable(tmdPlayerBar);
+  }
 
   function formatTime(seconds: number): string {
     if (isNaN(seconds) || seconds < 0) seconds = 0;
@@ -1029,16 +1105,6 @@ async function main() {
   if (playerBtnPause) {
     playerBtnPause.addEventListener("click", () => {
       tmdPlayer.togglePause();
-    });
-  }
-
-  if (playerBtnStop) {
-    playerBtnStop.addEventListener("click", () => {
-      tmdPlayer.stop();
-      if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
-      if (btnPlayTMD) {
-        btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
-      }
     });
   }
 
