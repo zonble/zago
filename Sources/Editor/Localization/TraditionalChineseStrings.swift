@@ -27,6 +27,11 @@ struct TraditionalChineseStrings {
         "help.select_all": "全選",
         "help.open_link": "開啟連結",
         "help.table_exit": "離開表格",
+        "help.next_buffer": "下個緩衝區",
+        "help.dir_open": "開啟/瀏覽",
+        "help.dir_up": "上一層",
+        "help.dir_sort": "切換排序",
+        "help.dir_order": "遞增/遞減",
         "help.next_cell": "下個儲存格",
         "help.prev_cell": "上個儲存格",
         "help.cell_width": "儲存格寬度 -/+",
@@ -90,8 +95,11 @@ struct TraditionalChineseStrings {
         "mode.canvas_mode": "畫布模式",
         "mode.table_mode": "表格模式",
         "dirbuf.header_directory": "\" 目錄: %@",
-        "dirbuf.header_instructions": "\" 在檔案上按 Enter 開啟，在資料夾上按 Enter 瀏覽",
+        "dirbuf.header_instructions": "\" 在檔案上按 Enter 開啟，按 's' 切換排序，按 'u'/'b' 返回上層",
+        "dirbuf.sort_label": "排序",
         "dirbuf.up_dir": ".. (上一層目錄)",
+        "status.dir_sorted": "目錄排序：%@",
+        "status.not_in_directory_buffer": "目前緩衝區不是目錄瀏覽器",
         "status.cannot_open_binary_file": "無法開啟非文字檔 (Binary File)",
         "prompt.goto_line": "請輸入列號與欄號：",
         "textview.footer": "  ↑/↓/上頁/下頁/Home/End：捲動   其他按鍵：關閉",
@@ -824,10 +832,326 @@ struct TraditionalChineseStrings {
         "dialog.describe_key.insert_char": "輸入字元「%@」",
         "dialog.describe_key.unbound": "未綁定任何指令",
 
-        "symbol_category.steps": "1. 步驟標記",
-        "symbol_category.badges": "2. 狀態圖示",
-        "symbol_category.math_keys": "3. 數學按鍵",
-        "symbol_category.gfm": "4. GFM 區塊",
+        "symbol_category.arrows": "1. 箭頭符號",
+        "symbol_category.steps": "2. 步驟標記",
+        "symbol_category.badges": "3. 狀態圖示",
+        "symbol_category.math_keys": "4. 數學按鍵",
+        "symbol_category.gfm": "5. GFM 區塊",
+
+        // 1-4: 循環、圓環與旋轉
+        "symbol.arrow.loop_ccw": "逆時針循環箭頭",
+        "symbol.arrow.loop_cw": "順時針循環箭頭",
+        "symbol.arrow.open_circle_ccw": "開口圓逆時針循環",
+        "symbol.arrow.open_circle_cw": "開口圓順時針循環",
+
+        "symbol.arrow.closed_circle_ccw": "閉合圓逆時針箭頭",
+        "symbol.arrow.closed_circle_cw": "閉合圓順時針箭頭",
+        "symbol.arrow.top_arc_cw": "上方圓弧順時針箭頭",
+        "symbol.arrow.top_arc_ccw": "上方圓弧逆時針箭頭",
+
+        "symbol.arrow.curve_up_left": "向上左彎弧形箭頭",
+        "symbol.arrow.curve_up_right": "向上右彎弧形箭頭",
+        "symbol.arrow.curve_down_left": "向下左彎弧形箭頭",
+        "symbol.arrow.curve_down_right": "向下右彎弧形箭頭",
+
+        "symbol.arrow.arc_top_left": "左上半圓弧形箭頭",
+        "symbol.arrow.arc_top_right": "右上半圓弧形箭頭",
+        "symbol.arrow.arc_bottom_left": "左下半圓弧形箭頭",
+        "symbol.arrow.arc_bottom_right": "右下半圓弧形箭頭",
+
+        // 5-8: 直角折角與拐彎
+        "symbol.arrow.corner_down_right": "向下折右直角箭頭",
+        "symbol.arrow.corner_down_left": "向下折左直角箭頭",
+        "symbol.arrow.corner_up_right": "向上折右直角箭頭",
+        "symbol.arrow.corner_up_left": "向上折左直角箭頭",
+
+        "symbol.arrow.corner_right_down": "向右折下直角箭頭",
+        "symbol.arrow.return_symbol": "換行回車符號",
+        "symbol.arrow.hook_left": "向左鉤形回傳箭頭",
+        "symbol.arrow.hook_right": "向右鉤形轉發箭頭",
+
+        "symbol.arrow.curve_up": "向上弧形跳轉箭頭",
+        "symbol.arrow.curve_down": "向下弧形跳轉箭頭",
+        "symbol.arrow.turn_down_left": "向下轉左拐彎箭頭",
+        "symbol.arrow.turn_down_right": "向下轉右拐彎箭頭",
+
+        "symbol.arrow.curved_corner_left": "向左彎折弧角箭頭",
+        "symbol.arrow.curved_corner_right": "向右彎折弧角箭頭",
+        "symbol.arrow.bent_elbow_left": "向左尖折直角箭頭",
+        "symbol.arrow.bent_elbow_right": "向右尖折直角箭頭",
+
+        // 9-12: 閃電、波浪與長箭頭
+        "symbol.arrow.lightning": "向下閃電鋸齒箭頭",
+        "symbol.arrow.wave_left": "向左波浪震盪箭頭",
+        "symbol.arrow.wave_right": "向右波浪震盪箭頭",
+        "symbol.arrow.wave_bidi": "水平雙向波浪箭頭",
+
+        "symbol.arrow.wave_tail_left": "向左波浪尾翼箭頭",
+        "symbol.arrow.wave_tail_right": "向右波浪尾翼箭頭",
+        "symbol.arrow.squiggle_right": "向右波浪曲折箭頭",
+        "symbol.arrow.long_squiggle_right": "向右長波浪曲折箭頭",
+
+        "symbol.arrow.long_left": "長向左單線箭頭",
+        "symbol.arrow.long_right": "長向右單線箭頭",
+        "symbol.arrow.long_bidi": "長水平雙向箭頭",
+        "symbol.arrow.long_harpoon_left": "長向左魚鉤箭頭",
+
+        "symbol.arrow.long_double_left": "長向左雙線箭頭",
+        "symbol.arrow.long_double_right": "長向右雙線箭頭",
+        "symbol.arrow.long_double_bidi": "長雙向雙線箭頭",
+        "symbol.arrow.long_harpoon_right": "長向右魚鉤箭頭",
+
+        // 13-16: 否定、劃線與穿透
+        "symbol.arrow.negated_left": "向左劃線禁止箭頭",
+        "symbol.arrow.negated_right": "向右劃線禁止箭頭",
+        "symbol.arrow.negated_bidi": "雙向劃線禁止箭頭",
+        "symbol.arrow.crossed_bidi": "交叉穿越雙向箭頭",
+
+        "symbol.arrow.negated_double_left": "向左劃線雙線否定",
+        "symbol.arrow.negated_double_right": "向右劃線雙線否定",
+        "symbol.arrow.negated_double_bidi": "雙向劃線雙線否定",
+        "symbol.arrow.stroke_right": "向右帶斜線修飾箭頭",
+
+        "symbol.arrow.stroke_bidi": "帶中槓雙向箭頭",
+        "symbol.arrow.double_stroke_left": "向左雙豎槓修飾箭頭",
+        "symbol.arrow.double_stroke_right": "向右雙豎槓修飾箭頭",
+        "symbol.arrow.double_stroke_bidi": "雙豎槓雙向箭頭",
+
+        "symbol.arrow.stroke_tail_left": "向左帶尾劃線箭頭",
+        "symbol.arrow.stroke_tail_right": "向右帶尾劃線箭頭",
+        "symbol.arrow.stroke_tail_bidi": "雙向帶尾劃線箭頭",
+        "symbol.arrow.diagonal_stroke": "對角線雙向劃線箭頭",
+
+        // 17-20: 三重線總線與羽尾
+        "symbol.arrow.triple_left": "向左三線總線箭頭",
+        "symbol.arrow.triple_right": "向右三線總線箭頭",
+        "symbol.arrow.triple_up": "向上三線箭頭",
+        "symbol.arrow.triple_down": "向下三線箭頭",
+
+        "symbol.arrow.barb_left": "向左帶橫槓倒鉤箭頭",
+        "symbol.arrow.barb_right": "向右帶橫槓倒鉤箭頭",
+        "symbol.arrow.double_bar_right": "向右雙豎線箭頭",
+        "symbol.arrow.stacked_three_right": "三重堆疊向右箭頭",
+
+        "symbol.arrow.fishtail_right": "向右魚尾箭頭",
+        "symbol.arrow.fishtail_left": "向左魚尾箭頭",
+        "symbol.arrow.fishtail_bidi": "雙向魚尾箭頭",
+        "symbol.arrow.feathered_right": "向右羽毛三叉箭頭",
+
+        "symbol.arrow.corner_down_stem": "向右折下柄箭頭",
+        "symbol.arrow.corner_up_stem": "向右折上柄箭頭",
+        "symbol.arrow.feathered_left": "向左羽毛三叉箭頭",
+        "symbol.arrow.arrow_tail_left": "向左帶尾端點箭頭",
+
+        // 21-24: 空心立體與帶框
+        "symbol.arrow.block_up": "向上空心立體箭頭",
+        "symbol.arrow.block_down": "向下空心立體箭頭",
+        "symbol.arrow.block_left": "向左空心立體箭頭",
+        "symbol.arrow.block_right": "向右空心立體箭頭",
+
+        "symbol.arrow.block_bidi_horizontal": "水平雙向空心立體箭頭",
+        "symbol.arrow.block_bidi_vertical": "垂直雙向空心立體箭頭",
+        "symbol.arrow.block_diag_up_right": "東北向空心立體箭頭",
+        "symbol.arrow.block_diag_up_left": "西北向空心立體箭頭",
+
+        "symbol.arrow.block_diag_down_right": "東南向空心立體箭頭",
+        "symbol.arrow.block_diag_down_left": "西南向空心立體箭頭",
+        "symbol.arrow.bent_black_down_right": "向右折下黑體直角箭頭",
+        "symbol.arrow.bent_black_up_right": "向右折上黑體直角箭頭",
+
+        "symbol.arrow.bent_black_down_left": "向左折下黑體直角箭頭",
+        "symbol.arrow.bent_black_up_left": "向左折上黑體直角箭頭",
+        "symbol.arrow.caps_lock": "大寫鎖定鍵箭頭符號",
+        "symbol.arrow.caps_lock_bar": "帶橫條大寫鎖定箭頭",
+
+        // 25-28: 斜向 8 方向與交叉
+        "symbol.arrow.diag_up_left": "左上斜向細線箭頭",
+        "symbol.arrow.diag_up_right": "右上斜向細線箭頭",
+        "symbol.arrow.diag_down_right": "右下斜向細線箭頭",
+        "symbol.arrow.diag_down_left": "左下斜向細線箭頭",
+
+        "symbol.arrow.double_diag_up_left": "左上斜向雙線箭頭",
+        "symbol.arrow.double_diag_up_right": "右上斜向雙線箭頭",
+        "symbol.arrow.double_diag_down_right": "右下斜向雙線箭頭",
+        "symbol.arrow.double_diag_down_left": "左下斜向雙線箭頭",
+
+        "symbol.arrow.tri_diag_up_left": "左上斜向三角箭頭",
+        "symbol.arrow.tri_diag_up_right": "右上斜向三角箭頭",
+        "symbol.arrow.tri_diag_down_right": "右下斜向三角箭頭",
+        "symbol.arrow.tri_diag_down_left": "左下斜向三角箭頭",
+
+        "symbol.arrow.diagonal_double_ended": "東北西南雙向對角箭頭",
+        "symbol.arrow.diagonal_cross_1": "對角線交叉箭頭一",
+        "symbol.arrow.diagonal_cross_2": "對角線交叉箭頭二",
+        "symbol.arrow.diagonal_cross_3": "對角線交叉箭頭三",
+
+        // 29-32: 數學映射、單射與滿射
+        "symbol.arrow.maps_up": "向上映射箭頭",
+        "symbol.arrow.maps_down": "向下映射箭頭",
+        "symbol.arrow.maps_left": "向左映射箭頭",
+        "symbol.arrow.maps_right": "向右映射箭頭",
+
+        "symbol.arrow.long_maps_left": "長向左映射箭頭",
+        "symbol.arrow.long_maps_right": "長向右映射箭頭",
+        "symbol.arrow.from_bar_up": "向上起點底座箭頭",
+        "symbol.arrow.from_bar_down": "向下起點底座箭頭",
+
+        "symbol.arrow.two_headed_up": "向上雙頭滿射箭頭",
+        "symbol.arrow.two_headed_down": "向下雙頭滿射箭頭",
+        "symbol.arrow.two_headed_left": "向左雙頭滿射箭頭",
+        "symbol.arrow.two_headed_right": "向右雙頭滿射箭頭",
+
+        "symbol.arrow.tailed_left": "向左帶尾單射箭頭",
+        "symbol.arrow.tailed_right": "向右帶尾單射箭頭",
+        "symbol.arrow.multimap": "多重映射棒棒糖箭頭",
+        "symbol.arrow.double_bar_right_heavy": "向右帶底座粗雙線箭頭",
+
+        // 33-36: 邊界停駐與迴路
+        "symbol.arrow.bar_left": "向左邊界停駐箭頭",
+        "symbol.arrow.bar_right": "向右邊界停駐箭頭",
+        "symbol.arrow.bar_up": "向上邊界停駐箭頭",
+        "symbol.arrow.bar_down": "向下邊界停駐箭頭",
+
+        "symbol.arrow.double_from_bar_left": "向左帶底座雙線箭頭",
+        "symbol.arrow.arrow_crossbar_left": "向左帶橫中槓箭頭",
+        "symbol.arrow.arrow_crossbar_right": "向右帶橫中槓箭頭",
+        "symbol.arrow.arrow_wave_shaft_right": "向右波浪柄箭頭",
+
+        "symbol.arrow.arrow_wave_shaft_left": "向左波浪柄箭頭",
+        "symbol.arrow.loop_down": "帶下環迴路箭頭",
+        "symbol.arrow.loop_up": "帶上環迴路箭頭",
+        "symbol.arrow.loop_left": "帶左環迴路箭頭",
+
+        "symbol.arrow.loop_right": "帶右環迴路箭頭",
+        "symbol.arrow.ribbon_turn_left": "緞帶向左拐角箭頭",
+        "symbol.arrow.ribbon_turn_right": "緞帶向右拐角箭頭",
+        "symbol.arrow.ribbon_turn_up": "緞帶向上拐角箭頭",
+
+        // 37-40: 配對與平行
+        "symbol.arrow.pair_left_right": "左右對向箭頭",
+        "symbol.arrow.pair_right_left": "右左對向箭頭",
+        "symbol.arrow.pair_up_down": "上下對向箭頭",
+        "symbol.arrow.pair_down_up": "下上對向箭頭",
+
+        "symbol.arrow.paired_right": "雙並行向右箭頭",
+        "symbol.arrow.paired_left": "雙並行向左箭頭",
+        "symbol.arrow.paired_up": "雙並行向上箭頭",
+        "symbol.arrow.paired_down": "雙並行向下箭頭",
+
+        "symbol.arrow.equilibrium_left_right": "左右魚鉤化學平衡箭頭",
+        "symbol.arrow.equilibrium_right_left": "右左魚鉤化學平衡箭頭",
+        "symbol.arrow.harpoon_pair_up_down": "上下魚鉤配對箭頭",
+        "symbol.arrow.harpoon_pair_down_up": "下上魚鉤配對箭頭",
+
+        "symbol.arrow.paired_harpoon_left": "雙重並行向左魚鉤",
+        "symbol.arrow.paired_harpoon_right": "雙重並行向右魚鉤",
+        "symbol.arrow.paired_harpoon_up": "雙重並行向上魚鉤",
+        "symbol.arrow.paired_harpoon_down": "雙重並行向下魚鉤",
+
+        // 41-44: 複雜魚鉤半箭頭
+        "symbol.arrow.harpoon_barb_up_left": "向左倒鉤朝上魚鉤",
+        "symbol.arrow.harpoon_barb_down_left": "向左倒鉤朝下魚鉤",
+        "symbol.arrow.harpoon_barb_up_right": "向右倒鉤朝上魚鉤",
+        "symbol.arrow.harpoon_barb_down_right": "向右倒鉤朝下魚鉤",
+
+        "symbol.arrow.harpoon_barb_left_up": "向上倒鉤朝左魚鉤",
+        "symbol.arrow.harpoon_barb_right_up": "向上倒鉤朝右魚鉤",
+        "symbol.arrow.harpoon_barb_left_down": "向下倒鉤朝左魚鉤",
+        "symbol.arrow.harpoon_barb_right_down": "向下倒鉤朝右魚鉤",
+
+        "symbol.arrow.harpoon_stacked_left_1": "雙重堆疊向左魚鉤一",
+        "symbol.arrow.harpoon_stacked_left_2": "雙重堆疊向左魚鉤二",
+        "symbol.arrow.harpoon_stacked_right_1": "雙重堆疊向右魚鉤一",
+        "symbol.arrow.harpoon_stacked_right_2": "雙重堆疊向右魚鉤二",
+
+        "symbol.arrow.harpoon_long_bar_left": "向左帶長橫槓魚鉤",
+        "symbol.arrow.harpoon_long_bar_right": "向右帶長橫槓魚鉤",
+        "symbol.arrow.harpoon_bidi_barb_up": "雙向倒鉤朝上魚鉤",
+        "symbol.arrow.harpoon_bidi_barb_down": "雙向倒鉤朝下魚鉤",
+
+        // 45-48: 粗體與帶圈 Dingbats
+        "symbol.arrow.dingbat_heavy_right": "粗體向右箭頭",
+        "symbol.arrow.dingbat_triangle_right": "粗三角向右箭頭",
+        "symbol.arrow.dingbat_circled_right": "帶圈向右箭頭",
+        "symbol.arrow.dingbat_open_double": "開口雙標向右箭頭",
+
+        "symbol.arrow.dingbat_dart_small": "微型向右飛鏢箭頭",
+        "symbol.arrow.dingbat_heavy_dart": "粗體向右飛鏢箭頭",
+        "symbol.arrow.dingbat_dashed_dart": "虛線柄向右飛鏢箭頭",
+        "symbol.arrow.dingbat_heavy_dashed": "粗虛線柄向右飛鏢箭頭",
+
+        "symbol.arrow.dingbat_black_triangle_left": "向左黑體三角指標",
+        "symbol.arrow.dingbat_notched": "帶凹槽向右箭頭",
+        "symbol.arrow.dingbat_notched_shadowed": "帶凹槽陰影向右箭頭",
+        "symbol.arrow.dingbat_curved_stem": "弧柄向右指標箭頭",
+
+        "symbol.arrow.dingbat_heavy_bottom_hook": "粗體底部鉤向右箭頭",
+        "symbol.arrow.dingbat_heavy_top_hook": "粗體頂部鉤向右箭頭",
+        "symbol.arrow.dingbat_heavy_wedge": "粗體楔形向右箭頭",
+        "symbol.arrow.dingbat_heavy_wedge_large": "大楔形向右箭頭",
+
+        // 49-52: 陰影與立體 Dingbats
+        "symbol.arrow.dingbat_open_white": "白底開口向右箭頭",
+        "symbol.arrow.dingbat_shaded_white": "白底陰影向右箭頭",
+        "symbol.arrow.dingbat_shaded_left_fat": "粗體陰影向右箭頭",
+        "symbol.arrow.dingbat_shaded_right_fat": "粗體陰影向右箭頭二",
+
+        "symbol.arrow.dingbat_shaded_notched": "帶凹槽白底陰影箭頭",
+        "symbol.arrow.dingbat_shaded_pointed": "尖角白底陰影箭頭",
+        "symbol.arrow.dingbat_shaded_wedge": "楔形白底陰影箭頭",
+        "symbol.arrow.black_wedge_up": "黑色向上楔形箭頭",
+
+        "symbol.arrow.black_wedge_down": "黑色向下楔形箭頭",
+        "symbol.arrow.black_wedge_left": "黑色向左楔形箭頭",
+        "symbol.arrow.black_wedge_right": "黑色向右楔形箭頭",
+        "symbol.arrow.black_ribbon_left": "黑色緞帶向左箭頭",
+
+        "symbol.arrow.black_ribbon_up": "黑色緞帶向上箭頭",
+        "symbol.arrow.black_ribbon_right": "黑色緞帶向右箭頭",
+        "symbol.arrow.black_ribbon_down": "黑色緞帶向下箭頭",
+        "symbol.arrow.ribbon_diag_ne": "東北向緞帶箭頭",
+
+        // 53-56: 羽箭、飛鏢與花式
+        "symbol.arrow.dart_feathered_left": "向左羽毛飛鏢箭頭",
+        "symbol.arrow.dart_feathered_center": "居中羽毛飛鏢箭頭",
+        "symbol.arrow.dart_feathered_right": "向右羽毛飛鏢箭頭",
+        "symbol.arrow.ribbon_arrow": "緞帶向右花式箭頭",
+
+        "symbol.arrow.teardrop_feather": "水滴倒鉤向右羽箭",
+        "symbol.arrow.heavy_feather_right": "粗羽毛向右箭頭",
+        "symbol.arrow.heavy_dart_right": "粗飛鏢向右箭頭",
+        "symbol.arrow.circled_tri_up": "帶圈向上三角箭頭",
+
+        "symbol.arrow.circled_tri_down": "帶圈向下三角箭頭",
+        "symbol.arrow.circled_tri_left": "帶圈向左三角箭頭",
+        "symbol.arrow.circled_tri_right": "帶圈向右三角箭頭",
+        "symbol.arrow.ribbon_diag_se": "東南向緞帶箭頭",
+
+        "symbol.arrow.ribbon_diag_sw": "西南向緞帶箭頭",
+        "symbol.arrow.ribbon_curve_left": "向左圓弧緞帶箭頭",
+        "symbol.arrow.ribbon_curve_right": "向右圓弧緞帶箭頭",
+        "symbol.arrow.conical_wedge": "錐形楔角指引箭頭",
+
+        // 57-60: 偏序、包含與角括號
+        "symbol.arrow.angle_double_left": "雙左角括號",
+        "symbol.arrow.angle_double_right": "雙右角括號",
+        "symbol.arrow.angle_single_left": "單左角括號",
+        "symbol.arrow.angle_single_right": "單右角括號",
+
+        "symbol.arrow.precedes": "優先於 (Precedes)",
+        "symbol.arrow.succeeds": "後續於 (Succeeds)",
+        "symbol.arrow.precedes_equal": "優先或等於",
+        "symbol.arrow.succeeds_equal": "後續或等於",
+
+        "symbol.arrow.open_triangle_left": "開口三角向左箭頭",
+        "symbol.arrow.open_triangle_right": "開口三角向右箭頭",
+        "symbol.arrow.open_triangle_underbar_left": "開口三角帶底線左箭頭",
+        "symbol.arrow.open_triangle_underbar_right": "開口三角帶底線右箭頭",
+
+        "symbol.arrow.square_subset_left": "左方框球窩 (Socket)",
+        "symbol.arrow.square_subset_right": "右方框球窩 (Socket)",
+        "symbol.arrow.square_subset_equal_left": "左方框包含或等於",
+        "symbol.arrow.square_subset_equal_right": "右方框包含或等於",
 
         "symbol.callout.note": "Note 說明提示區塊",
         "symbol.callout.tip": "Tip 秘訣提示區塊",
@@ -976,6 +1300,7 @@ struct TraditionalChineseStrings {
         "menu.borders.arrow_heavy": "箭頭：粗線 ⬆⬇⬅⮕",
 
         "menu.tools.journal": "今天日記",
+        "menu.tools.journal_dir": "日記目錄",
         "menu.tools.logo": "指令列\tEsc",
         "menu.tools.eval_logo": "Eval LOGO 腳本\t^Q",
         "menu.tools.word_count": "字數統計",
@@ -1074,5 +1399,108 @@ struct TraditionalChineseStrings {
         "describe_command.examples": "範例：",
         "describe_command.not_found": "找不到符合項目",
         "describe_command.not_found_desc": "找不到名為 '%@' 的指令、程序或內建語法",
+
+        // TMD Menu & Commands
+        "menu.tmd": "TMD",
+        "menu.tmd.play": "試聽樂譜",
+        "menu.tmd.export_midi": "匯出 MIDI",
+        "menu.tmd.export_musicxml": "匯出 MusicXML",
+        "menu.tmd.export_lilypond": "匯出 Lily",
+        "menu.tmd.export_abc": "匯出 ABC",
+        "menu.tmd.export_wav": "匯出 WAV",
+        "prompt.export_midi": "匯出 MIDI 至：",
+        "prompt.export_musicxml": "匯出 MusicXML 至：",
+        "prompt.export_lilypond": "匯出 LilyPond 至：",
+        "prompt.export_abc": "匯出 ABC 至：",
+        "prompt.export_wav": "匯出 WAV 至：",
+        "status.tmd_exported": "已成功匯出 %@ 至：%@",
+        "status.tmd_exported_web": "已成功匯出 %@ 並觸發下載：%@",
+        "status.tmd_playing": "正在試聽：%@...",
+        "status.tmd_export_failed": "匯出 %@ 失敗：%@",
+        "status.tmd_snippet_inserted": "已插入 TMD 範本",
+        "menu.tmd.snippet.score_template": "完整樂譜範本",
+        "menu.tmd.snippet.paragraph": "新增段落 (Verse)",
+        "menu.tmd.snippet.chords": "和弦進程範本",
+        "menu.help.tmd_reference": "TMD 語法速查",
+        "tmdview.reference_title": "  zago - TMD 語法速查",
+        "tmdref.content": """
+
+          TMD (Text Music Description) 語法速查
+          ================================================================
+
+          TMD 是一種輕量級、純文字的音樂描述格式，可用於撰寫旋律、和弦與多軌樂譜。
+
+          1. 標頭與樂譜結構
+          ----------------------------------------------------------------
+            ::SCORE::            TMD 樂譜檔案必備標頭
+            ** 樂曲標題 **       樂譜標題（Document Heading）
+
+          2. 全域設定與行內指令
+          ----------------------------------------------------------------
+            != 120               全域速度（BPM），例如 != 90 或 ! = 144
+            {!=140}              段落內行內變速
+            {!+20}               相對增減速度
+            ?= C                 全域調號（C, G, D, F, Bb, Am 等）
+            {?=F}                段落內行內轉調
+            {?+1} / {?-1}        半音移調
+            <4/4>                拍號（例如 <4/4>, <3/4>, <6/8>）
+            {<3/4>}              段落內行內變更拍號
+
+          3. 演奏順序（Playback Order）
+          ----------------------------------------------------------------
+            -> Intro             演奏段落「Intro」
+            -> Verse             演奏段落「Verse」
+            -> {?=D} Chorus      行內轉調後演奏段落「Chorus」
+            -> #                 結束樂曲演奏
+
+          4. 段落與樂器宣告（Section & Paragraph）
+          ----------------------------------------------------------------
+            段落名稱:樂器名稱@{ ... }
+            Intro:Piano@{ ... }
+            Verse:AcousticGuitar@|0|{ ... }     (@|小節偏移| 起始位置)
+
+          5. 節奏與基本細分單位（Section）
+          ----------------------------------------------------------------
+            <4*>                 以四分音符為基準單位
+            <8*>                 以八分音符為基準單位
+            <16*>                以十六分音符為基準單位
+
+          6. 音樂單位（首調唱名音符與修飾）
+          ----------------------------------------------------------------
+            1 2 3 4 5 6 7        首調唱名音階（Do Re Mi Fa Sol La Ti）
+            0                    休止符
+            -                    延音線（延續前一音）
+            |                    排版用小節線（parser 會忽略）
+
+            升降記號（直接接在音級後）：
+            1'                   升 Do
+            2,                   降 Re
+
+            八度記號（以 ^ 或 _ 表示，每個符號代表一個八度）：
+            1^                   高一個八度
+            1^^                  高兩個八度
+            1_                   低一個八度
+            1__                  低兩個八度
+            1'^                  升 Do，高一個八度（先升降後八度）
+
+            連音與節奏群組：
+            (1 2 3)%(--)         三連音，佔兩個基準單位長度
+            (7, 1)%(--)          二連音，佔兩個基準單位長度
+
+          7. 和弦標記
+          ----------------------------------------------------------------
+            [C]                  C 大三和弦
+            [Am]                 A 小三和弦
+            [G7]                 G 屬七和弦
+            [Fmaj7]              F 大七和弦
+            [C/E]                轉位和弦（低音為 E）
+
+          8. 註解
+          ----------------------------------------------------------------
+            /* 區塊註解 */       編譯器與播放器將忽略註解內容
+
+          ----------------------------------------------------------------
+          In memory of Chen, Chih-Han / aguai (阿怪, 1974–2019).
+        """,
     ]
 }

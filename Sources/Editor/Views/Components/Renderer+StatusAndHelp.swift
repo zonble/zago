@@ -88,16 +88,15 @@ extension Renderer {
         }
 
         let modifiedBadgeStr = editor.buffer.isModified ? "\(editor.l10n.modified)" : ""
-        let rightText: String
-        if !modifiedBadgeStr.isEmpty && !branchTextStr.isEmpty {
-            rightText = "\(modifiedBadgeStr)\(branchTextStr)  "
-        } else if !modifiedBadgeStr.isEmpty {
-            rightText = "\(modifiedBadgeStr)  "
-        } else if !branchTextStr.isEmpty {
-            rightText = "\(branchTextStr)  "
+        let dirSortBadgeStr: String
+        if let dirBuf = editor.buffer as? DirectoryBuffer {
+            dirSortBadgeStr = "[\(dirBuf.sortOption.displayName(language: editor.language))]"
         } else {
-            rightText = "  "
+            dirSortBadgeStr = ""
         }
+
+        let rightItems = [modifiedBadgeStr, branchTextStr.trimmingCharacters(in: .whitespaces), dirSortBadgeStr].filter { !$0.isEmpty }
+        let rightText = rightItems.isEmpty ? "  " : rightItems.joined(separator: " ") + "  "
 
         let leftW = leftText.displayWidth
         let centerW = centerText.displayWidth
@@ -271,7 +270,7 @@ extension Renderer {
 
         case .saveFilePath, .insertFilePath, .openFilePath, .search, .replaceSearch, .replaceWith, .fillText, .tableDimensions,
             .gotoLine, .spellCheck,
-            .logoReadWord, .logoReadChar:
+            .logoReadWord, .logoReadChar, .tmdExport:
             if editor?.keymapManager.activePreset == .modern {
                 rawItems1 = [
                     ("Enter", tr("help.confirm")), ("^G", tr("help.cancel")), ("^X", tr("help.cut_text")),
@@ -300,7 +299,22 @@ extension Renderer {
                 return editor.keymapManager.primaryKeyLabel(for: cmd, in: editor.currentMode) ?? fallback
             }
 
-            if editor?.isTableModeActive == true {
+            if editor?.buffer.isDirectoryBuffer == true {
+                rawItems1 = [
+                    (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
+                    ("Enter", tr("help.dir_open")),
+                    ("s", tr("help.dir_sort")),
+                    ("u", tr("help.dir_up")),
+                    ("Esc", tr("help.commands")),
+                ]
+                rawItems2 = [
+                    (keyLabel(for: .fileExit, fallback: "^X"), tr("help.exit")),
+                    ("o", tr("help.dir_order")),
+                    ("b", tr("help.dir_up")),
+                    ("↑/↓", tr("help.move")),
+                    (keyLabel(for: .bufferNext, fallback: "^]"), tr("help.next_buffer")),
+                ]
+            } else if editor?.isTableModeActive == true {
                 rawItems1 = [
                     (keyLabel(for: .menuShow, fallback: "F1"), tr("help.menu")),
                     ("Esc", tr("help.commands")),
@@ -669,6 +683,11 @@ extension Renderer {
             let p =
                 prompt.isEmpty ? editor.l10n["prompt.logo_read_key"] : (prompt.hasSuffix(" ") ? prompt : prompt + " ")
             promptPrefix = p
+            isConfirmation = false
+        case .tmdExport(let format, _):
+            let formatKey = "prompt.export_\(format.rawValue)"
+            let prefix = editor.l10n[formatKey]
+            promptPrefix = prefix != formatKey ? prefix : "Export \(format.displayName) to: "
             isConfirmation = false
         case .none:
             return RenderedPrompt(text: "", cursorCol: 1)

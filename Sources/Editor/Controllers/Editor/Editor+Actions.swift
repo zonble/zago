@@ -1,3 +1,4 @@
+import Config
 import Foundation
 import LogoEngine
 import TextMetrics
@@ -107,7 +108,8 @@ extension Editor {
 
     @discardableResult
     func openBuffer(path: String) -> EditorOperationResult {
-        let expanded = fileIOStrategy.normalizePath(path, isDirectory: false)
+        let (cleanPath, targetLine, targetCol) = FilePathNormalizer.parseLocation(from: path)
+        let expanded = fileIOStrategy.normalizePath(cleanPath, isDirectory: false)
         let info = fileIOStrategy.fileInfo(at: expanded)
         if info.exists, info.isDirectory {
             openDirectoryBuffer(path: expanded)
@@ -137,6 +139,11 @@ extension Editor {
         } else {
             openNewBuffer(filePath: expanded)
         }
+
+        if let targetLine {
+            goToLocation(line: targetLine, column: targetCol)
+        }
+
         return .succeeded
     }
 

@@ -44,6 +44,11 @@ struct Zago: ParsableCommand {
         help: "Display a scroll bar on the righthand side of the edit window.")
     var indicator: Bool = false
 
+    @Flag(
+        name: [.customLong("no-indicator")],
+        help: "Disable the scroll bar on the righthand side of the edit window.")
+    var noIndicator: Bool = false
+
     @Option(
         name: [.customLong("linenumbers"), .customLong("line-numbers"), .customShort("l")],
         help: "Enable or disable line numbers (true/false).")
@@ -96,14 +101,19 @@ struct Zago: ParsableCommand {
     var journal: Bool = false
 
     @Flag(
+        name: [.customLong("journal-dir"), .customLong("journal-folder")],
+        help: "Open the daily journal directory.")
+    var journalDir: Bool = false
+
+    @Flag(
         name: [.customLong("init"), .customLong("init-config"), .customLong("generate-config")],
         help: "Generate a default ~/.zagorc configuration file.")
     var initConfig: Bool = false
 
     @Flag(
-        name: [.customLong("install-skill"), .customLong("install-agent-skill")],
+        name: [.customLong("install-skill"), .customLong("install-skills"), .customLong("install-agent-skill")],
         help:
-            "Install the zago AI skill definition into ~/.codex/skills and other local AI skill directories, plus MCP configuration."
+            "Install zago and TMD AI skill definitions into ~/.codex/skills and other local AI skill directories, plus MCP configuration."
     )
     var installSkill: Bool = false
 
@@ -115,8 +125,8 @@ struct Zago: ParsableCommand {
     var installMcp: Bool = false
 
     @Flag(
-        name: [.customLong("uninstall-skill")],
-        help: "Remove the zago AI skill definition from local user AI directories."
+        name: [.customLong("uninstall-skill"), .customLong("uninstall-skills")],
+        help: "Remove zago and TMD AI skill definitions from local user AI directories."
     )
     var uninstallSkill: Bool = false
 
@@ -186,7 +196,8 @@ struct Zago: ParsableCommand {
             fileIOStrategy: fileIOStrategy,
             terminal: terminal,
             gitService: gitService,
-            clipboardStrategy: clipboardStrategy
+            clipboardStrategy: clipboardStrategy,
+            tmdExportDelegate: ZagoTMDExporter()
         )
         let configProvider = { ConfigLoader(provider: LocalConfigFileProvider()).loadConfig() }
         let configSource = EditorConfigSource(initial: configProvider(), reload: configProvider)
@@ -203,9 +214,9 @@ struct Zago: ParsableCommand {
             if uninstallSkill {
                 let removedPaths = try ZagoSkillCLIInstaller.uninstallSkill()
                 if removedPaths.isEmpty {
-                    terminal.write("No installed zago AI skill was found.\n")
+                    terminal.write("No installed AI skills were found.\n")
                 } else {
-                    terminal.write("Removed zago AI skill from:\n")
+                    terminal.write("Removed AI skills from:\n")
                     for path in removedPaths {
                         terminal.write(" - \(path)\n")
                     }
@@ -237,7 +248,7 @@ struct Zago: ParsableCommand {
 
         if installSkill {
             let (skillPaths, mcpPaths) = try ZagoSkillCLIInstaller.installSkillAndMCP()
-            terminal.write("Successfully installed zago AI skill to:\n")
+            terminal.write("Successfully installed AI skills (zago & TMD) to:\n")
             for path in skillPaths {
                 terminal.write(" - \(path)\n")
             }
@@ -334,9 +345,10 @@ struct Zago: ParsableCommand {
             backup: backup ? true : nil,
             backupDir: backupDir,
             launchToJournal: journal ? true : nil,
+            launchToJournalDir: journalDir ? true : nil,
             enableMouse: mouse ? true : (noMouse ? false : nil),
             isZeroMode: zero ? true : nil,
-            showIndicator: indicator ? true : nil
+            showIndicator: indicator ? true : (noIndicator ? false : nil)
         )
         var headlessOptions = baseOptions
         headlessOptions.showRuler = false
@@ -492,7 +504,13 @@ struct Zago: ParsableCommand {
                     continue
                 }
             }
-            remaining.append(arg)
+
+            let (cleanPath, parsedLine, parsedCol) = FilePathNormalizer.parseLocation(from: arg)
+            if let line = parsedLine, targetLine == nil {
+                targetLine = line
+                targetCol = parsedCol
+            }
+            remaining.append(cleanPath)
         }
         files = remaining
         return (targetLine, targetCol)

@@ -200,7 +200,7 @@ struct RendererChromeTests {
         #expect(geometry.showGutter == true)
         #expect(geometry.mainAreaHeight == 21)
         #expect(geometry.gutterWidth == 5)
-        #expect(geometry.textWidth == 75)
+        #expect(geometry.textWidth == 74)
 
         // Renderer accepts geometry without re-calculating layout
         let output = editor.renderer.render(editor: editor, geometry: geometry)
@@ -590,16 +590,19 @@ struct RendererChromeTests {
         let editor = Editor()
         editor.buffer.lines = (1...100).map { "Line \($0)" }
 
-        // Normal geometry without indicator
+        // Default geometry with indicator enabled
+        let defaultGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
+        #expect(defaultGeometry.showIndicator == true)
+        #expect(defaultGeometry.textWidth == 74) // 80 - 5 gutter - 1 indicator
+
+        // With indicator disabled
+        editor.displayConfig.showIndicator = false
         let noIndicatorGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
         #expect(noIndicatorGeometry.showIndicator == false)
         #expect(noIndicatorGeometry.textWidth == 75) // 80 - 5 gutter
 
-        // With indicator enabled
+        // Re-enable indicator
         editor.displayConfig.showIndicator = true
-        let indicatorGeometry = ScreenGeometry(rows: 24, cols: 80, editor: editor)
-        #expect(indicatorGeometry.showIndicator == true)
-        #expect(indicatorGeometry.textWidth == 74) // 80 - 5 gutter - 1 indicator
 
         // Long document > viewport (contains thumb █ and track │)
         editor.buffer.lines = (1...100).map { "Line \($0)" }
@@ -626,22 +629,72 @@ struct RendererChromeTests {
 
     @Test func testIndicatorTogglingAndCommandBar() throws {
         let editor = Editor()
-        #expect(editor.displayConfig.showIndicator == false)
+        #expect(editor.displayConfig.showIndicator == true)
 
         // 1. Toggle via method
         editor.toggleIndicator()
-        #expect(editor.displayConfig.showIndicator == true)
+        #expect(editor.displayConfig.showIndicator == false)
         #expect(editor.statusMessage.contains("Indicator") || editor.statusMessage.contains("指示條"))
 
         // 2. Toggle via command dispatch
         _ = editor.commandRegistry.dispatch(id: .indicatorToggle, editor: editor)
-        #expect(editor.displayConfig.showIndicator == false)
-
-        // 3. Command Bar
-        _ = editor.commandRegistry.dispatch("set indicator on", editor: editor)
         #expect(editor.displayConfig.showIndicator == true)
 
+        // 3. Command Bar
         _ = editor.commandRegistry.dispatch("set indicator off", editor: editor)
         #expect(editor.displayConfig.showIndicator == false)
+
+        _ = editor.commandRegistry.dispatch("set indicator on", editor: editor)
+        #expect(editor.displayConfig.showIndicator == true)
+    }
+
+    @Test func testScrollbarMouseClickAndDrag() throws {
+        let editor = Editor()
+        editor.displayConfig.enableMouse = true
+        #expect(editor.displayConfig.showIndicator == true)
+
+        editor.buffer.lines = (1...100).map { "Line \($0)" }
+        #expect(editor.topVLineIndex == 0)
+
+        // Click at bottom of scrollbar track (col: 80, row: 21)
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 80, row: 21))
+        #expect(editor.isDraggingScrollbar == true)
+        let bottomTop = editor.topVLineIndex
+        #expect(bottomTop > 50)
+
+        // Drag to middle of track (col: 80, row: 11)
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 80, row: 11))
+        #expect(editor.isDraggingScrollbar == true)
+        #expect(editor.topVLineIndex > 0)
+        #expect(editor.topVLineIndex < bottomTop)
+
+        // Drag to top of track (col: 80, row: 2)
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 80, row: 2))
+        #expect(editor.topVLineIndex == 0)
+
+        // Drag beyond top boundary
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 80, row: 1))
+        #expect(editor.topVLineIndex == 0)
+
+        // Release mouse
+        editor.handleMouseEvent(MouseEvent(action: .release(.left), col: 80, row: 1))
+        #expect(editor.isDraggingScrollbar == false)
+
+        // Selection mark should not have been set
+        #expect(editor.buffer.selectionMark == nil)
+
+        // Test in Canvas Mode
+        editor.switchToCanvasMode()
+        editor.handleMouseEvent(MouseEvent(action: .press(.left), col: 80, row: 21))
+        #expect(editor.isDraggingScrollbar == true)
+        #expect(editor.topVLineIndex > 50)
+        #expect(editor.buffer.canvasBlockMark == nil)
+
+        editor.handleMouseEvent(MouseEvent(action: .drag(.left), col: 80, row: 2))
+        #expect(editor.topVLineIndex == 0)
+        #expect(editor.buffer.canvasBlockMark == nil)
+
+        editor.handleMouseEvent(MouseEvent(action: .release(.left), col: 80, row: 2))
+        #expect(editor.isDraggingScrollbar == false)
     }
 }

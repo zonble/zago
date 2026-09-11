@@ -31,6 +31,8 @@ public struct EditorFileInfo: Sendable, Equatable {
     public let isBinary: Bool
     /// Whether the file has executable permissions.
     public let isExecutable: Bool
+    /// Creation timestamp, if available.
+    public let creationDate: Date?
     /// Last modification timestamp, if available.
     public let modificationDate: Date?
     /// File size in bytes.
@@ -41,6 +43,7 @@ public struct EditorFileInfo: Sendable, Equatable {
         isDirectory: Bool,
         isBinary: Bool = false,
         isExecutable: Bool = false,
+        creationDate: Date? = nil,
         modificationDate: Date? = nil,
         size: Int64 = 0
     ) {
@@ -48,6 +51,7 @@ public struct EditorFileInfo: Sendable, Equatable {
         self.isDirectory = isDirectory
         self.isBinary = isBinary
         self.isExecutable = isExecutable
+        self.creationDate = creationDate
         self.modificationDate = modificationDate
         self.size = size
     }
@@ -81,12 +85,29 @@ public struct EditorDirectoryEntry: Sendable, Equatable {
     public let isDirectory: Bool
     /// Whether this entry is an executable file.
     public let isExecutable: Bool
+    /// Creation timestamp, if available.
+    public let creationDate: Date?
+    /// Last modification timestamp, if available.
+    public let modificationDate: Date?
+    /// File size in bytes.
+    public let size: Int64
 
-    public init(name: String, path: String, isDirectory: Bool, isExecutable: Bool = false) {
+    public init(
+        name: String,
+        path: String,
+        isDirectory: Bool,
+        isExecutable: Bool = false,
+        creationDate: Date? = nil,
+        modificationDate: Date? = nil,
+        size: Int64 = 0
+    ) {
         self.name = name
         self.path = path
         self.isDirectory = isDirectory
         self.isExecutable = isExecutable
+        self.creationDate = creationDate
+        self.modificationDate = modificationDate
+        self.size = size
     }
 }
 

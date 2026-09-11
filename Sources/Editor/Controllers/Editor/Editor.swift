@@ -209,6 +209,7 @@ public final class Editor: @unchecked Sendable {
     var backupDir: String? = nil
     var customBoundKeys: Set<Key> = []
     public weak var effectDelegate: (any EditorEffectDelegate)?
+    public let tmdExportDelegate: any TMDExportDelegate
     let proposalQueue = ProposalQueue()
     public let historyStore: any AIHistoryStoring
     private let editorLoopRequests = EditorLoopRequestQueue()
@@ -227,6 +228,7 @@ public final class Editor: @unchecked Sendable {
     }
 
     public var activeBoundaryDragState: BoundaryDragScrollState?
+    public var isDraggingScrollbar: Bool = false
 
     public struct MouseClickTracker: Sendable {
         public var lastClickTime: Date?
@@ -335,13 +337,27 @@ public final class Editor: @unchecked Sendable {
         self.gitCoordinator = GitCoordinator(gitService: dependencies.gitService)
         self.historyStore = dependencies.historyStore
         self.clipboardCoordinator = ClipboardCoordinator(strategy: dependencies.clipboardStrategy)
+        self.tmdExportDelegate = dependencies.tmdExportDelegate
         self.configProvider = configSource.reload
 
         let resolved = Self.resolveConfig(options: options, config: configSource.initial)
 
         let initialBuffers: [TextBuffer]
+        let shouldLaunchJournalDir = options.filePaths.isEmpty && (options.launchToJournalDir == true) && options.pipedInput == nil
         let shouldLaunchJournal = options.filePaths.isEmpty && resolved.launchToJournal && options.pipedInput == nil
-        if shouldLaunchJournal {
+        if shouldLaunchJournalDir {
+            let journalFolder = Self.resolveJournalFolderPath(
+                configuredFolder: resolved.journalFolder,
+                fileIO: dependencies.fileIOStrategy
+            )
+            let dirBuffer = DirectoryBuffer(
+                directoryPath: journalFolder,
+                fileIO: dependencies.fileIOStrategy,
+                gitService: dependencies.gitService,
+                language: options.language ?? configSource.initial.language ?? .detectSystemLanguage()
+            )
+            initialBuffers = [dirBuffer]
+        } else if shouldLaunchJournal {
             let journalPath = Self.resolveTodayJournalPath(
                 configuredFolder: resolved.journalFolder,
                 fileIO: dependencies.fileIOStrategy
@@ -441,11 +457,24 @@ public final class Editor: @unchecked Sendable {
             syncCanvasCursorFromBuffer()
         }
         applyCustomConfig(configSource.initial)
+        if let explicitJournal = resolved.journalFolder {
+            self.journalFolder = explicitJournal
+        }
+        if options.backup != nil {
+            self.backup = resolved.backup
+        }
+        if options.backupDir != nil {
+            self.backupDir = resolved.backupDir
+        }
+        if options.launchToJournal != nil {
+            self.launchToJournal = resolved.launchToJournal
+        }
         if let explicitPreset = options.keymapPreset {
             keymapManager.loadPreset(explicitPreset)
         }
 
         startFileWatcherForCurrentBuffer()
+        tmdExportDelegate.notifyActiveBuffer(filePath: buffer.filePath)
     }
 
     deinit {
@@ -703,6 +732,9 @@ public final class Editor: @unchecked Sendable {
                                 openNewBuffer(filePath: path)
                             }
                             renderer.invalidateScreenCache()
+                        case .playTMD:
+                            activeBoundaryDragState = nil
+                            playCurrentTMDScore()
                         }
                         break
                     }
@@ -729,6 +761,9 @@ public final class Editor: @unchecked Sendable {
                     openNewBuffer(filePath: path)
                 }
                 renderer.invalidateScreenCache()
+            case .playTMD:
+                activeBoundaryDragState = nil
+                playCurrentTMDScore()
             }
         }
     }

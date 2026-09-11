@@ -5,6 +5,7 @@ public enum InputEvent: Equatable, Hashable, Sendable {
     case key(Key)
     case mouse(MouseEvent)
     case openFile(String)
+    case playTMD
 }
 
 /// Represents mouse interactions captured by the terminal driver.

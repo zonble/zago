@@ -91,15 +91,24 @@
           <div class="hero-section">
             <div class="hero-header">
               <h1 class="hero-title">zago</h1>
-              <a href="https://github.com/zonble/zago" target="_blank" rel="noopener noreferrer"
-                class="action-btn secondary github-link" title="GitHub Repository">
-                <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path
-                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
-                  </path>
-                </svg>
-                <span>GitHub</span>
-              </a>
+              <div class="hero-actions">
+                <a href="https://github.com/zonble/zago" target="_blank" rel="noopener noreferrer"
+                  class="action-btn secondary github-link" title="GitHub Repository">
+                  <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path
+                      d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                    </path>
+                  </svg>
+                  <span>GitHub</span>
+                </a>
+                <button id="btn-collapse-sidebar" class="action-btn secondary collapse-sidebar-btn" title="Collapse Sidebar"
+                  data-i18n-title="btnCollapseSidebar" aria-label="Collapse Sidebar">
+                  <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd"
+                      d="M10.354 3.646a.5.5 0 0 1 0 .708L6.707 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0z" />
+                  </svg>
+                </button>
+              </div>
             </div>
             <p class="hero-tagline" data-i18n="heroTagline">
               A terminal editor built for AI prompts.
@@ -227,9 +236,18 @@
       <main id="demo-panel" class="demo-panel">
         <!-- Terminal Toolbar -->
         <div class="toolbar">
-          <div class="toolbar-title">
-            <span class="status-dot"></span>
-            <span data-i18n="toolbarTitle" data-i18n-html="true">Interactive Workspace (<code>/workspace</code>)</span>
+          <div class="toolbar-left">
+            <button id="btn-toggle-sidebar" class="action-btn secondary sidebar-toggle-btn" title="Collapse Sidebar"
+              data-i18n-title="btnCollapseSidebar" aria-label="Toggle Sidebar">
+              <svg class="sidebar-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M1.5 3A1.5 1.5 0 0 1 3 1.5h10A1.5 1.5 0 0 1 14.5 3v10a1.5 1.5 0 0 1-1.5 1.5H3A1.5 1.5 0 0 1 1.5 13V3zm4 0v10H13a.5.5 0 0 0 .5-.5V3.5a.5.5 0 0 0-.5-.5H5.5zm-1 0H3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h1.5V3z" />
+              </svg>
+            </button>
+            <div class="toolbar-title">
+              <span class="status-dot"></span>
+              <span data-i18n="toolbarTitle" data-i18n-html="true">Interactive Workspace (<code>/workspace</code>)</span>
+            </div>
           </div>
           <div class="toolbar-actions">
             <div class="font-select-wrapper">
@@ -247,6 +265,9 @@
                 <option value="'Courier New', 'Noto Sans Mono CJK TC', monospace">Courier New</option>
               </select>
             </div>
+            <button id="btn-play-tmd" class="action-btn tmd-play-btn" style="display: none;" title="Play TMD Score">
+              <span class="btn-icon">▶</span> <span class="btn-text" data-i18n="btnPlayTMD">Play Score</span>
+            </button>
             <button id="btn-import" class="action-btn" title="Import File or ZIP project archive into /workspace">
               <span class="btn-icon">📁</span> <span class="btn-text" data-i18n="btnImport">Import</span>
             </button>
@@ -267,6 +288,28 @@
         <!-- Terminal Workspace Container -->
         <div id="terminal-wrapper" class="terminal-wrapper">
           <div id="terminal-container"></div>
+
+          <!-- TMD Floating Mini Player Bar -->
+          <div id="tmd-player-bar" class="tmd-player-bar" style="display: none;">
+            <span class="player-icon pulse">🎵</span>
+            <div class="player-meta">
+              <span id="player-title" class="player-title">score.mid</span>
+              <span id="player-time" class="player-time">00:00 / 00:00</span>
+            </div>
+            <input type="range" id="player-progress" class="player-slider" min="0" max="100" value="0" step="0.1" title="Seek" />
+            <div class="player-synth-wrapper">
+              <label for="synth-select" class="visually-hidden" data-i18n="synthSelectLabel">Synth</label>
+              <select id="synth-select" class="player-synth-select" title="Change SoundFont / Synthesizer" data-i18n-title="synthSelectTitle">
+                <option value="piano" data-i18n="synthOptionPiano">🎹 Grand Piano (FluidR3)</option>
+                <option value="tiny" data-i18n="synthOptionTiny">⚡ Tiny Synth (Chiptune)</option>
+                <option value="webmidi" data-i18n="synthOptionWebMidi">🎛 System MIDI Out</option>
+              </select>
+            </div>
+            <div class="player-controls">
+              <button id="player-btn-pause" class="player-ctrl-btn" title="Pause / Resume">⏸</button>
+              <button id="player-btn-close" class="player-ctrl-btn player-close-btn" title="Stop & Close">✕</button>
+            </div>
+          </div>
 
           <!-- WASM Loading Progress Overlay -->
           <div id="wasm-loading-overlay" class="loading-overlay">

@@ -15,6 +15,27 @@ extension Editor {
         let showTitle = !geometry.isZeroMode || menuBarController.isActive
         let topMargin = (showTitle ? 1 : 0) + (geometry.showRuler ? 1 : 0)
 
+        if case .release = mouseEvent.action {
+            isDraggingScrollbar = false
+        }
+
+        if isDraggingScrollbar
+            || (geometry.showIndicator && mouseEvent.col == geometry.cols && buffer.selectionMark == nil
+                && buffer.canvasBlockMark == nil)
+        {
+            if case .drag(.left) = mouseEvent.action {
+                if promptController.isActive || menuBarController.isActive {
+                    isDraggingScrollbar = false
+                    return
+                }
+                isDraggingScrollbar = true
+                activeBoundaryDragState = nil
+                let screenVLineOffset = mouseEvent.row - topMargin - 1
+                scrollToIndicatorPosition(screenVLineOffset: screenVLineOffset, geometry: geometry)
+                return
+            }
+        }
+
         if case .drag(.left) = mouseEvent.action {
             if buffer.isReadOnly || promptController.isActive || menuBarController.isActive { return }
 
@@ -241,13 +262,11 @@ extension Editor {
                 return
             }
             if geometry.showIndicator && mouseEvent.col == geometry.cols {
-                let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
-                let totalLines = max(1, virtualLines.count)
-                let targetRatio = Double(screenVLineOffset) / Double(max(1, geometry.mainAreaHeight - 1))
-                let maxTop = max(0, totalLines - geometry.mainAreaHeight)
-                topVLineIndex = max(0, min(maxTop, Int(round(targetRatio * Double(maxTop)))))
+                isDraggingScrollbar = true
+                scrollToIndicatorPosition(screenVLineOffset: screenVLineOffset, geometry: geometry)
                 return
             }
+            isDraggingScrollbar = false
             if buffer.isReadOnly && buffer.isDirectoryBuffer {
                 let minSelectableLine = min(3, max(0, buffer.lines.count - 1))
                 if vLineIndex >= minSelectableLine && vLineIndex < buffer.lines.count {
@@ -338,6 +357,7 @@ extension Editor {
             }
 
         case .release(.left):
+            isDraggingScrollbar = false
             if promptController.isActive {
                 return
             }
@@ -350,5 +370,23 @@ extension Editor {
         default:
             break
         }
+    }
+
+    private func scrollToIndicatorPosition(screenVLineOffset: Int, geometry: ScreenGeometry) {
+        let totalLines: Int
+        if isCanvasModeActive {
+            totalLines = max(1, buffer.lines.count)
+        } else {
+            let virtualLines = prepareVirtualLines(textWidth: geometry.textWidth)
+            totalLines = max(1, virtualLines.count)
+        }
+        let maxTop = max(0, totalLines - geometry.mainAreaHeight)
+        guard maxTop > 0, geometry.mainAreaHeight > 1 else {
+            topVLineIndex = 0
+            return
+        }
+        let clampedOffset = max(0, min(geometry.mainAreaHeight - 1, screenVLineOffset))
+        let targetRatio = Double(clampedOffset) / Double(geometry.mainAreaHeight - 1)
+        topVLineIndex = max(0, min(maxTop, Int(round(targetRatio * Double(maxTop)))))
     }
 }

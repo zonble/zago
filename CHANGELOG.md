@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Added
+
+- **Directory Browser Multi-Criteria Sorting & Dedicated Help Bar**:
+  - Added multi-criteria sorting for Directory Buffer (`name`, `created`, `modified` with ASC / DESC ordering).
+  - Added interactive hotkeys (`s`/`S` to cycle sort criteria, `o`/`O` to toggle ASC/DESC order) and `:sort` command bar interface.
+  - Added dedicated 2D-aligned Help Bar layout and visual sort badges in buffer header, title bar, and status line for Directory Buffer.
+- **Journal Directory Browser Support**:
+  - Added support for opening the daily journals folder directly in Directory Buffer via `:journal dir`, `:journals`, `:dir journal`, Tools menu item, and `--journal-dir` CLI flag.
+- **Cross-Platform `file://` URL & Anchor Support**:
+  - Added support for opening and resolving `file://` URLs (POSIX, Windows drive letters, and percent-encoded paths) from CLI arguments, command prompts (`:open`, `:edit`, `:write`, `Ctrl+O`), and IPC.
+  - Added line and column anchor parsing (`#L<line>`, `#L<line>C<col>`, `#L<line>:<col>`, `:<line>:<col>`) to jump directly to target positions on open.
+  - Added Tab autocompletion support for `file://` URL prefixes in the interactive prompt bar.
+
+### Fixed
+
+- **Canvas Mode Line Drawing Adjacent Line Isolation**:
+  - Fixed an issue where drawing a horizontal line across empty space adjacent to vertical box borders on neighboring rows would erroneously convert straight line segments into `┬` (top-join) junctions.
+
 ## [1.4.6] - 2026-09-01
 
 Feature and bugfix release featuring enhanced path autocompletion, multi-mode double-click word selection, refined Canvas Mode editing behaviors, dotted arrow styles, menu organization improvements, and rendering accuracy fixes.

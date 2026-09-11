@@ -108,7 +108,9 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case fileEditConfig = "file.edit_config"
     case fileReloadConfig = "file.reload_config"
     case fileRunLogo = "file.run_logo"
+    case fileSortDirectory = "file.sort_directory"
     case openJournal = "tools.journal"
+    case openJournalDirectory = "tools.journal_dir"
 
     // Table Mode Operations
     case tableNextCell = "table.next_cell"
@@ -160,6 +162,15 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case diagramInsert = "diagram.insert"
     case diagramMenu = "diagram.menu"
     case symbolPicker = "symbol.picker"
+
+    // TMD
+    case tmdPlay = "tmd.play"
+    case tmdExportMIDI = "tmd.export.midi"
+    case tmdExportMusicXML = "tmd.export.musicxml"
+    case tmdExportLilyPond = "tmd.export.lilypond"
+    case tmdExportABC = "tmd.export.abc"
+    case tmdExportWAV = "tmd.export.wav"
+    case tmdReference = "tmd.reference"
 
     // Test & Custom
     case testCmd = "test.cmd"

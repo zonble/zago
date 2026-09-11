@@ -32,7 +32,8 @@ let dependencies = EditorDependencies(
     terminal: terminal,
     gitService: StubGitService(),
     historyStore: InMemoryAIHistoryStore(),
-    clipboardStrategy: InMemoryClipboardStrategy()
+    clipboardStrategy: InMemoryClipboardStrategy(),
+    tmdExportDelegate: WasiTMDExporter()
 )
 
 let editor = Editor(

@@ -46,6 +46,48 @@ function insertFileIntoWorkspace(path: string, contentBytes: Uint8Array) {
   currentMap.set(fileName, new File(contentBytes));
 }
 
+function getFileBytesFromWorkspace(path: string): Uint8Array | null {
+  let relPath = path;
+  if (relPath.startsWith("/workspace/")) {
+    relPath = relPath.slice("/workspace/".length);
+  } else if (relPath.startsWith("/")) {
+    relPath = relPath.slice(1);
+  }
+  const parts = relPath.split("/").filter(Boolean);
+  if (parts.length === 0) return null;
+
+  const fileName = parts.pop()!;
+  let currentMap = workspaceDir;
+
+  for (const part of parts) {
+    let entry = currentMap.get(part);
+    if (!entry || !(entry instanceof Directory)) {
+      return null;
+    }
+    currentMap = entry.contents as Map<string, Inode>;
+  }
+
+  const fileEntry = currentMap.get(fileName);
+  if (fileEntry && fileEntry instanceof File) {
+    return fileEntry.data;
+  }
+  return null;
+}
+
+function triggerFileDownload(filePath: string) {
+  const bytes = getFileBytesFromWorkspace(filePath);
+  const fileName = filePath.split("/").pop() || filePath;
+  if (bytes) {
+    self.postMessage({
+      type: "download",
+      filename: fileName,
+      data: bytes,
+    });
+  } else {
+    console.warn(`[triggerFileDownload] File not found in workspace: ${filePath}`);
+  }
+}
+
 class SharedStdinFd extends Fd {
   constructor(
     private stdin: SharedStdin,
@@ -143,11 +185,93 @@ async function startWasm(
   workspaceDir = buildInodeTree(initialNodes);
 
   const stdoutDecoder = new TextDecoder("utf-8");
+  let stdoutPending = "";
   const stdoutFd = new ConsoleStdout((buffer: Uint8Array) => {
     const unshared = buffer.buffer instanceof ArrayBuffer ? buffer : new Uint8Array(buffer);
-    const text = stdoutDecoder.decode(unshared, { stream: true });
-    if (text.length > 0) {
-      self.postMessage({ type: "stdout", data: text });
+    const chunk = stdoutDecoder.decode(unshared, { stream: true });
+    stdoutPending += chunk;
+
+    // 1. zago:download;<filename>;<base64>
+    const downloadRegex = /\x1b\]zago:download;([^\x07\x1b;]+)(?:;([^\x07\x1b]*))?(?:\x07|\x1b\\)/g;
+    let match;
+    while ((match = downloadRegex.exec(stdoutPending)) !== null) {
+      const filename = match[1];
+      const base64Data = match[2];
+      if (base64Data && base64Data.length > 0) {
+        try {
+          const binaryStr = atob(base64Data);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          console.log("[Worker] Emitting download with inline base64 bytes:", filename, bytes.length);
+          self.postMessage({
+            type: "download",
+            filename: filename.split("/").pop() || filename,
+            data: bytes,
+          });
+        } catch (err) {
+          console.error("[Worker] Failed to decode inline base64 for download:", err);
+          triggerFileDownload(filename);
+        }
+      } else {
+        triggerFileDownload(filename);
+      }
+    }
+    stdoutPending = stdoutPending.replace(downloadRegex, "");
+
+    // 2. zago:play;<title>;<base64>
+    const playRegex = /\x1b\]zago:play;([^\x07\x1b;]+);([^\x07\x1b]+)(?:\x07|\x1b\\)/g;
+    while ((match = playRegex.exec(stdoutPending)) !== null) {
+      const title = match[1];
+      const base64Data = match[2];
+      try {
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        console.log("[Worker] Emitting play_midi:", title, bytes.length);
+        self.postMessage({
+          type: "play_midi",
+          title,
+          data: bytes,
+        });
+      } catch (err) {
+        console.error("[Worker] Failed to decode base64 for playback:", err);
+      }
+    }
+    stdoutPending = stdoutPending.replace(playRegex, "");
+
+    // 3. zago:active-buffer;<isTMD:1|0>;<filename>
+    const activeBufferRegex = /\x1b\]zago:active-buffer;([01]);([^\x07\x1b]*)(?:\x07|\x1b\\)/g;
+    while ((match = activeBufferRegex.exec(stdoutPending)) !== null) {
+      const isTMD = match[1] === "1";
+      const filename = match[2];
+      self.postMessage({
+        type: "active_buffer",
+        isTMD,
+        filename,
+      });
+    }
+    stdoutPending = stdoutPending.replace(activeBufferRegex, "");
+
+    const partialDownloadIndex = stdoutPending.lastIndexOf("\x1b]zago:");
+    if (
+      partialDownloadIndex !== -1 &&
+      !stdoutPending.slice(partialDownloadIndex).includes("\x07") &&
+      !stdoutPending.slice(partialDownloadIndex).includes("\x1b\\")
+    ) {
+      const toSend = stdoutPending.slice(0, partialDownloadIndex);
+      stdoutPending = stdoutPending.slice(partialDownloadIndex);
+      if (toSend.length > 0) {
+        self.postMessage({ type: "stdout", data: toSend });
+      }
+    } else {
+      if (stdoutPending.length > 0) {
+        self.postMessage({ type: "stdout", data: stdoutPending });
+        stdoutPending = "";
+      }
     }
   });
 

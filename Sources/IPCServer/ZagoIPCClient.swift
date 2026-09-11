@@ -41,11 +41,17 @@ struct PosixZagoIPCSessionLocator: ZagoIPCSessionLocating {
         return
             temporaryDirectories
             .flatMap { temporaryDirectory -> [URL] in
-                (try? fileManager.contentsOfDirectory(
+                if let directURLs = try? fileManager.contentsOfDirectory(
                     at: temporaryDirectory,
                     includingPropertiesForKeys: [.contentModificationDateKey],
                     options: [.skipsHiddenFiles]
-                )) ?? []
+                ) {
+                    return directURLs
+                } else if let fileNames = try? fileManager.contentsOfDirectory(atPath: temporaryDirectory.path) {
+                    return fileNames.map { temporaryDirectory.appendingPathComponent($0) }
+                } else {
+                    return []
+                }
             }
             .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "sock" }
             .filter { $0.path.utf8CString.count <= ZagoIPCSessionPaths.unixSocketPathByteLimit }
@@ -93,25 +99,44 @@ struct WindowsZagoIPCSessionLocator: ZagoIPCSessionLocating {
 
         return
             temporaryDirectories
-            .flatMap { temporaryDirectory -> [URL] in
-                (try? fileManager.contentsOfDirectory(
+            .flatMap { temporaryDirectory -> [(ZagoIPCSession, Date)] in
+                let tokenURLs: [URL]
+                if let directURLs = try? fileManager.contentsOfDirectory(
                     at: temporaryDirectory,
                     includingPropertiesForKeys: [.contentModificationDateKey],
                     options: [.skipsHiddenFiles]
-                )) ?? []
-            }
-            .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "token" }
-            .compactMap { tokenURL -> (ZagoIPCSession, Date)? in
-                let resourceValues = try? tokenURL.resourceValues(forKeys: [.contentModificationDateKey])
-                let instanceId = tokenURL.deletingPathExtension().lastPathComponent
-                return (
-                    ZagoIPCSession(
-                        instanceId: instanceId,
-                        endpointPath: #"\\.\pipe\\#(instanceId)"#,
-                        tokenPath: tokenURL.path
-                    ),
-                    resourceValues?.contentModificationDate ?? .distantPast
-                )
+                ) {
+                    tokenURLs = directURLs
+                } else if let fileNames = try? fileManager.contentsOfDirectory(atPath: temporaryDirectory.path) {
+                    tokenURLs = fileNames.map { temporaryDirectory.appendingPathComponent($0) }
+                } else {
+                    tokenURLs = []
+                }
+
+                return tokenURLs
+                    .filter { $0.lastPathComponent.hasPrefix("zago-") && $0.pathExtension == "token" }
+                    .compactMap { tokenURL -> (ZagoIPCSession, Date)? in
+                        let resourceValues = try? tokenURL.resourceValues(forKeys: [.contentModificationDateKey])
+                        let modDate: Date
+                        if let date = resourceValues?.contentModificationDate {
+                            modDate = date
+                        } else if let attrs = try? fileManager.attributesOfItem(atPath: tokenURL.path),
+                            let date = attrs[.modificationDate] as? Date
+                        {
+                            modDate = date
+                        } else {
+                            modDate = .distantPast
+                        }
+                        let instanceId = tokenURL.deletingPathExtension().lastPathComponent
+                        return (
+                            ZagoIPCSession(
+                                instanceId: instanceId,
+                                endpointPath: #"\\.\pipe\\#(instanceId)"#,
+                                tokenPath: tokenURL.path
+                            ),
+                            modDate
+                        )
+                    }
             }
             .sorted(by: sortByModificationDateThenInstanceId)
             .map(\.0)
@@ -319,9 +344,11 @@ final class ZagoIPCClient {
         clientId: String? = nil
     ) throws -> Result {
         let tokenData: Data
-        do {
-            tokenData = try Data(contentsOf: URL(fileURLWithPath: session.tokenPath))
-        } catch {
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: session.tokenPath)) {
+            tokenData = data
+        } else if let data = FileManager.default.contents(atPath: session.tokenPath) {
+            tokenData = data
+        } else {
             throw ZagoIPCClientError.invalidToken(session.tokenPath)
         }
         guard

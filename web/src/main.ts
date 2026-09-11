@@ -8,6 +8,7 @@ import "@xterm/xterm/css/xterm.css";
 import { VirtualOSStorage, isBinaryData, resolveAvailableFilename } from "./vfs";
 import { SharedStdin, SharedFileChannel } from "./shared-stdin";
 import { detectLanguage, applyI18n, translations } from "./i18n";
+import { tmdPlayer } from "./midi-player";
 
 async function main() {
   const currentLang = detectLanguage();
@@ -352,6 +353,50 @@ async function main() {
             if (mode === "editor" && data) term.write(data);
             break;
 
+          case "download": {
+            const { filename, data: fileBytes } = event.data;
+            console.log("[Main] Received download message:", filename, fileBytes?.byteLength);
+            if (filename && fileBytes) {
+              const mimeMap: Record<string, string> = {
+                mid: "audio/midi",
+                midi: "audio/midi",
+                musicxml: "application/vnd.recordare.musicxml+xml",
+                xml: "application/xml",
+                ly: "text/x-lilypond",
+                abc: "text/vnd.abc",
+              };
+              const ext = filename.split(".").pop()?.toLowerCase() || "";
+              const mimeType = mimeMap[ext] || "application/octet-stream";
+              const blob = new Blob([fileBytes], { type: mimeType });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.style.display = "none";
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }, 1500);
+            }
+            break;
+          }
+
+          case "play_midi": {
+            const { title, data: midiBytes } = event.data;
+            if (midiBytes && midiBytes.length > 0) {
+              startMidiPlayback(midiBytes, title || "score.mid");
+            }
+            break;
+          }
+
+          case "active_buffer": {
+            const { isTMD } = event.data;
+            updateTMDButtonVisibility(Boolean(isTMD));
+            break;
+          }
+
           case "status":
             if (statusText) {
               statusText.textContent =
@@ -380,6 +425,8 @@ async function main() {
 
           case "exit":
             hideLoading();
+            tmdPlayer.stop();
+            updateTMDButtonVisibility(false);
             if (currentWorker === worker) {
               currentWorker.terminate();
               currentWorker = null;
@@ -670,6 +717,54 @@ async function main() {
   if (tabDemo) tabDemo.addEventListener("click", switchToDemo);
   if (btnJumpDemo) btnJumpDemo.addEventListener("click", switchToDemo);
 
+  // Desktop Sidebar Toggle
+  const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+  const btnCollapseSidebar = document.getElementById("btn-collapse-sidebar");
+  const SIDEBAR_STORAGE_KEY = "zago_sidebar_collapsed";
+
+  const updateSidebarState = (collapsed: boolean) => {
+    if (collapsed) {
+      docsPanel?.classList.add("collapsed");
+      btnToggleSidebar?.setAttribute("title", t.btnExpandSidebar);
+      btnToggleSidebar?.setAttribute("aria-label", t.btnExpandSidebar);
+      btnToggleSidebar?.classList.add("collapsed");
+    } else {
+      docsPanel?.classList.remove("collapsed");
+      btnToggleSidebar?.setAttribute("title", t.btnCollapseSidebar);
+      btnToggleSidebar?.setAttribute("aria-label", t.btnCollapseSidebar);
+      btnToggleSidebar?.classList.remove("collapsed");
+    }
+  };
+
+  const toggleSidebar = () => {
+    const isCollapsed = docsPanel?.classList.contains("collapsed") ?? false;
+    const nextState = !isCollapsed;
+    updateSidebarState(nextState);
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
+    } catch {}
+    setTimeout(() => {
+      fitAndNotifyEditor();
+      term.focus();
+    }, 50);
+  };
+
+  if (btnToggleSidebar) {
+    btnToggleSidebar.addEventListener("click", toggleSidebar);
+  }
+  if (btnCollapseSidebar) {
+    btnCollapseSidebar.addEventListener("click", toggleSidebar);
+  }
+
+  // Restore desktop sidebar collapsed preference if saved
+  if (window.innerWidth > 900) {
+    try {
+      if (localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true") {
+        updateSidebarState(true);
+      }
+    } catch {}
+  }
+
   // Resize handling
   const handleResize = () => {
     if (window.innerWidth < 600) {
@@ -831,6 +926,234 @@ async function main() {
 
   if (btnCloseHelp && helpDialog) {
     btnCloseHelp.addEventListener("click", () => helpDialog.close());
+  }
+
+  // TMD Player Bar & Controls
+  const btnPlayTMD = document.getElementById("btn-play-tmd");
+  const tmdPlayerBar = document.getElementById("tmd-player-bar");
+  const playerTitle = document.getElementById("player-title");
+  const playerTime = document.getElementById("player-time");
+  const playerProgress = document.getElementById("player-progress") as HTMLInputElement | null;
+  const playerBtnPause = document.getElementById("player-btn-pause");
+  const playerBtnClose = document.getElementById("player-btn-close");
+
+  let isCurrentBufferTMD = false;
+  let isSeeking = false;
+
+  function makeDraggable(element: HTMLElement) {
+    let isDragging = false;
+    let startPointerX = 0;
+    let startPointerY = 0;
+    let startElementX = 0;
+    let startElementY = 0;
+
+    element.addEventListener("pointerdown", (e: PointerEvent) => {
+      // Ignore clicks on inputs, buttons, selects, or other interactive elements
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("button, input, select, a")) {
+        return;
+      }
+
+      // Only respond to primary mouse click or touch
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+
+      isDragging = true;
+      startPointerX = e.clientX;
+      startPointerY = e.clientY;
+
+      const rect = element.getBoundingClientRect();
+      const parentRect = element.offsetParent
+        ? (element.offsetParent as HTMLElement).getBoundingClientRect()
+        : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+
+      startElementX = rect.left - parentRect.left;
+      startElementY = rect.top - parentRect.top;
+
+      // Reset right/bottom positioning to explicit top/left
+      element.style.right = "auto";
+      element.style.bottom = "auto";
+      element.style.left = `${startElementX}px`;
+      element.style.top = `${startElementY}px`;
+
+      element.classList.add("dragging");
+      element.setPointerCapture(e.pointerId);
+    });
+
+    element.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!isDragging) return;
+
+      const deltaX = e.clientX - startPointerX;
+      const deltaY = e.clientY - startPointerY;
+
+      const parentEl = (element.offsetParent as HTMLElement) || document.body;
+      const parentWidth = parentEl.clientWidth;
+      const parentHeight = parentEl.clientHeight;
+
+      const rect = element.getBoundingClientRect();
+      const maxX = Math.max(0, parentWidth - rect.width);
+      const maxY = Math.max(0, parentHeight - rect.height);
+
+      const newX = Math.min(Math.max(0, startElementX + deltaX), maxX);
+      const newY = Math.min(Math.max(0, startElementY + deltaY), maxY);
+
+      element.style.left = `${newX}px`;
+      element.style.top = `${newY}px`;
+    });
+
+    const stopDrag = (e: PointerEvent) => {
+      if (!isDragging) return;
+      isDragging = false;
+      element.classList.remove("dragging");
+      if (element.hasPointerCapture(e.pointerId)) {
+        element.releasePointerCapture(e.pointerId);
+      }
+    };
+
+    element.addEventListener("pointerup", stopDrag);
+    element.addEventListener("pointercancel", stopDrag);
+  }
+
+  if (tmdPlayerBar) {
+    makeDraggable(tmdPlayerBar);
+  }
+
+  function formatTime(seconds: number): string {
+    if (isNaN(seconds) || seconds < 0) seconds = 0;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  function updateTMDButtonVisibility(isTMD: boolean) {
+    isCurrentBufferTMD = isTMD;
+    if (btnPlayTMD) {
+      btnPlayTMD.style.display = isTMD ? "inline-flex" : "none";
+    }
+  }
+
+  function startMidiPlayback(midiBytes: Uint8Array, title: string) {
+    if (playerTitle) playerTitle.textContent = title;
+    if (playerTime) playerTime.textContent = "00:00 / 00:00";
+    if (playerProgress) {
+      playerProgress.value = "0";
+      playerProgress.max = "100";
+    }
+    if (tmdPlayerBar) tmdPlayerBar.style.display = "flex";
+    if (playerBtnPause) playerBtnPause.textContent = "⏸";
+
+    tmdPlayer.play(midiBytes, title, {
+      onStart: (_title, durationSec) => {
+        if (playerProgress) {
+          playerProgress.max = Math.max(1, durationSec).toString();
+          playerProgress.value = "0";
+        }
+        if (playerTime) {
+          playerTime.textContent = `00:00 / ${formatTime(durationSec)}`;
+        }
+      },
+      onProgress: (currentSec, totalSec) => {
+        if (playerTime) {
+          playerTime.textContent = `${formatTime(currentSec)} / ${formatTime(totalSec)}`;
+        }
+        if (playerProgress && !isSeeking) {
+          if (playerProgress.max !== totalSec.toString()) {
+            playerProgress.max = Math.max(1, totalSec).toString();
+          }
+          playerProgress.value = currentSec.toString();
+        }
+      },
+      onPause: () => {
+        if (playerBtnPause) playerBtnPause.textContent = "▶";
+      },
+      onResume: () => {
+        if (playerBtnPause) playerBtnPause.textContent = "⏸";
+      },
+      onLoadingStatus: (status) => {
+        if (status && playerTime) {
+          playerTime.textContent = status;
+        }
+      },
+      onStop: () => {
+        if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+        if (playerBtnPause) playerBtnPause.textContent = "⏸";
+        if (playerProgress) playerProgress.value = "0";
+        // Ensure play button in toolbar remains visible if the current buffer is TMD
+        if (btnPlayTMD) {
+          btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+        }
+      },
+      onEnd: () => {
+        if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+        if (playerBtnPause) playerBtnPause.textContent = "⏸";
+        if (playerProgress) playerProgress.value = "0";
+        // Ensure play button in toolbar remains visible if the current buffer is TMD
+        if (btnPlayTMD) {
+          btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+        }
+      },
+    });
+  }
+
+  if (btnPlayTMD) {
+    btnPlayTMD.addEventListener("click", () => {
+      if (mode === "editor") {
+        writeStdin("\x1b]zago:play-tmd\x07");
+      }
+    });
+  }
+
+  if (playerBtnPause) {
+    playerBtnPause.addEventListener("click", () => {
+      tmdPlayer.togglePause();
+    });
+  }
+
+  if (playerBtnClose) {
+    playerBtnClose.addEventListener("click", () => {
+      tmdPlayer.stop();
+      if (tmdPlayerBar) tmdPlayerBar.style.display = "none";
+      if (btnPlayTMD) {
+        btnPlayTMD.style.display = isCurrentBufferTMD ? "inline-flex" : "none";
+      }
+    });
+  }
+
+  if (playerProgress) {
+    playerProgress.addEventListener("mousedown", () => {
+      isSeeking = true;
+    });
+    playerProgress.addEventListener("touchstart", () => {
+      isSeeking = true;
+    }, { passive: true });
+
+    playerProgress.addEventListener("input", () => {
+      const targetSec = parseFloat(playerProgress.value);
+      const totalSec = tmdPlayer.getDuration();
+      if (playerTime) {
+        playerTime.textContent = `${formatTime(targetSec)} / ${formatTime(totalSec)}`;
+      }
+    });
+
+    const commitSeek = () => {
+      if (isSeeking) {
+        const targetSec = parseFloat(playerProgress.value);
+        tmdPlayer.seek(targetSec);
+        isSeeking = false;
+      }
+    };
+
+    playerProgress.addEventListener("change", commitSeek);
+    playerProgress.addEventListener("mouseup", commitSeek);
+    playerProgress.addEventListener("touchend", commitSeek);
+  }
+
+  const synthSelect = document.getElementById("synth-select") as HTMLSelectElement | null;
+  if (synthSelect) {
+    synthSelect.value = tmdPlayer.getSynthType();
+    synthSelect.addEventListener("change", async () => {
+      const selected = synthSelect.value as "piano" | "tiny" | "webmidi";
+      await tmdPlayer.setSynthType(selected);
+    });
   }
 
   // Copy Buttons for Quick Install

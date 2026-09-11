@@ -29,7 +29,8 @@ let package = Package(
         .library(name: "SystemClipboard", targets: ["SystemClipboard"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
+        .package(url: "https://github.com/zonble/TmdSwift.git", from: "0.1.3"),
     ],
     targets: [
         .target(
@@ -74,7 +75,10 @@ let package = Package(
         ),
         .target(
             name: "Config",
-            dependencies: ["Drawing"]
+            dependencies: [
+                "Drawing",
+                .product(name: "TmdSkill", package: "TmdSwift"),
+            ]
         ),
         .target(
             name: "IPCServer",
@@ -124,6 +128,12 @@ let package = Package(
                 "LogoLocalization",
                 "SystemClipboard",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "TmdSwift", package: "TmdSwift"),
+                .product(name: "TmdMIDI", package: "TmdSwift"),
+                .product(name: "TmdMusicXML", package: "TmdSwift"),
+                .product(name: "TmdLilyPond", package: "TmdSwift"),
+                .product(name: "TmdABC", package: "TmdSwift"),
+                .product(name: "TmdAudio", package: "TmdSwift", condition: .when(platforms: [.macOS])),
             ]
         ),
         .executableTarget(
@@ -134,6 +144,11 @@ let package = Package(
                 "Editor",
                 "Git",
                 "LogoEngine",
+                .product(name: "TmdSwift", package: "TmdSwift"),
+                .product(name: "TmdMIDI", package: "TmdSwift"),
+                .product(name: "TmdMusicXML", package: "TmdSwift"),
+                .product(name: "TmdLilyPond", package: "TmdSwift"),
+                .product(name: "TmdABC", package: "TmdSwift"),
             ],
             path: "Sources/zagoweb"
         ),

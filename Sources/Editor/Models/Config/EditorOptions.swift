@@ -22,6 +22,7 @@ public struct EditorOptions {
     public var backup: Bool?
     public var backupDir: String?
     public var launchToJournal: Bool?
+    public var launchToJournalDir: Bool?
     public var journalFolder: String?
     public var enableMouse: Bool?
     public var isZeroMode: Bool?
@@ -48,6 +49,7 @@ public struct EditorOptions {
         backup: Bool? = nil,
         backupDir: String? = nil,
         launchToJournal: Bool? = nil,
+        launchToJournalDir: Bool? = nil,
         journalFolder: String? = nil,
         enableMouse: Bool? = nil,
         isZeroMode: Bool? = nil,
@@ -73,6 +75,7 @@ public struct EditorOptions {
         self.backup = backup
         self.backupDir = backupDir
         self.launchToJournal = launchToJournal
+        self.launchToJournalDir = launchToJournalDir
         self.journalFolder = journalFolder
         self.enableMouse = enableMouse
         self.isZeroMode = isZeroMode

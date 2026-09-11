@@ -330,6 +330,7 @@ final class MenuBar {
                         isVisible: { $0.buffer.allowsLogoExecution }),
                     .divider,
                     MenuItem(titleKey: "menu.tools.journal", hotkeyChar: "j", commandId: .openJournal),
+                    MenuItem(titleKey: "menu.tools.journal_dir", hotkeyChar: "d", commandId: .openJournalDirectory),
                     MenuItem(
                         titleKey: "menu.tools.word_count", hotkeyChar: "w",
                         action: { editor in
@@ -381,6 +382,43 @@ final class MenuBar {
             baseCategories.append(DiagramSnippets.makeMenuCategory(for: ed))
         }
 
+        var tmdItems: [MenuItem] = []
+        if editor?.tmdExportDelegate.isPlaybackSupported ?? false {
+            tmdItems.append(MenuItem(titleKey: "menu.tmd.play", hotkeyChar: "p", commandId: .tmdPlay))
+            tmdItems.append(.divider)
+        }
+        tmdItems.append(contentsOf: [
+            MenuItem(titleKey: "menu.tmd.export_midi", hotkeyChar: "m", commandId: .tmdExportMIDI),
+            MenuItem(titleKey: "menu.tmd.export_musicxml", hotkeyChar: "x", commandId: .tmdExportMusicXML),
+            MenuItem(titleKey: "menu.tmd.export_lilypond", hotkeyChar: "l", commandId: .tmdExportLilyPond),
+            MenuItem(titleKey: "menu.tmd.export_abc", hotkeyChar: "a", commandId: .tmdExportABC),
+        ])
+        if editor?.tmdExportDelegate.isWAVExportSupported ?? true {
+            tmdItems.append(MenuItem(titleKey: "menu.tmd.export_wav", hotkeyChar: "w", commandId: .tmdExportWAV))
+        }
+
+        tmdItems.append(.divider)
+        for snippet in TMDSnippets.allSnippets {
+            tmdItems.append(
+                MenuItem(
+                    titleKey: snippet.titleKey,
+                    hotkeyChar: snippet.hotkeyChar,
+                    action: { editor in
+                        TMDSnippets.insertSnippet(snippet, into: editor)
+                    }
+                )
+            )
+        }
+
+        baseCategories.append(
+            MenuCategory(
+                titleKey: "menu.tmd",
+                hotkeyChar: "m",
+                items: tmdItems,
+                isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".tmd") == true }
+            )
+        )
+
         baseCategories.append(
             MenuCategory(
                 titleKey: "menu.help", hotkeyChar: "h",
@@ -390,6 +428,9 @@ final class MenuBar {
                     MenuItem(titleKey: "menu.help.describe_command", hotkeyChar: "c", commandId: .helpDescribeCommand),
                     MenuItem(
                         titleKey: "menu.help.style_dsl", hotkeyChar: "s", commandId: .styleDSLReference),
+                    MenuItem(
+                        titleKey: "menu.help.tmd_reference", hotkeyChar: "t", commandId: .tmdReference,
+                        isVisible: { $0.buffer.filePath?.lowercased().hasSuffix(".tmd") == true }),
                     .divider,
                     MenuItem(
                         titleKey: "menu.help.logo_reference", hotkeyChar: "l", commandId: .logoReference,

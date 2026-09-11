@@ -1,4 +1,5 @@
 import Foundation
+import TmdSkill
 
 public enum ZagoSkillCLIInstaller {
     private static let skillRelativePaths = [
@@ -6,6 +7,13 @@ public enum ZagoSkillCLIInstaller {
         ".gemini/config/skills/zago",
         ".agents/skills/zago",
         ".claude/skills/zago",
+    ]
+
+    private static let tmdSkillRelativePaths = [
+        ".codex/skills/tmd",
+        ".gemini/config/skills/tmd",
+        ".agents/skills/tmd",
+        ".claude/skills/tmd",
     ]
 
     public static func installSkill(
@@ -28,11 +36,23 @@ public enum ZagoSkillCLIInstaller {
             installedPaths.append(targetFile.path)
         }
 
+        for relPath in tmdSkillRelativePaths {
+            let targetDir = homeDir.appendingPathComponent(relPath)
+            try fileManager.createDirectory(at: targetDir, withIntermediateDirectories: true)
+            let targetFile = targetDir.appendingPathComponent("SKILL.md")
+            try TmdSkill.skillMarkdown.write(
+                to: targetFile,
+                atomically: usesAtomicWrites,
+                encoding: .utf8
+            )
+            installedPaths.append(targetFile.path)
+        }
+
         return installedPaths
     }
 
-    /// Removes only the zago skill files. Parent directories are retained unless the
-    /// per-agent `zago` directory is empty after removing `SKILL.md`.
+    /// Removes zago and tmd skill files installed by zago. Parent directories are retained unless the
+    /// per-agent skill directory is empty after removing `SKILL.md`.
     public static func uninstallSkill(
         customHomePath: String? = nil,
         fileManager: FileManager = .default
@@ -40,7 +60,7 @@ public enum ZagoSkillCLIInstaller {
         let homeDir = homeDirectory(customHomePath, fileManager: fileManager)
         var removedPaths: [String] = []
 
-        for relPath in skillRelativePaths {
+        for relPath in skillRelativePaths + tmdSkillRelativePaths {
             let targetDir = homeDir.appendingPathComponent(relPath)
             let targetFile = targetDir.appendingPathComponent("SKILL.md")
             guard fileManager.fileExists(atPath: targetFile.path) else { continue }

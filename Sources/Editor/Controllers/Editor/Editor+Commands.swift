@@ -75,6 +75,8 @@ extension Editor {
         commandRegistry.register(EditConfigCommand())
         commandRegistry.register(ReloadConfigCommand())
         commandRegistry.register(OpenJournalCommand())
+        commandRegistry.register(OpenJournalDirectoryCommand())
+        commandRegistry.register(SortDirCommand())
 
         // Table Mode Commands
         commandRegistry.register(TableNextCellCommand())
@@ -91,7 +93,6 @@ extension Editor {
         // CommandBar Specialized Commands
         commandRegistry.register(QuitCommand())
         commandRegistry.register(SaveExitCommand())
-        commandRegistry.register(OpenCommand())
         commandRegistry.register(DirCommand())
         commandRegistry.register(WriteCommand())
         commandRegistry.register(SettingCommand())
@@ -124,6 +125,15 @@ extension Editor {
         commandRegistry.register(CycleBorderStyleCommand())
         commandRegistry.register(DiagramMenuCommand())
         commandRegistry.register(ToggleCommentCommand())
+
+        // TMD Commands
+        commandRegistry.register(TMDPlayScoreCommand())
+        commandRegistry.register(TMDExportMIDICommand())
+        commandRegistry.register(TMDExportMusicXMLCommand())
+        commandRegistry.register(TMDExportLilyPondCommand())
+        commandRegistry.register(TMDExportABCCommand())
+        commandRegistry.register(TMDExportWAVCommand())
+        commandRegistry.register(TMDReferenceCommand())
 
         // AI Proposal Commands
         commandRegistry.register(AcceptProposalCommand())

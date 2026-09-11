@@ -1,3 +1,4 @@
+import Config
 import DocumentOutline
 import Foundation
 
@@ -52,8 +53,8 @@ enum DocumentLinkParser {
             target = String(target.dropFirst().dropLast())
         }
 
-        if target.lowercased().hasPrefix("file:") {
-            target = String(target.dropFirst(5))
+        if FilePathNormalizer.isFileURL(target) {
+            target = FilePathNormalizer.fileURLToPath(target)
         }
 
         let lower = target.lowercased()

@@ -73,7 +73,7 @@ public final class WasiTerminal: EditorTerminal {
     public func readKey() -> Key {
         switch readInputEvent() {
         case .key(let key): return key
-        case .mouse, .openFile: return .unknown
+        case .mouse, .openFile, .playTMD: return .unknown
         }
     }
 
@@ -209,6 +209,9 @@ public final class WasiTerminal: EditorTerminal {
         if payload.hasPrefix("zago:open;") {
             let path = String(payload.dropFirst("zago:open;".count))
             return .openFile(path)
+        }
+        if payload == "zago:play-tmd" || payload.hasPrefix("zago:play-tmd;") {
+            return .playTMD
         }
         return .key(.unknown)
     }

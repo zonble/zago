@@ -9,6 +9,7 @@ extension Editor {
     /// Prompts user to input file path for saving (^O / ^S / F3).
     func promptWriteFilePath() {
         promptInputText = buffer.filePath ?? ""
+        promptCursorIndex = promptInputText.count
         currentPromptMode = .saveFilePath(completion: { [weak self] path in
             guard let self = self, let path = path, !path.isEmpty else {
                 self?.reportOperationResult(.cancelled(message: self?.l10n["status.cancelled"] ?? ""))
@@ -384,5 +385,67 @@ extension Editor {
         onSuccess: (() -> Void)? = nil
     ) -> EditorOperationResult {
         saveBufferContent(to: path, forcedEncoding: forcedEncoding, onSuccess: onSuccess)
+    }
+
+    /// Prompts user for export target path for TMD format.
+    func promptTMDExport(format: TMDExportFormat) {
+        let currentPath = buffer.filePath ?? ""
+        let defaultPath: String
+        if !currentPath.isEmpty {
+            let ns = currentPath as NSString
+            // Export target defaults are also displayed and passed to the
+            // format-specific exporters. Keep their separators portable so
+            // a Windows-normalized source path does not turn a POSIX-style
+            // path into `\\workspace\\...` in the prompt.
+            #if os(Windows)
+            let basePath = ns.deletingPathExtension.replacingOccurrences(of: "\\", with: "/")
+            #else
+            let basePath = ns.deletingPathExtension
+            #endif
+            defaultPath = "\(basePath).\(format.fileExtension)"
+        } else {
+            defaultPath = "score.\(format.fileExtension)"
+        }
+
+        guard tmdExportDelegate.shouldPromptForPath else {
+            executeTMDExport(format: format, toPath: defaultPath)
+            return
+        }
+
+        promptInputText = defaultPath
+        promptCursorIndex = promptInputText.count
+        currentPromptMode = .tmdExport(format: format, completion: { [weak self] targetPath in
+            guard let self else { return }
+            guard let targetPath, !targetPath.isEmpty else {
+                self.reportOperationResult(.cancelled(message: self.l10n["status.cancelled"]))
+                return
+            }
+            self.executeTMDExport(format: format, toPath: targetPath)
+        })
+    }
+
+    /// Dispatches TMD export via delegate and reports outcome.
+    func executeTMDExport(format: TMDExportFormat, toPath targetPath: String) {
+        let sourceText = buffer.lines.joined(separator: "\n")
+        do {
+            try tmdExportDelegate.exportTMD(sourceText: sourceText, format: format, toPath: targetPath)
+            let statusKey = tmdExportDelegate.shouldPromptForPath ? "status.tmd_exported" : "status.tmd_exported_web"
+            let displayTarget = tmdExportDelegate.shouldPromptForPath ? targetPath : (targetPath as NSString).lastPathComponent
+            reportOperationResult(.succeeded(message: String(format: l10n[statusKey], format.displayName, displayTarget)))
+        } catch {
+            reportOperationResult(.failed(error.localizedDescription, message: String(format: l10n["status.tmd_export_failed"], format.displayName, error.localizedDescription)))
+        }
+    }
+
+    /// Plays/previews the current buffer TMD score in host environment (e.g. Web Audio synthesizer).
+    func playCurrentTMDScore() {
+        let sourceText = buffer.lines.joined(separator: "\n")
+        let title = buffer.filePath.map { ($0 as NSString).lastPathComponent } ?? "score.mid"
+        do {
+            try tmdExportDelegate.playTMD(sourceText: sourceText, title: title)
+            reportOperationResult(.succeeded(message: String(format: l10n["status.tmd_playing"], title)))
+        } catch {
+            reportOperationResult(.failed(error.localizedDescription, message: error.localizedDescription))
+        }
     }
 }

@@ -575,3 +575,90 @@ import Testing
     let logoLang = highlighter.detectLanguage(for: nil, firstLine: "TO DRAW_RECT")
     #expect(logoLang?.name == "LOGO")
 }
+
+@Test func testTMDSyntaxHighlightingAndOutline() throws {
+    let highlighter = SyntaxHighlighter()
+
+    // 1. Detection via file extension
+    let tmdLang = highlighter.detectLanguage(for: "score.tmd")
+    #expect(tmdLang != nil)
+    #expect(tmdLang?.name == "TMD")
+
+    // 2. Detection via header rule
+    let headerDetected = highlighter.detectLanguage(for: nil, firstLine: "::SCORE::")
+    #expect(headerDetected?.name == "TMD")
+
+    guard let lang = tmdLang else { return }
+
+    // 3. Highlight tests
+    let headerHighlight = highlighter.highlight(line: "::SCORE::", syntax: lang)
+    #expect(headerHighlight.contains("\u{1B}[1;36m::SCORE::"))
+
+    let titleHighlight = highlighter.highlight(line: "** 三天三夜 **", syntax: lang)
+    #expect(titleHighlight.contains("\u{1B}[32m** 三天三夜 **"))
+
+    let tempoHighlight = highlighter.highlight(line: "!= 120", syntax: lang)
+    #expect(tempoHighlight.contains("\u{1B}[1;36m!="))
+    #expect(tempoHighlight.contains("\u{1B}[33m120"))
+
+    let keyHighlight = highlighter.highlight(line: "?= C", syntax: lang)
+    #expect(keyHighlight.contains("\u{1B}[1;36m?="))
+
+    let meterHighlight = highlighter.highlight(line: "<4/4>", syntax: lang)
+    #expect(meterHighlight.contains("\u{1B}[94m<4/4>"))
+
+    let sectionHeaderHighlight = highlighter.highlight(line: "主歌:鋼琴@|0|{", syntax: lang)
+    #expect(sectionHeaderHighlight.contains("\u{1B}[94m主歌:鋼琴@|0|{"))
+
+    let subdivisionHighlight = highlighter.highlight(line: "<4*>", syntax: lang)
+    #expect(subdivisionHighlight.contains("\u{1B}[94m<4*>"))
+
+    let chordHighlight = highlighter.highlight(line: "[Am7] [G/B]", syntax: lang)
+    #expect(chordHighlight.contains("\u{1B}[94m[Am7]"))
+    #expect(chordHighlight.contains("\u{1B}[94m[G/B]"))
+
+    let notesHighlight = highlighter.highlight(line: "1 2 3 5' 6, - |", syntax: lang)
+    #expect(notesHighlight.contains("\u{1B}[33m1"))
+    #expect(notesHighlight.contains("\u{1B}[33m5'"))
+    #expect(notesHighlight.contains("\u{1B}[33m6,"))
+    #expect(notesHighlight.contains("\u{1B}[1;36m-"))
+    #expect(notesHighlight.contains("\u{1B}[1;36m|"))
+
+    let orderHighlight = highlighter.highlight(line: "-> 主歌 ->#", syntax: lang)
+    #expect(orderHighlight.contains("\u{1B}[1;36m-> 主歌"))
+    #expect(orderHighlight.contains("\u{1B}[1;36m->#"))
+
+    let commentHighlight = highlighter.highlight(line: "/* 註解說明 */", syntax: lang)
+    #expect(commentHighlight.contains("\u{1B}[90m/* 註解說明 */"))
+
+    // 4. Document Outline tests
+    let tmdContent = [
+        "::SCORE::",
+        "** 歌曲標題 **",
+        "!= 120",
+        "?= C",
+        "<4/4>",
+        "",
+        "前奏:木吉他@{",
+        "    <4*>",
+        "    [C] 1 2 3 4",
+        "}",
+        "",
+        "主歌A:電鋼琴@|0|{",
+        "    <4*>",
+        "    [Am] 1 1 2 3",
+        "}",
+        "",
+        "-> 前奏 -> 主歌A ->#",
+    ]
+
+    let outline = lang.outlineParser?(tmdContent)
+    #expect(outline != nil)
+    #expect(outline?.headings.count == 3)
+    #expect(outline?.headings[0].title == "歌曲標題")
+    #expect(outline?.headings[0].level == 1)
+    #expect(outline?.headings[1].title == "前奏 (木吉他)")
+    #expect(outline?.headings[1].level == 2)
+    #expect(outline?.headings[2].title == "主歌A (電鋼琴)")
+    #expect(outline?.headings[2].level == 2)
+}

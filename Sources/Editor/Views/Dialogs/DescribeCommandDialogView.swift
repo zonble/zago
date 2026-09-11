@@ -151,7 +151,7 @@ final class DescribeCommandDialogView {
                     }
                 }
 
-            case .openFile:
+            case .openFile, .playTMD:
                 break
             }
         }

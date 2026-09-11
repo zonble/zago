@@ -797,3 +797,75 @@ if result == nil { result = evaluateCodecAndDetectorPrimitives(tokens, index: &i
 if result == nil { result = evaluateSystemPrimitives(tokens, index: &index) }
 ```
 This ensures zero compilation bottlenecks across macOS, Linux, Windows, and WASM platforms.
+
+---
+
+## 19. Windows IPC Session Discovery & `contentsOfDirectory(at:includingPropertiesForKeys:)` Permission Pitfall
+
+### The Pitfall: `ERROR_ACCESS_DENIED` (Code 5) Swallowed by `try?` in Windows Temp Directory
+
+In `zago`'s Model Context Protocol (MCP) server architecture ([`ZagoMCPServer.swift`](../../Sources/IPCServer/ZagoMCPServer.swift)), external AI tools and MCP clients connect to active editor instances via a local IPC bridge:
+- On POSIX systems, `zago` listens on Unix domain sockets (`/tmp/zago-<pid>-<nonce>.sock`).
+- On Windows, `zago` listens on Windows Named Pipes (`\\.\pipe\zago-<pid>-<nonce>`).
+
+To discover running instances, the editor generates a session authentication token file upon IPC startup (`zago-<pid>-<nonce>.token`) placed in candidate temporary directories (`%TEMP%`, typically `C:\Users\<User>\AppData\Local\Temp`). When MCP tools (such as `zago_list_instances` or `zago_get_text`) execute, `WindowsZagoIPCSessionLocator` scans candidate directories for matching `zago-*.token` files to resolve the instance ID, Named Pipe endpoint, and authentication token.
+
+#### The Problem
+
+In `WindowsZagoIPCSessionLocator.sessions()`, directory enumeration originally used:
+```swift
+(try? fileManager.contentsOfDirectory(
+    at: temporaryDirectory,
+    includingPropertiesForKeys: [.contentModificationDateKey],
+    options: [.skipsHiddenFiles]
+)) ?? []
+```
+
+1. **Permission Trap on Windows `AppData\Local\Temp`**:
+   In Swift Foundation on Windows (`swift-corelibs-foundation`), calling `contentsOfDirectory(at:includingPropertiesForKeys:options:)` attempts to query file attributes and security descriptors while traversing the directory. When scanning the user's `AppData\Local\Temp` directory (which routinely contains thousands of files, transient socket handles, and exclusive locked temporary files from other processes like browsers or OS updates), the operation throws:
+   ```text
+   Error Domain=NSCocoaErrorDomain Code=257 "You don’t have permission." UserInfo={NSUnderlyingError=Error Domain=org.swift.Foundation.WindowsError Code=5 "(null)"}
+   ```
+   (`ERROR_ACCESS_DENIED`).
+2. **Silent Failure & Broken Discovery**:
+   Because the call was wrapped in `try?`, the entire enumeration silently returned `[]` (empty list). Consequently, `WindowsZagoIPCSessionLocator` found zero sessions, causing `zago --mcp` to report:
+   ```text
+   No active zago editor session was found. Start zago with IPC enabled.
+   ```
+   even when the editor was actively running with `--ipc` and the Named Pipe and `.token` files were fully present and valid on disk.
+
+### Architectural Solution: Multi-Tier Resilient Directory Scanning & Token Reader Fallbacks
+
+1. **Path-Based Fallback Enumeration**:
+   In [`ZagoIPCClient.swift`](../../Sources/IPCServer/ZagoIPCClient.swift), `WindowsZagoIPCSessionLocator` (and `PosixZagoIPCSessionLocator`) implements a multi-tier fallback. If `contentsOfDirectory(at:includingPropertiesForKeys:)` throws a permission or handle error, it falls back to:
+   ```swift
+   fileManager.contentsOfDirectory(atPath: temporaryDirectory.path)
+   ```
+   `contentsOfDirectory(atPath:)` invokes Win32 `FindFirstFileW` / `FindNextFileW` to enumerate directory entry names directly without attempting to open privileged or locked handles.
+
+2. **Decoupled Attribute Retrieval**:
+   Individual `.token` modification dates are resolved from `attributesOfItem(atPath:)` for matched files only, ensuring sorting by recent session activity succeeds even if bulk prefetching failed:
+   ```swift
+   let tokenURLs: [URL]
+   if let directURLs = try? fileManager.contentsOfDirectory(
+       at: temporaryDirectory,
+       includingPropertiesForKeys: [.contentModificationDateKey],
+       options: [.skipsHiddenFiles]
+   ) {
+       tokenURLs = directURLs
+   } else if let fileNames = try? fileManager.contentsOfDirectory(atPath: temporaryDirectory.path) {
+       tokenURLs = fileNames.map { temporaryDirectory.appendingPathComponent($0) }
+   } else {
+       tokenURLs = []
+   }
+   ```
+
+3. **Resilient Token Reading**:
+   When reading session tokens in `ZagoIPCClient.call`, `Data(contentsOf: URL(fileURLWithPath:))` is supplemented with a direct fallback to `FileManager.default.contents(atPath:)` to protect against path normalization anomalies on Windows.
+
+### Testing Strategy
+
+In [`IPCServerTests.swift`](../../Tests/IPCServerTests.swift):
+- `testWindowsSessionLocatorFindsNamedPipeTokenFiles` verifies that tokens in isolated temporary directories are located with correct Named Pipe endpoint and token paths.
+- `testWindowsSessionLocatorFindsTokenFilesViaCandidateTemporaryDirectories` verifies end-to-end resolution through candidate temporary directory discovery, ensuring active tokens are found even when the directory contains thousands of disparate files.
+

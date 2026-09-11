@@ -18,7 +18,8 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
     }
 
     func normalizePath(_ path: String, isDirectory: Bool = false) -> String {
-        let expanded = expandTilde(path)
+        let cleaned = FilePathNormalizer.fileURLToPath(path)
+        let expanded = expandTilde(cleaned)
         let absolutePath: String
         if isAbsolutePath(expanded) {
             absolutePath = expanded
@@ -107,6 +108,7 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
             isDirectory: isDir.boolValue,
             isBinary: isDir.boolValue ? false : isBinaryFile(at: normalized),
             isExecutable: isDir.boolValue ? false : fileManager.isExecutableFile(atPath: normalized),
+            creationDate: attrs?[.creationDate] as? Date,
             modificationDate: attrs?[.modificationDate] as? Date,
             size: isDir.boolValue ? 0 : EditorFileInfo.fileSize(from: attrs)
         )
@@ -166,7 +168,10 @@ final class TestLocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Send
                 name: name,
                 path: fullPath,
                 isDirectory: info.isDirectory,
-                isExecutable: info.isExecutable
+                isExecutable: info.isExecutable,
+                creationDate: info.creationDate,
+                modificationDate: info.modificationDate,
+                size: info.size
             )
         }
     }
