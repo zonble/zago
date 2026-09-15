@@ -250,11 +250,9 @@ extension Editor {
                 if buffer.canvasBlockMark != nil {
                     buffer.canvasBlockMark = nil
                     buffer.canvasBlockMarkEnd = nil
-                } else {
-                    menuBarController.toggle()
                 }
-            } else if !buffer.isReadOnly {
-                menuBarController.toggle()
+            } else {
+                buffer.selectionMark = nil
             }
 
         case .press(.left):
