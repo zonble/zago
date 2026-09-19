@@ -133,6 +133,10 @@ let package = Package(
                 .product(name: "TmdMusicXML", package: "TmdSwift"),
                 .product(name: "TmdLilyPond", package: "TmdSwift"),
                 .product(name: "TmdABC", package: "TmdSwift"),
+                .product(name: "TmdChordPro", package: "TmdSwift"),
+                .product(name: "TmdReaper", package: "TmdSwift"),
+                .product(name: "TmdUTAU", package: "TmdSwift"),
+                .product(name: "TmdVocaloid", package: "TmdSwift"),
                 .product(name: "TmdAudio", package: "TmdSwift", condition: .when(platforms: [.macOS])),
             ]
         ),
@@ -149,6 +153,10 @@ let package = Package(
                 .product(name: "TmdMusicXML", package: "TmdSwift"),
                 .product(name: "TmdLilyPond", package: "TmdSwift"),
                 .product(name: "TmdABC", package: "TmdSwift"),
+                .product(name: "TmdChordPro", package: "TmdSwift"),
+                .product(name: "TmdReaper", package: "TmdSwift"),
+                .product(name: "TmdUTAU", package: "TmdSwift"),
+                .product(name: "TmdVocaloid", package: "TmdSwift"),
             ],
             path: "Sources/zagoweb"
         ),

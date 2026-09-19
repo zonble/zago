@@ -90,6 +90,126 @@ struct TMDExportWAVCommand: Command {
     }
 }
 
+struct TMDExportChordProCommand: Command {
+    let id: CommandID = .tmdExportChordPro
+    let name = "Export ChordPro"
+    let description = "Export current TMD score to ChordPro lead sheet"
+    let commandBarAliases = ["export-chordpro", "chordpro", "cho"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptTMDExport(format: .chordpro)
+        return .prompting
+    }
+}
+
+struct TMDExportReaperCommand: Command {
+    let id: CommandID = .tmdExportReaper
+    let name = "Export REAPER"
+    let description = "Export current TMD score to REAPER project file (.rpp)"
+    let commandBarAliases = ["export-reaper", "reaper", "rpp"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptTMDExport(format: .reaper)
+        return .prompting
+    }
+}
+
+struct TMDExportUTAUCommand: Command {
+    let id: CommandID = .tmdExportUTAU
+    let name = "Export UTAU"
+    let description = "Export current TMD vocal track to UTAU sequence (.ust)"
+    let commandBarAliases = ["export-utau", "utau", "ust"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptTMDExport(format: .utau)
+        return .prompting
+    }
+}
+
+struct TMDExportVSQXCommand: Command {
+    let id: CommandID = .tmdExportVSQX
+    let name = "Export VOCALOID4 (VSQX)"
+    let description = "Export current TMD vocal track to VOCALOID3/4 sequence (.vsqx)"
+    let commandBarAliases = ["export-vsqx", "vsqx"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptTMDExport(format: .vsqx)
+        return .prompting
+    }
+}
+
+struct TMDExportVSQCommand: Command {
+    let id: CommandID = .tmdExportVSQ
+    let name = "Export VOCALOID2 (VSQ)"
+    let description = "Export current TMD vocal track to VOCALOID2 sequence (.vsq)"
+    let commandBarAliases = ["export-vsq", "vsq"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.promptTMDExport(format: .vsq)
+        return .prompting
+    }
+}
+
+struct TMDCheckCommand: Command {
+    let id: CommandID = .tmdCheck
+    let name = "Check TMD Score"
+    let description = "Verify measure bar beat consistency and playback order completeness"
+    let commandBarAliases = ["tmd-check", "check-tmd", "check-score"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.checkCurrentTMDScore()
+        return .succeeded
+    }
+}
+
+struct TMDFormatCommand: Command {
+    let id: CommandID = .tmdFormat
+    let name = "Format TMD Score"
+    let description = "Format and re-indent current TMD score layout"
+    let commandBarAliases = ["tmd-format", "format-tmd", "format-score"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.formatCurrentTMDScore()
+        return .succeeded
+    }
+}
+
+struct TMDInspectCommand: Command {
+    let id: CommandID = .tmdInspect
+    let name = "Inspect TMD Score"
+    let description = "Generate vocal range, timing, density, and structure profile report"
+    let commandBarAliases = ["tmd-inspect", "inspect-tmd", "song-profile", "song-inspect"]
+
+    init() {}
+
+    @discardableResult
+    func execute(on editor: Editor) -> EditorOperationResult {
+        editor.inspectCurrentTMDScore()
+        return .succeeded
+    }
+}
+
 struct TMDReferenceCommand: Command {
     let id: CommandID = .tmdReference
     let name = "TMD Reference"

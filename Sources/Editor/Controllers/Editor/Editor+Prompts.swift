@@ -448,4 +448,70 @@ extension Editor {
             reportOperationResult(.failed(error.localizedDescription, message: error.localizedDescription))
         }
     }
+
+    /// Formats the current buffer TMD score preserving comments and structure.
+    func formatCurrentTMDScore() {
+        guard !buffer.isReadOnly else {
+            reportOperationResult(.noOp(message: l10n["status.read_only"]))
+            return
+        }
+        let sourceText = buffer.lines.joined(separator: "\n")
+        do {
+            let formatted = try tmdExportDelegate.formatTMD(sourceText: sourceText)
+            if formatted != sourceText {
+                saveUndoSnapshot()
+                buffer.lines = formatted.components(separatedBy: .newlines)
+                buffer.isModified = true
+                reportOperationResult(.succeeded(message: l10n["status.tmd_formatted"]))
+            } else {
+                reportOperationResult(.succeeded(message: l10n["status.tmd_already_formatted"]))
+            }
+        } catch {
+            reportOperationResult(.failed(error.localizedDescription, message: String(format: l10n["status.tmd_format_failed"], error.localizedDescription)))
+        }
+    }
+
+    /// Verifies measure durations and playback order consistency for current TMD score.
+    func checkCurrentTMDScore() {
+        let sourceText = buffer.lines.joined(separator: "\n")
+        let issues = tmdExportDelegate.checkTMD(sourceText: sourceText)
+        if issues.isEmpty {
+            reportOperationResult(.succeeded(message: l10n["status.tmd_check_passed"]))
+        } else {
+            let title = l10n["tmdview.check_title"]
+            var lines = ["  \(l10n["status.tmd_check_issues_found"]) (\(issues.count)):", ""]
+            lines.append(contentsOf: issues)
+            TextDocumentView(
+                terminal: terminal,
+                title: title,
+                lines: lines,
+                footer: l10n["textview.footer"]
+            ).show()
+            renderer.invalidateScreenCache()
+            refreshScreen()
+            reportOperationResult(.succeeded(message: String(format: l10n["status.tmd_check_failed_summary"], issues.count)))
+        }
+    }
+
+    /// Inspects current TMD score and displays a detailed music structure & arrangement report.
+    func inspectCurrentTMDScore() {
+        let sourceText = buffer.lines.joined(separator: "\n")
+        do {
+            let report = try tmdExportDelegate.inspectTMD(sourceText: sourceText)
+            let title = l10n["tmdview.inspect_title"]
+            let lines = report.components(separatedBy: "\n")
+            TextDocumentView(
+                terminal: terminal,
+                title: title,
+                lines: lines,
+                footer: l10n["textview.footer"]
+            ).show()
+            renderer.invalidateScreenCache()
+            refreshScreen()
+            reportOperationResult(.succeeded)
+        } catch {
+            reportOperationResult(.failed(error.localizedDescription, message: String(format: l10n["status.tmd_inspect_failed"], error.localizedDescription)))
+        }
+    }
 }
+

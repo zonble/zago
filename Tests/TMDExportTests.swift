@@ -50,6 +50,26 @@ private final class MockTMDExportDelegate: TMDExportDelegate, @unchecked Sendabl
     func notifyActiveBuffer(filePath: String?) {
         lastNotifiedBufferPath = filePath
     }
+
+    var lastFormattedSourceText: String?
+    var lastCheckedSourceText: String?
+    var lastInspectedSourceText: String?
+    var mockIssues: [String] = []
+
+    func formatTMD(sourceText: String) throws -> String {
+        lastFormattedSourceText = sourceText
+        return "// formatted\n" + sourceText
+    }
+
+    func checkTMD(sourceText: String) -> [String] {
+        lastCheckedSourceText = sourceText
+        return mockIssues
+    }
+
+    func inspectTMD(sourceText: String) throws -> String {
+        lastInspectedSourceText = sourceText
+        return "TMD Song Profile Report\n======================"
+    }
 }
 
 @Suite(.serialized)
@@ -127,6 +147,31 @@ struct TMDExportTests {
         _ = editor.commandRegistry.dispatch(id: .tmdExportWAV, editor: editor)
         _ = editor.promptController.handleKey(.enter)
         #expect(mockDelegate.lastFormat == .wav)
+
+        // 7. Trigger export ChordPro
+        _ = editor.commandRegistry.dispatch(id: .tmdExportChordPro, editor: editor)
+        _ = editor.promptController.handleKey(.enter)
+        #expect(mockDelegate.lastFormat == .chordpro)
+
+        // 8. Trigger export REAPER
+        _ = editor.commandRegistry.dispatch(id: .tmdExportReaper, editor: editor)
+        _ = editor.promptController.handleKey(.enter)
+        #expect(mockDelegate.lastFormat == .reaper)
+
+        // 9. Trigger export UTAU
+        _ = editor.commandRegistry.dispatch(id: .tmdExportUTAU, editor: editor)
+        _ = editor.promptController.handleKey(.enter)
+        #expect(mockDelegate.lastFormat == .utau)
+
+        // 10. Trigger export VSQX
+        _ = editor.commandRegistry.dispatch(id: .tmdExportVSQX, editor: editor)
+        _ = editor.promptController.handleKey(.enter)
+        #expect(mockDelegate.lastFormat == .vsqx)
+
+        // 11. Trigger export VSQ
+        _ = editor.commandRegistry.dispatch(id: .tmdExportVSQ, editor: editor)
+        _ = editor.promptController.handleKey(.enter)
+        #expect(mockDelegate.lastFormat == .vsq)
     }
 
     @Test func testTMDExportCancellation() {
@@ -331,5 +376,83 @@ struct TMDExportTests {
 
         exporter.notifyActiveBuffer(filePath: "/workspace/mysong.tmd")
         exporter.notifyActiveBuffer(filePath: "/workspace/notes.txt")
+    }
+
+    @Test func testTMDCheckFormatAndInspectCommands() {
+        let mockDelegate = MockTMDExportDelegate()
+        let editor = makeEditor(filePath: "/workspace/test_score.tmd", delegate: mockDelegate)
+        editor.buffer.lines = [
+            "::SCORE::",
+            "** Check Me **",
+            "!= 120",
+            "?= C",
+            "<4/4>",
+            "Intro:Piano@{ <4*> 1 2 3 4 }",
+            "-> Intro ->#",
+        ]
+
+        // 1. TMD Check clean
+        _ = editor.commandRegistry.dispatch(id: .tmdCheck, editor: editor)
+        #expect(mockDelegate.lastCheckedSourceText != nil)
+        #expect(editor.statusMessage == editor.l10n["status.tmd_check_passed"])
+
+        // 2. TMD Check with issues
+        mockDelegate.mockIssues = ["Intro:Piano (line 6, measure 1): Expected 4 units, found 3"]
+        _ = editor.commandRegistry.dispatch(id: .tmdCheck, editor: editor)
+        #expect(editor.statusMessage.contains("1"))
+
+        // 3. TMD Format
+        _ = editor.commandRegistry.dispatch(id: .tmdFormat, editor: editor)
+        #expect(mockDelegate.lastFormattedSourceText != nil)
+        #expect(editor.buffer.lines[0] == "// formatted")
+        #expect(editor.statusMessage == editor.l10n["status.tmd_formatted"])
+
+        // 4. TMD Inspect
+        _ = editor.commandRegistry.dispatch(id: .tmdInspect, editor: editor)
+        #expect(mockDelegate.lastInspectedSourceText != nil)
+    }
+
+    @Test func testRealZagoTMDExporterExtendedFormatsAndOperations() throws {
+        let exporter = ZagoTMDExporter()
+        let sourceText = TMDSnippets.fullScoreTemplate.templateText
+
+        let tempDir = FileManager.default.temporaryDirectory
+        let choURL = tempDir.appendingPathComponent("test_export.cho")
+        let rppURL = tempDir.appendingPathComponent("test_export.rpp")
+        let ustURL = tempDir.appendingPathComponent("test_export.ust")
+        let vsqxURL = tempDir.appendingPathComponent("test_export.vsqx")
+        let vsqURL = tempDir.appendingPathComponent("test_export.vsq")
+
+        defer {
+            try? FileManager.default.removeItem(at: choURL)
+            try? FileManager.default.removeItem(at: rppURL)
+            try? FileManager.default.removeItem(at: ustURL)
+            try? FileManager.default.removeItem(at: vsqxURL)
+            try? FileManager.default.removeItem(at: vsqURL)
+        }
+
+        try exporter.exportTMD(sourceText: sourceText, format: .chordpro, toPath: choURL.path)
+        #expect(FileManager.default.fileExists(atPath: choURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .reaper, toPath: rppURL.path)
+        #expect(FileManager.default.fileExists(atPath: rppURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .utau, toPath: ustURL.path)
+        #expect(FileManager.default.fileExists(atPath: ustURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .vsqx, toPath: vsqxURL.path)
+        #expect(FileManager.default.fileExists(atPath: vsqxURL.path))
+
+        try exporter.exportTMD(sourceText: sourceText, format: .vsq, toPath: vsqURL.path)
+        #expect(FileManager.default.fileExists(atPath: vsqURL.path))
+
+        let formatted = try exporter.formatTMD(sourceText: sourceText)
+        #expect(formatted.contains("::SCORE::"))
+
+        let issues = exporter.checkTMD(sourceText: sourceText)
+        #expect(issues.isEmpty)
+
+        let report = try exporter.inspectTMD(sourceText: sourceText)
+        #expect(report.contains("Untitled Score") || report.contains("Piano"))
     }
 }

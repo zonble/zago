@@ -133,6 +133,14 @@ extension Editor {
         commandRegistry.register(TMDExportLilyPondCommand())
         commandRegistry.register(TMDExportABCCommand())
         commandRegistry.register(TMDExportWAVCommand())
+        commandRegistry.register(TMDExportChordProCommand())
+        commandRegistry.register(TMDExportReaperCommand())
+        commandRegistry.register(TMDExportUTAUCommand())
+        commandRegistry.register(TMDExportVSQXCommand())
+        commandRegistry.register(TMDExportVSQCommand())
+        commandRegistry.register(TMDCheckCommand())
+        commandRegistry.register(TMDFormatCommand())
+        commandRegistry.register(TMDInspectCommand())
         commandRegistry.register(TMDReferenceCommand())
 
         // AI Proposal Commands

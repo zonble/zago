@@ -170,6 +170,14 @@ enum CommandID: String, CaseIterable, Sendable, Hashable {
     case tmdExportLilyPond = "tmd.export.lilypond"
     case tmdExportABC = "tmd.export.abc"
     case tmdExportWAV = "tmd.export.wav"
+    case tmdExportChordPro = "tmd.export.chordpro"
+    case tmdExportReaper = "tmd.export.reaper"
+    case tmdExportUTAU = "tmd.export.utau"
+    case tmdExportVSQX = "tmd.export.vsqx"
+    case tmdExportVSQ = "tmd.export.vsq"
+    case tmdCheck = "tmd.check"
+    case tmdFormat = "tmd.format"
+    case tmdInspect = "tmd.inspect"
     case tmdReference = "tmd.reference"
 
     // Test & Custom

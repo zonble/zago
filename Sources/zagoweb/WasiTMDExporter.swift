@@ -5,6 +5,10 @@ import TmdMIDI
 import TmdMusicXML
 import TmdLilyPond
 import TmdABC
+import TmdChordPro
+import TmdReaper
+import TmdUTAU
+import TmdVocaloid
 
 #if canImport(WASILibc)
     import WASILibc
@@ -65,6 +69,37 @@ public final class WasiTMDExporter: TMDExportDelegate, @unchecked Sendable {
 
         case .wav:
             throw TMDExportError.notSupported
+
+        case .chordpro:
+            let choString = TMDChordProGenerator.generateChordPro(from: sheet)
+            guard let choData = choString.data(using: .utf8) else {
+                throw TMDExportError.custom("Failed to encode ChordPro into UTF-8 data.")
+            }
+            targetData = choData
+
+        case .reaper:
+            let rppString = TMDReaperGenerator.generateRPP(from: sheet)
+            guard let rppData = rppString.data(using: .utf8) else {
+                throw TMDExportError.custom("Failed to encode REAPER project into UTF-8 data.")
+            }
+            targetData = rppData
+
+        case .utau:
+            let ustString = TMDUSTGenerator.generateUST(from: sheet)
+            guard let ustData = ustString.data(using: .shiftJIS) ?? ustString.data(using: .utf8) else {
+                throw TMDExportError.custom("Failed to encode UTAU (.ust) data.")
+            }
+            targetData = ustData
+
+        case .vsqx:
+            let vsqxString = TMDVSQXGenerator.generateVSQX(from: sheet)
+            guard let vsqxData = vsqxString.data(using: .utf8) else {
+                throw TMDExportError.custom("Failed to encode VOCALOID4 (.vsqx) into UTF-8 data.")
+            }
+            targetData = vsqxData
+
+        case .vsq:
+            targetData = TMDVSQGenerator.generateVSQ(from: sheet)
         }
 
         // 1. Write file to virtual file system (VFS)
@@ -138,5 +173,20 @@ public final class WasiTMDExporter: TMDExportDelegate, @unchecked Sendable {
                 #endif
             }
         }
+    }
+
+    public func formatTMD(sourceText: String) throws -> String {
+        return TMDRefactor.format(sourceText)
+    }
+
+    public func checkTMD(sourceText: String) -> [String] {
+        let issues = TMDMeasureChecker.check(source: sourceText)
+        return issues.map(\.description)
+    }
+
+    public func inspectTMD(sourceText: String) throws -> String {
+        let sheet = try TmdParser.parseThrowing(string: sourceText)
+        let profile = TMDSongInspector.inspect(sheet: sheet)
+        return TMDSongInspector.generateReport(profile)
     }
 }
