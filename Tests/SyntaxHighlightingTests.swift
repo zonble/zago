@@ -661,4 +661,43 @@ import Testing
     #expect(outline?.headings[1].level == 2)
     #expect(outline?.headings[2].title == "主歌A (電鋼琴)")
     #expect(outline?.headings[2].level == 2)
+
+    // 5. Multi-line block comment highlighting test
+    let multiLineCommentTMD = [
+        "::SCORE::",
+        "/* 第一行註解",
+        " * 第二行註解",
+        " * 第三行註解 */",
+        "** 標題 **",
+    ]
+    let line0Syntax = highlighter.getSyntaxForLine(
+        filePath: "score.tmd", isDirectoryBuffer: false, lines: multiLineCommentTMD, bufferLineIndex: 0, isEnabled: true
+    )
+    #expect(line0Syntax?.name == "TMD")
+
+    let line1Syntax = highlighter.getSyntaxForLine(
+        filePath: "score.tmd", isDirectoryBuffer: false, lines: multiLineCommentTMD, bufferLineIndex: 1, isEnabled: true
+    )
+    #expect(line1Syntax?.name == "BlockComment")
+    let line1Highlight = highlighter.highlight(line: multiLineCommentTMD[1], syntax: line1Syntax!)
+    #expect(line1Highlight.contains("\u{1B}[90m/* 第一行註解"))
+
+    let line2Syntax = highlighter.getSyntaxForLine(
+        filePath: "score.tmd", isDirectoryBuffer: false, lines: multiLineCommentTMD, bufferLineIndex: 2, isEnabled: true
+    )
+    #expect(line2Syntax?.name == "BlockComment")
+    let line2Highlight = highlighter.highlight(line: multiLineCommentTMD[2], syntax: line2Syntax!)
+    #expect(line2Highlight.contains("\u{1B}[90m * 第二行註解"))
+
+    let line3Syntax = highlighter.getSyntaxForLine(
+        filePath: "score.tmd", isDirectoryBuffer: false, lines: multiLineCommentTMD, bufferLineIndex: 3, isEnabled: true
+    )
+    #expect(line3Syntax?.name == "BlockComment")
+    let line3Highlight = highlighter.highlight(line: multiLineCommentTMD[3], syntax: line3Syntax!)
+    #expect(line3Highlight.contains("\u{1B}[90m * 第三行註解 */"))
+
+    let line4Syntax = highlighter.getSyntaxForLine(
+        filePath: "score.tmd", isDirectoryBuffer: false, lines: multiLineCommentTMD, bufferLineIndex: 4, isEnabled: true
+    )
+    #expect(line4Syntax?.name == "TMD")
 }

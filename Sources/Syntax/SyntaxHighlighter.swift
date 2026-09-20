@@ -153,6 +153,7 @@ public final class SyntaxHighlighter {
             VhsSyntaxDefinition(),
             TMDSyntaxDefinition(),
             CodeBlockPlainTextSyntaxDefinition(),
+            BlockCommentSyntaxDefinition(),
         ]
         for def in definitions {
             languages.append(def.buildLanguageSyntax())
