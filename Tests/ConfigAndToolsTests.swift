@@ -31,7 +31,7 @@ struct ConfigAndToolsTests {
     }
     @Test func testZagoVersionAndTitleBarDisplay() throws {
         #expect(!ZagoVersion.current.isEmpty)
-        #expect(ZagoVersion.current == "1.4.6")
+        #expect(ZagoVersion.current == "1.5.0")
 
         let editor = Editor()
         let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)

@@ -2,23 +2,55 @@
 
 ## Unreleased
 
+## [1.5.0] - 2026-09-20
+
+Major feature release introducing full Timebase Mark Down (TMD) music score editing and audio playback, interactive score export workflows, expanded Symbol Picker with 240+ specialized Unicode arrows, Directory Browser multi-criteria sorting, cross-platform file URL support, and enhanced mouse/scrollbar interactions.
+
 ### Added
 
+- **Timebase Mark Down (TMD) Music Score Support**:
+  - Integrated `TmdSwift` parser and syntax highlighter with document outline for TMD music scores.
+  - Context-aware **TMD** menu in editor menu bar (visible when editing TMD files).
+  - Score export to MIDI, MusicXML, LilyPond, ABC, WAV, MP3, and OGG formats with interactive prompt workflows.
+  - Built-in TMD score diagnostics checker (`:tmd check`), code formatter (`:tmd format`), and score structure inspector (`:tmd inspect`).
+  - Score playback triggers with high-quality SoundFont synths via OSC and terminal audio playback.
+  - Interactive playback control bar with progress bar, transport controls, and draggable floating UI in web edition.
+  - Built-in TMD snippets and Quick Reference guide in TMD and Help menus.
+  - TMD skill integration in `install-skills` script.
+- **Special Unicode Arrows Symbol Picker**:
+  - Expanded Symbol Picker with a dedicated "Arrows" tab featuring 240 curated Unicode arrow symbols organized in an interactive grid.
+  - Mouse click support for selecting tabs and inserting symbols directly from the Symbol Picker dialog.
 - **Directory Browser Multi-Criteria Sorting & Dedicated Help Bar**:
-  - Added multi-criteria sorting for Directory Buffer (`name`, `created`, `modified` with ASC / DESC ordering).
-  - Added interactive hotkeys (`s`/`S` to cycle sort criteria, `o`/`O` to toggle ASC/DESC order) and `:sort` command bar interface.
-  - Added dedicated 2D-aligned Help Bar layout and visual sort badges in buffer header, title bar, and status line for Directory Buffer.
+  - Multi-criteria sorting for Directory Buffer (`name`, `created`, `modified` with ASC / DESC ordering).
+  - Interactive hotkeys (`s`/`S` to cycle sort criteria, `o`/`O` to toggle ASC/DESC order) and `:sort` command bar interface.
+  - Dedicated 2D-aligned Help Bar layout and visual sort badges in buffer header, title bar, and status line for Directory Buffer.
 - **Journal Directory Browser Support**:
-  - Added support for opening the daily journals folder directly in Directory Buffer via `:journal dir`, `:journals`, `:dir journal`, Tools menu item, and `--journal-dir` CLI flag.
+  - Open daily journals folder directly in Directory Buffer via `:journal dir`, `:journals`, `:dir journal`, Tools menu item, and `--journal-dir` CLI flag.
 - **Cross-Platform `file://` URL & Anchor Support**:
-  - Added support for opening and resolving `file://` URLs (POSIX, Windows drive letters, and percent-encoded paths) from CLI arguments, command prompts (`:open`, `:edit`, `:write`, `Ctrl+O`), and IPC.
-  - Added line and column anchor parsing (`#L<line>`, `#L<line>C<col>`, `#L<line>:<col>`, `:<line>:<col>`) to jump directly to target positions on open.
-  - Added Tab autocompletion support for `file://` URL prefixes in the interactive prompt bar.
+  - Open and resolve `file://` URLs (POSIX, Windows drive letters, and percent-encoded paths) from CLI arguments, command prompts (`:open`, `:edit`, `:write`, `Ctrl+O`), and IPC.
+  - Line and column anchor parsing (`#L<line>`, `#L<line>C<col>`, `#L<line>:<col>`, `:<line>:<col>`) to jump directly to target positions on open.
+  - Tab autocompletion support for `file://` URL prefixes in interactive prompt bar.
+- **Scrollbar Interaction & Web UI Improvements**:
+  - Scrollbar enabled by default with mouse click and drag thumb scrolling support.
+  - Collapsible documentation sidebar on desktop for full-width editing in web edition.
+
+### Changed
+
+- Updated default save and export prompt cursors to automatically place at the end of the input string.
+- Upgraded `TmdSwift` dependency to `0.1.6`.
 
 ### Fixed
 
-- **Canvas Mode Line Drawing Adjacent Line Isolation**:
-  - Fixed an issue where drawing a horizontal line across empty space adjacent to vertical box borders on neighboring rows would erroneously convert straight line segments into `┬` (top-join) junctions.
+- **TMD Multi-Line Block Comments**:
+  - Fixed syntax highlighter to properly parse and render multi-line block comments (`/* ... */`) in TMD files.
+- **Canvas Mode Line Drawing Adjacent Isolation**:
+  - Fixed line drawing to prevent unintended junction fusion (`┬`) with adjacent rows when drawing horizontal lines across empty space near existing boxes.
+- **Mouse Right Click Behavior**:
+  - Prevented right click from toggling the top menu bar unintentionally.
+- **Windows IPC Session Locator**:
+  - Enhanced Windows session locator directory scanning resilience and token reading.
+- **Dynamic Binary Path Resolution**:
+  - Dynamically resolved binary output path via `swift build --show-bin-path`.
 
 ## [1.4.6] - 2026-09-01
 
