@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/zonble/TmdSwift.git",
       "state" : {
-        "revision" : "7ec61f655796e28fc93d6fde9cc4194b1fe529d1",
-        "version" : "0.1.6"
+        "revision" : "f39dd35e767df92329e651c6d8c65f41a6330ad7",
+        "version" : "0.2.1"
       }
     }
   ],
