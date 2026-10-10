@@ -1358,5 +1358,23 @@ struct ConfigAndToolsTests {
         let selected = view.show()
         #expect(selected?.title == "Heading 4")
     }
+
+    @Test func testCIAndWasmBuildScriptsConfigureSubmoduleSkipAndAllBranches() throws {
+        let dockerfile = try String(contentsOfFile: "Dockerfile_wasm", encoding: .utf8)
+        #expect(dockerfile.contains("submodule.docs.update none"))
+
+        let buildWasm = try String(contentsOfFile: "build-wasm.sh", encoding: .utf8)
+        #expect(buildWasm.contains("submodule.docs.update none"))
+
+        let ciWorkflow = try String(contentsOfFile: ".github/workflows/ci.yml", encoding: .utf8)
+        #expect(ciWorkflow.contains("submodule.docs.update none"))
+        #expect(!ciWorkflow.contains("branches: [ main, dev, web ]"))
+
+        let deployWorkflow = try String(contentsOfFile: ".github/workflows/deploy-pages.yml", encoding: .utf8)
+        #expect(deployWorkflow.contains("submodule.docs.update none"))
+
+        let releaseWorkflow = try String(contentsOfFile: ".github/workflows/release.yml", encoding: .utf8)
+        #expect(releaseWorkflow.contains("submodule.docs.update none"))
+    }
 }
 

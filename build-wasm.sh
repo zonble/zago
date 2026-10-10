@@ -8,10 +8,12 @@ echo "==> Building zago for WebAssembly..."
 
 mkdir -p web/public
 
+git config --global submodule.docs.update none || true
+
 if command -v docker >/dev/null 2>&1 && docker image inspect zago-wasm-builder >/dev/null 2>&1; then
     echo "==> Using cached Docker container 'zago-wasm-builder'..."
     docker run --rm -v "$ROOT_DIR":/workspace -w /workspace zago-wasm-builder \
-        swift build --configuration release --swift-sdk wasm32-unknown-wasi --product zagoweb
+        sh -c "git config --global submodule.docs.update none && swift build --configuration release --swift-sdk wasm32-unknown-wasi --product zagoweb"
 elif swift sdk list 2>/dev/null | grep -q "wasm"; then
     echo "==> Using local Swift Wasm SDK..."
     # Keep the SDK selection deterministic on CI machines that may have more
