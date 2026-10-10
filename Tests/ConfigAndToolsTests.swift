@@ -804,7 +804,7 @@ struct ConfigAndToolsTests {
         final class AtomicCounter: @unchecked Sendable { var value = 0 }
         let counter = AtomicCounter()
 
-        let fileIO = LocalEditorFileIOStrategy.shared
+        let fileIO = LocalEditorFileIOStrategy()
         let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(
             "test_prod_watcher_\(UUID().uuidString).txt"
         ).path
@@ -842,7 +842,7 @@ struct ConfigAndToolsTests {
         let terminal = TestEditorTerminal.shared
         let editor = Editor(
             options: EditorOptions(filePaths: [tmpFile], autoReload: true),
-            dependencies: EditorDependencies(fileIOStrategy: LocalEditorFileIOStrategy.shared, terminal: terminal)
+            dependencies: EditorDependencies(fileIOStrategy: LocalEditorFileIOStrategy(), terminal: terminal)
         )
         defer {
             editor.stopFileWatcherForCurrentBuffer()
@@ -1412,6 +1412,23 @@ struct ConfigAndToolsTests {
         ipcHandler.editor(zhEditor, didEmit: .ipcEnabled(false))
         #expect(zhEditor.statusMessage == "[已停用 IPC]")
     }
+
+    @Test func testNoSingletonAndUnifiedUnicodeClassificationSSOT() throws {
+        let localFileIOSource = try String(
+            contentsOfFile: "Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift",
+            encoding: .utf8
+        )
+        #expect(!localFileIOSource.contains("static let shared"))
+
+        let classifierSource = try String(
+            contentsOfFile: "Sources/TextTransform/TextUnicodeClassifier.swift",
+            encoding: .utf8
+        )
+        #expect(classifierSource.contains("import TextMetrics"))
+        #expect(!classifierSource.contains("0x4E00...0x9FFF"))
+        #expect(!classifierSource.contains("0x3000...0x303F"))
+    }
 }
+
 
 

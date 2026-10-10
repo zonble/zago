@@ -71,7 +71,8 @@ let package = Package(
             dependencies: ["LogoEngine"]
         ),
         .target(
-            name: "TextTransform"
+            name: "TextTransform",
+            dependencies: ["TextMetrics"]
         ),
         .target(
             name: "Config",

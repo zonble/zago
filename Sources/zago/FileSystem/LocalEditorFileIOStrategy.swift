@@ -5,8 +5,6 @@ import Foundation
 import TextEncoding
 
 public final class LocalEditorFileIOStrategy: EditorFileIOStrategy, @unchecked Sendable {
-    public static let shared = LocalEditorFileIOStrategy()
-
     private let fileManager: FileManager
     private let fileWatcher = FileWatcher()
 

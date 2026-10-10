@@ -113,7 +113,7 @@ import Testing
     }
 
     @Test func testLocalFileIONormalizeRelativePath() {
-        let strategy = LocalEditorFileIOStrategy.shared
+        let strategy = LocalEditorFileIOStrategy()
         let cwd = strategy.currentDirectoryPath()
         let normalizedRelative = strategy.normalizePath("sample.txt", isDirectory: false)
         let expected = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent("sample.txt").path.replacingOccurrences(of: "/", with: "\\")
@@ -122,7 +122,7 @@ import Testing
     }
 
     @Test func testLocalFileIONormalizeDrivePathWithSpaces() {
-        let strategy = LocalEditorFileIOStrategy.shared
+        let strategy = LocalEditorFileIOStrategy()
         let inputPath = "G:\\My Drive\\Blog\\test.md"
         let normalized = strategy.normalizePath(inputPath, isDirectory: false)
         #expect(normalized == "G:\\My Drive\\Blog\\test.md" || normalized == "g:\\My Drive\\Blog\\test.md")
@@ -130,9 +130,9 @@ import Testing
     }
 
     @Test func testLocalFileIOWriteAndReadInTempDirWithSpaces() throws {
-        let strategy = LocalEditorFileIOStrategy.shared
+        let strategy = LocalEditorFileIOStrategy()
         let tempDir = strategy.temporaryDirectoryPath()
-        let testSubdir = strategy.childPath("zago test dir", in: tempDir)
+        let testSubdir = strategy.childPath("zago test dir \(UUID().uuidString)", in: tempDir)
         let testFilePath = strategy.childPath("my blog post.md", in: testSubdir)
 
         let content = "# Hello World\nTesting direct write on Windows."
