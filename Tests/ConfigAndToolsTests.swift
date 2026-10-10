@@ -1376,5 +1376,42 @@ struct ConfigAndToolsTests {
         let releaseWorkflow = try String(contentsOfFile: ".github/workflows/release.yml", encoding: .utf8)
         #expect(releaseWorkflow.contains("submodule.docs.update none"))
     }
+
+    @Test func testMissingL10nKeysAndLocalizedFillAndIPCStatusMessages() throws {
+        let enL10n = L10n(language: .en)
+        let zhL10n = L10n(language: .zh_TW)
+
+        #expect(enL10n["describe_command.general_category"] == "General")
+        #expect(zhL10n["describe_command.general_category"] == "一般")
+
+        let zhEditor = Editor(language: .zh_TW)
+        zhEditor.menuBar.updateCategories(for: zhEditor)
+        let dialog = DescribeCommandDialogView(
+            terminal: zhEditor.terminal,
+            editor: zhEditor,
+            symbol: "edit.join_line",
+            language: .zh_TW
+        )
+        let details = dialog.buildSymbolDetails(for: "edit.join_line", l10n: zhL10n, maxLineWidth: 70)
+        let joinedDetails = details.joined(separator: "\n")
+        #expect(!joinedDetails.contains("describe_command.general_category"))
+        #expect(joinedDetails.contains("編輯器指令 (一般)"))
+
+        // Fill status messages in zh_TW
+        zhEditor.buffer.lines = ["open text"]
+        _ = zhEditor.runLogoScript("FILL \"\"")
+        #expect(zhEditor.statusMessage == "需要填滿文字")
+
+        _ = zhEditor.runLogoScript("FILL \"x\"")
+        #expect(zhEditor.statusMessage == "[ 填滿操作需要封閉區域或明確指定尺寸 ]")
+
+        // IPC status messages in zh_TW
+        let ipcHandler = ZagoEditorIPCEffectHandler(editor: zhEditor, terminal: zhEditor.terminal)
+        ipcHandler.editor(zhEditor, didEmit: .ipcEnabled(true))
+        #expect(zhEditor.statusMessage.contains("[IPC] Socket："))
+        ipcHandler.editor(zhEditor, didEmit: .ipcEnabled(false))
+        #expect(zhEditor.statusMessage == "[已停用 IPC]")
+    }
 }
+
 
