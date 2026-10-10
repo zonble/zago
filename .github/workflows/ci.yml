@@ -2,9 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, dev, web ]
   pull_request:
-    branches: [ main, dev, web ]
 
 jobs:
   build-and-test:
@@ -18,6 +16,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
+
+      - name: Configure Git Submodule Policy
+        run: git config --global submodule.docs.update none
 
       - name: Set up Swift Toolchain (Windows)
         if: runner.os == 'Windows'

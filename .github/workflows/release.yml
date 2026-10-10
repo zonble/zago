@@ -38,6 +38,7 @@ jobs:
             -v "$PWD:/workspace" -w /workspace \
             ${{ matrix.swift_image }} \
             sh -c "
+              git config --global submodule.docs.update none
               apt-get update -qq && apt-get install -y -qq wamerican binutils > /dev/null 2>&1
               swift build -c release --static-swift-stdlib -Xswiftc -Osize
               strip --strip-all .build/release/zago
@@ -65,6 +66,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
+
+      - name: Configure Git Submodule Policy
+        run: git config --global submodule.docs.update none
 
       - name: Set up Swift Toolchain
         shell: pwsh
