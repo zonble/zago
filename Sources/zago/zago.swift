@@ -184,7 +184,7 @@ struct Zago: ParsableCommand {
             return
         }
 
-        let fileIOStrategy = LocalEditorFileIOStrategy.shared
+        let fileIOStrategy = LocalEditorFileIOStrategy()
         #if os(Windows)
             let terminal: EditorTerminal = WindowsTerminal()
         #else
