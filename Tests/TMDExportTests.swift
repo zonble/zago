@@ -244,10 +244,11 @@ struct TMDExportTests {
         let sourceText = TMDSnippets.fullScoreTemplate.templateText
 
         let tempDir = FileManager.default.temporaryDirectory
-        let midiURL = tempDir.appendingPathComponent("test_export.mid")
-        let xmlURL = tempDir.appendingPathComponent("test_export.xml")
-        let lyURL = tempDir.appendingPathComponent("test_export.ly")
-        let abcURL = tempDir.appendingPathComponent("test_export.abc")
+        let suffix = UUID().uuidString
+        let midiURL = tempDir.appendingPathComponent("test_export_\(suffix).mid")
+        let xmlURL = tempDir.appendingPathComponent("test_export_\(suffix).xml")
+        let lyURL = tempDir.appendingPathComponent("test_export_\(suffix).ly")
+        let abcURL = tempDir.appendingPathComponent("test_export_\(suffix).abc")
 
         defer {
             try? FileManager.default.removeItem(at: midiURL)
@@ -300,10 +301,11 @@ struct TMDExportTests {
 
         let sourceText = TMDSnippets.fullScoreTemplate.templateText
         let tempDir = FileManager.default.temporaryDirectory
-        let midiURL = tempDir.appendingPathComponent("wasi_test.mid")
-        let xmlURL = tempDir.appendingPathComponent("wasi_test.xml")
-        let lyURL = tempDir.appendingPathComponent("wasi_test.ly")
-        let abcURL = tempDir.appendingPathComponent("wasi_test.abc")
+        let suffix = UUID().uuidString
+        let midiURL = tempDir.appendingPathComponent("wasi_test_\(suffix).mid")
+        let xmlURL = tempDir.appendingPathComponent("wasi_test_\(suffix).xml")
+        let lyURL = tempDir.appendingPathComponent("wasi_test_\(suffix).ly")
+        let abcURL = tempDir.appendingPathComponent("wasi_test_\(suffix).abc")
 
         defer {
             try? FileManager.default.removeItem(at: midiURL)
@@ -417,11 +419,12 @@ struct TMDExportTests {
         let sourceText = TMDSnippets.fullScoreTemplate.templateText
 
         let tempDir = FileManager.default.temporaryDirectory
-        let choURL = tempDir.appendingPathComponent("test_export.cho")
-        let rppURL = tempDir.appendingPathComponent("test_export.rpp")
-        let ustURL = tempDir.appendingPathComponent("test_export.ust")
-        let vsqxURL = tempDir.appendingPathComponent("test_export.vsqx")
-        let vsqURL = tempDir.appendingPathComponent("test_export.vsq")
+        let suffix = UUID().uuidString
+        let choURL = tempDir.appendingPathComponent("test_export_\(suffix).cho")
+        let rppURL = tempDir.appendingPathComponent("test_export_\(suffix).rpp")
+        let ustURL = tempDir.appendingPathComponent("test_export_\(suffix).ust")
+        let vsqxURL = tempDir.appendingPathComponent("test_export_\(suffix).vsqx")
+        let vsqURL = tempDir.appendingPathComponent("test_export_\(suffix).vsq")
 
         defer {
             try? FileManager.default.removeItem(at: choURL)
