@@ -22,7 +22,7 @@ extension Editor: LogoEngineDelegate {
         case .insertNewline:
             insertNewlineForLogo()
         case .setStatusMessage(let msg):
-            reportOperationResult(.succeeded(message: msg))
+            reportOperationResult(.succeeded(message: l10n[msg]))
         case .deleteChar:
             buffer.delete()
         case .backspaceChar:

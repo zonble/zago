@@ -12,7 +12,7 @@ extension LogoEngine {
         let fillPattern = arguments.text
 
         if fillPattern.isEmpty {
-            editor.logoEngine(self, performAction: .setStatusMessage("Fill text required"))
+            editor.logoEngine(self, performAction: .setStatusMessage("status.fill_text_required"))
             hasSetStatusMessage = true
             return
         }
@@ -75,7 +75,7 @@ extension LogoEngine {
         if result.escaped || result.reachedLimit {
             editor.logoEngine(
                 self,
-                performAction: .setStatusMessage("[ Fill requires an enclosed region or explicit size ]"))
+                performAction: .setStatusMessage("status.fill_requires_enclosed_region"))
             hasSetStatusMessage = true
             return
         }
