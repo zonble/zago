@@ -20,70 +20,78 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background: var(--bg);
+      justify-content: space-between;
+      background: radial-gradient(circle at center, #2c313c 0%, #181a1f 100%);
       color: var(--text);
       font-family: "SF Mono", "Menlo", "Monaco", "Noto Sans Mono CJK TC", monospace;
-      padding: 20px;
+      padding: 10px 16px;
     }
     h1 {
-      margin: 0 0 8px;
-      color: #fff;
-      font-size: 1.5rem;
+      margin: 0;
+      color: #fde047;
+      font-size: clamp(1.2rem, 2vw, 1.75rem);
     }
     .hud {
       display: flex;
       gap: 20px;
       align-items: center;
-      margin-bottom: 14px;
-      font-size: 0.95rem;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
     }
     button {
-      background: #3a3f4b;
+      background: #ef4444;
       color: #fff;
-      border: 1px solid #5c6370;
-      border-radius: 6px;
-      padding: 6px 14px;
+      border: 2px solid #1e222a;
+      border-radius: 8px;
+      padding: 6px 16px;
       font-family: inherit;
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 3px 0 #1e222a;
     }
-    button:hover { background: #4b5263; }
+    button:hover { background: #dc2626; }
     #board {
+      width: min(96vw, calc((100vh - 115px) * 2));
+      height: min(calc(96vw / 2), calc(100vh - 115px));
       display: grid;
-      grid-template-columns: repeat(30, 26px);
-      grid-template-rows: repeat(15, 26px);
-      border: 3px solid #abb2bf;
+      grid-template-columns: repeat(30, minmax(0, 1fr));
+      grid-template-rows: repeat(15, minmax(0, 1fr));
+      border: 4px solid #fde047;
+      border-radius: 8px;
       background: var(--floor);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
       user-select: none;
+      overflow: hidden;
     }
     .cell {
-      width: 26px;
-      height: 26px;
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: clamp(14px, min(2.4vw, 4.5vh), 36px);
       position: relative;
+      line-height: 1;
     }
     .wall {
       background: var(--wall);
       border: 1px solid var(--wall-border);
-      font-size: 16px;
+      font-size: clamp(12px, min(2.1vw, 4vh), 32px);
     }
     .goal::after {
       content: "🎯";
-      font-size: 16px;
+      font-size: clamp(13px, min(2.2vw, 4.2vh), 32px);
       position: absolute;
-      opacity: 0.85;
+      opacity: 0.9;
     }
     .box {
       z-index: 2;
-      font-size: 19px;
+      font-size: clamp(15px, min(2.5vw, 4.6vh), 38px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -92,21 +100,21 @@
     .box.on-goal {
       background: rgba(152, 195, 121, 0.35);
       border-radius: 4px;
-      box-shadow: 0 0 8px rgba(152, 195, 121, 0.8);
+      box-shadow: 0 0 10px rgba(152, 195, 121, 0.85);
     }
     .player {
       z-index: 3;
-      font-size: 19px;
+      font-size: clamp(15px, min(2.5vw, 4.6vh), 38px);
       display: flex;
       align-items: center;
       justify-content: center;
       filter: drop-shadow(0 0 6px rgba(97, 175, 239, 0.8));
     }
     .status {
-      margin-top: 14px;
       min-height: 24px;
       color: #98c379;
       font-weight: bold;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
     }
   </style>
 </head>
@@ -117,11 +125,61 @@
     <span>Boxes on Goal: <strong id="score">0 / 2</strong></span>
     <button id="undoBtn">Undo (Z)</button>
     <button id="resetBtn">Reset (R)</button>
+    <button id="soundBtn">🔊 Sound: ON</button>
   </div>
   <div id="board"></div>
   <div class="status" id="status">Use Arrow Keys or WASD to move 👷 and push both 📦 onto 🎯.</div>
 
   <script>
+    // --- Web Audio API Sound Engine ---
+    let audioCtx = null;
+    let soundEnabled = true;
+    let bgmTimer = null;
+    let bgmStep = 0;
+    const BGM_MELODY = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      if (!bgmTimer && soundEnabled) {
+        bgmTimer = setInterval(() => {
+          if (!soundEnabled) return;
+          playTone(BGM_MELODY[bgmStep % BGM_MELODY.length], "triangle", 0.16, 0, 0.025);
+          bgmStep++;
+        }, 280);
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "sine", duration = 0.1, delay = 0, vol = 0.15, slideTo = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + duration);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    const sfx = {
+      step()  { playTone(320, "sine", 0.06, 0, 0.12, 420); },
+      push()  { playTone(160, "triangle", 0.11, 0, 0.22, 110); },
+      goal()  { playTone(587.33, "square", 0.09, 0, 0.14); playTone(880, "square", 0.18, 0.08, 0.16); },
+      bump()  { playTone(110, "sawtooth", 0.07, 0, 0.12, 75); },
+      undo()  { playTone(440, "sine", 0.08, 0, 0.12, 260); },
+      win()   { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => playTone(f, "square", 0.16, i * 0.1, 0.16)); }
+    };
+
     // Raw ASCII layout directly from box.md
     const RAW_MAP = [
       "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
@@ -186,13 +244,17 @@
     function move(dr, dc) {
       const nr = player.r + dr;
       const nc = player.c + dc;
-      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || walls[nr][nc]) return;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || walls[nr][nc]) {
+        sfx.bump();
+        return;
+      }
 
       const boxIdx = hasBox(nr, nc);
       if (boxIdx !== -1) {
         const br = nr + dr;
         const bc = nc + dc;
         if (br < 0 || br >= ROWS || bc < 0 || bc >= COLS || walls[br][bc] || hasBox(br, bc) !== -1) {
+          sfx.bump();
           return;
         }
         history.push({
@@ -201,21 +263,28 @@
         });
         boxes[boxIdx].r = br;
         boxes[boxIdx].c = bc;
+        if (goals[br][bc]) sfx.goal();
+        else sfx.push();
       } else {
         history.push({
           player: { ...player },
           boxes: boxes.map(b => ({ ...b }))
         });
+        sfx.step();
       }
 
       player.r = nr;
       player.c = nc;
       moves++;
       render();
+      if (boxes.every(b => goals[b.r][b.c])) {
+        sfx.win();
+      }
     }
 
     function undo() {
       if (!history.length) return;
+      sfx.undo();
       const prev = history.pop();
       player = prev.player;
       boxes = prev.boxes;
@@ -282,6 +351,10 @@
 
     document.getElementById("undoBtn").addEventListener("click", undo);
     document.getElementById("resetBtn").addEventListener("click", initGame);
+    document.getElementById("soundBtn").addEventListener("click", e => {
+      soundEnabled = !soundEnabled;
+      e.target.textContent = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+    });
 
     initGame();
   </script>

@@ -18,39 +18,51 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       background: var(--bg);
       color: #f4f4f5;
       font-family: "SF Mono", "Menlo", "Monaco", monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 16px;
+      justify-content: space-between;
+      padding: 10px 14px;
       user-select: none;
     }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 1.35rem;
-      letter-spacing: 1px;
-    }
-    .hud-bar {
-      width: 840px;
+    .top-bar {
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
+      margin-bottom: 6px;
     }
-    canvas {
+    h1 {
+      margin: 0;
+      font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+      color: #38bdf8;
+      letter-spacing: 1px;
+    }
+    .hud-bar {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+    }
+    #game {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
       border: 2px solid var(--border);
+      border-radius: 6px;
       background: radial-gradient(ellipse at center, #111827 0%, #090d16 100%);
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
       display: block;
     }
     .minimap-label {
-      width: 840px;
-      margin-top: 12px;
+      width: 100%;
+      margin-top: 8px;
       margin-bottom: 4px;
       font-size: 0.8rem;
       color: #9ca3af;
@@ -58,15 +70,19 @@
       justify-content: space-between;
     }
     #minimap {
+      width: 100%;
+      height: 76px;
       border: 1px solid #52525b;
+      border-radius: 4px;
       background: #090d16;
+      display: block;
     }
     button {
       background: #27272a;
       color: #fff;
       border: 1px solid #71717a;
       border-radius: 4px;
-      padding: 4px 12px;
+      padding: 5px 14px;
       font-family: inherit;
       cursor: pointer;
     }
@@ -74,11 +90,14 @@
   </style>
 </head>
 <body>
-  <h1>Side-Scrolling Shoot 'Em Up (Gradius Style)</h1>
-  <div class="hud-bar">
-    <span>Controls: <strong>WASD / Arrow Keys</strong> to fly, <strong>Space</strong> to shoot</span>
-    <span>Score: <strong id="scoreEl">0</strong></span>
-    <button id="restartBtn">Restart (R)</button>
+  <div class="top-bar">
+    <h1>Side-Scrolling Shoot 'Em Up (Gradius Style)</h1>
+    <div class="hud-bar">
+      <span>Controls: <strong>WASD / Arrow Keys</strong> to fly, <strong>Space</strong> to shoot</span>
+      <span>Score: <strong id="scoreEl">0</strong></span>
+      <button id="soundBtn">🔊 Sound: ON</button>
+      <button id="restartBtn">Restart (R)</button>
+    </div>
   </div>
 
   <!-- Main Screen Viewport -->
@@ -92,6 +111,217 @@
   <canvas id="minimap" width="840" height="81"></canvas>
 
   <script>
+    // --- Web Audio API Cosmic Space Synth & Sound Engine ---
+    let audioCtx = null;
+    let spaceBus = null;
+    let soundEnabled = true;
+    let bgmTimer = null;
+    let bgmStep = 0;
+
+    // Cosmic Lydian / Minor Space Arpeggio (E minor 9 -> C Lydian #11 -> A minor 9 -> B Phrygian)
+    const SPACE_ARP = [
+      659.25, 783.99, 987.77, 1174.66, 1479.98, 1174.66, 987.77, 783.99,
+      659.25, 783.99, 987.77, 1174.66, 1318.51, 1174.66, 987.77, 783.99,
+      523.25, 659.25, 783.99, 987.77,  1174.66, 987.77,  783.99, 659.25,
+      587.33, 739.99, 880.00, 1174.66, 1479.98, 1174.66, 880.00, 739.99
+    ];
+    const SPACE_PAD_CHORDS = [
+      [164.81, 246.94, 329.63, 369.99], // Em9 cosmic drone
+      [130.81, 196.00, 293.66, 369.99], // Cmaj9(#11) Lydian space chord
+      [110.00, 164.81, 246.94, 261.63], // Am9 nebula chord
+      [123.47, 185.00, 246.94, 311.13]  // B7alt dark star chord
+    ];
+    const SPACE_BASS = [
+      82.41, 82.41, 164.81, 82.41, 65.41, 65.41, 130.81, 65.41,
+      55.00, 55.00, 110.00, 55.00, 61.74, 61.74, 123.47, 73.42
+    ];
+
+    // Dark Sci-Fi Boss Sequence (Phrygian Dominant / Diminished cosmic tension)
+    const BOSS_ARP = [
+      659.25, 698.46, 830.61, 987.77, 1318.51, 987.77, 830.61, 698.46,
+      659.25, 783.99, 932.33, 1108.73, 1396.91, 1108.73, 932.33, 783.99
+    ];
+    const BOSS_BASS = [
+      82.41, 164.81, 87.31, 164.81, 98.00, 196.00, 92.50, 185.00
+    ];
+
+    function initSpaceBus(ctx) {
+      if (spaceBus) return spaceBus;
+      // Master resonant filter + Stereo-like Cosmic Delay Echo loop
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 1800;
+      filter.Q.value = 3.5;
+
+      const delay = ctx.createDelay(1.0);
+      delay.delayTime.value = 0.27;
+
+      const feedback = ctx.createGain();
+      feedback.gain.value = 0.45;
+
+      const wet = ctx.createGain();
+      wet.gain.value = 0.38;
+
+      // Filter -> dry destination & -> delay loop -> wet destination
+      filter.connect(ctx.destination);
+      filter.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      delay.connect(wet);
+      wet.connect(ctx.destination);
+
+      spaceBus = { filter, delay, feedback, wet };
+      return spaceBus;
+    }
+
+    function playSpaceArp(freq, duration = 0.22, vol = 0.045) {
+      if (!soundEnabled || !audioCtx) return;
+      const t0 = audioCtx.currentTime;
+      const bus = initSpaceBus(audioCtx);
+
+      // Slowly sweep the resonant low-pass filter for a cosmic synthesizer feel
+      const sweep = 1100 + Math.sin(bgmStep * 0.15) * 800;
+      bus.filter.frequency.setTargetAtTime(sweep, t0, 0.08);
+
+      // Dual slightly-detuned oscillators for shimmering space chorus
+      for (const detune of [-7, 7]) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = detune < 0 ? "triangle" : "sine";
+        osc.frequency.setValueAtTime(freq, t0);
+        osc.detune.setValueAtTime(detune, t0);
+
+        gain.gain.setValueAtTime(0.001, t0);
+        gain.gain.linearRampToValueAtTime(vol, t0 + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0008, t0 + duration);
+
+        osc.connect(gain);
+        gain.connect(bus.filter);
+        osc.start(t0);
+        osc.stop(t0 + duration);
+      }
+    }
+
+    function playSpacePad(chordFreqs, duration = 1.35, vol = 0.022) {
+      if (!soundEnabled || !audioCtx) return;
+      const t0 = audioCtx.currentTime;
+      const bus = initSpaceBus(audioCtx);
+
+      chordFreqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? "sawtooth" : "triangle";
+        osc.frequency.setValueAtTime(freq, t0);
+        osc.detune.setValueAtTime((idx - 1.5) * 6, t0);
+
+        // Slow atmospheric swell attack & release
+        gain.gain.setValueAtTime(0.001, t0);
+        gain.gain.linearRampToValueAtTime(vol, t0 + duration * 0.45);
+        gain.gain.exponentialRampToValueAtTime(0.0008, t0 + duration);
+
+        osc.connect(gain);
+        gain.connect(bus.filter);
+        osc.start(t0);
+        osc.stop(t0 + duration);
+      });
+    }
+
+    function playSubBass(freq, duration = 0.24, vol = 0.075) {
+      if (!soundEnabled || !audioCtx) return;
+      const t0 = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const subFilter = audioCtx.createBiquadFilter();
+      const gain = audioCtx.createGain();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(freq, t0);
+
+      // Synth bass filter pluck envelope
+      subFilter.type = "lowpass";
+      subFilter.Q.value = 4.0;
+      subFilter.frequency.setValueAtTime(650, t0);
+      subFilter.frequency.exponentialRampToValueAtTime(130, t0 + duration);
+
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+
+      osc.connect(subFilter);
+      subFilter.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    function startBgmLoop() {
+      if (bgmTimer) return;
+      bgmTimer = setInterval(() => {
+        if (!soundEnabled || !audioCtx || audioCtx.state !== "running" || gameOver || victory) return;
+        const isBoss = (typeof cameraX !== "undefined" && typeof WORLD_W !== "undefined") &&
+                       (cameraX >= WORLD_W - canvas.width - 120);
+        if (isBoss) {
+          playSpaceArp(BOSS_ARP[bgmStep % BOSS_ARP.length], 0.18, 0.05);
+          if (bgmStep % 2 === 0) {
+            playSubBass(BOSS_BASS[(bgmStep / 2) % BOSS_BASS.length], 0.24, 0.09);
+          }
+          if (bgmStep % 8 === 0) {
+            playSpacePad([164.81, 233.08, 311.13, 415.30], 1.1, 0.025);
+          }
+        } else {
+          playSpaceArp(SPACE_ARP[bgmStep % SPACE_ARP.length], 0.24, 0.042);
+          if (bgmStep % 2 === 0) {
+            playSubBass(SPACE_BASS[(bgmStep / 2) % SPACE_BASS.length], 0.26, 0.075);
+          }
+          if (bgmStep % 8 === 0) {
+            const chord = SPACE_PAD_CHORDS[Math.floor(bgmStep / 8) % SPACE_PAD_CHORDS.length];
+            playSpacePad(chord, 1.35, 0.024);
+          }
+        }
+        bgmStep++;
+      }, 150);
+    }
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      startBgmLoop();
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "sawtooth", duration = 0.09, delay = 0, vol = 0.12, slideTo = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + duration);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    const sfx = {
+      laser()     { playTone(980, "sine", 0.08, 0, 0.08, 240); },
+      bossLaser() { playTone(420, "sawtooth", 0.16, 0, 0.11, 110); },
+      hit()       { playTone(560, "triangle", 0.05, 0, 0.11, 320); },
+      explode()   { playTone(150, "sawtooth", 0.25, 0, 0.18, 38); },
+      damage()    { playTone(240, "sawtooth", 0.32, 0, 0.22, 50); },
+      win()       { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => playSpaceArp(f, 0.45, 0.08)); }
+    };
+
+    document.getElementById("soundBtn").addEventListener("click", e => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) getAudio();
+      e.target.textContent = soundEnabled ? "🔊 Music & SFX: ON" : "🔇 Music & SFX: OFF";
+    });
+
     // Exact 9 interior rows of the "Map" block from shoot.md
     const RAW_STAGE_MAP = [
       "                       earthearthearthearthearthearthearthearthearthearthearthearthearthearthearthearthearthearthea ",
@@ -202,15 +432,19 @@
         const minC = Math.min(...bossCells.map(b => b.c));
         const minR = Math.min(...bossCells.map(b => b.r));
         const maxR = Math.max(...bossCells.map(b => b.r));
+        const baseX = minC * TILE_W + 40;
         boss = {
-          x: minC * TILE_W + 40,
+          x: baseX,
+          baseX,
           y: ((minR + maxR + 1) / 2) * TILE_H,
           w: 110,
           h: 150,
-          hp: 30,
-          maxHp: 30,
-          vy: 1.3,
-          shootTimer: 85,
+          hp: 130,
+          maxHp: 130,
+          vy: 1.9,
+          phaseTimer: 0,
+          attackCycle: 0,
+          shootTimer: 55,
           alive: true
         };
       }
@@ -240,6 +474,7 @@
       if (jet.invuln > 0 || gameOver || victory) return;
       jet.lives--;
       jet.invuln = 120;
+      sfx.damage();
       spawnExplosion(jet.x, jet.y, "#38bdf8", 22);
       if (jet.lives <= 0) {
         gameOver = true;
@@ -281,7 +516,9 @@
         document.getElementById("stageStatus").textContent =
           `Scrolling Cavern (${Math.floor((cameraX / maxCameraX) * 100)}%)`;
       } else {
-        document.getElementById("stageStatus").textContent = "⚠️ BOSS ENGAGED!";
+        const enraged = boss && boss.hp <= boss.maxHp * 0.5;
+        document.getElementById("stageStatus").textContent =
+          enraged ? "🔥 BOSS OVERDRIVE (PHASE 2)!" : "⚠️ BOSS ENGAGED!";
       }
 
       // Move JET with solid axis-separated wall collision (cannot pass through earth walls)
@@ -331,6 +568,7 @@
         bullets.push({ x: jet.x + 30, y: jet.y - 5, vx: 11, vy: 0 });
         bullets.push({ x: jet.x + 30, y: jet.y + 9, vx: 11, vy: 0 });
         jet.fireCooldown = 8;
+        sfx.laser();
       }
 
       // Update player bullets
@@ -343,16 +581,26 @@
           continue;
         }
 
-        // Player bullets can shoot down enemy projectiles!
+        // Player bullets can shoot down normal enemy projectiles, but NOT indestructible Boss plasma orbs!
         let intercepted = false;
         for (let j = enemyBullets.length - 1; j >= 0; j--) {
           const eb = enemyBullets[j];
-          if (rectOverlap(b.x, b.y, 16, 10, eb.x, eb.y, 12, 12)) {
-            spawnExplosion(eb.x, eb.y, "#fde047", 4);
-            enemyBullets.splice(j, 1);
-            bullets.splice(i, 1);
-            intercepted = true;
-            break;
+          const hitSize = (eb.r || 5) * 2 + 2;
+          if (rectOverlap(b.x, b.y, 16, 10, eb.x, eb.y, hitSize, hitSize)) {
+            if (eb.indestructible) {
+              // Plasma orb absorbs player laser! Must dodge!
+              spawnExplosion(b.x, b.y, "#38bdf8", 2);
+              bullets.splice(i, 1);
+              intercepted = true;
+              break;
+            } else {
+              sfx.hit();
+              spawnExplosion(eb.x, eb.y, "#fde047", 4);
+              enemyBullets.splice(j, 1);
+              bullets.splice(i, 1);
+              intercepted = true;
+              break;
+            }
           }
         }
         if (intercepted) continue;
@@ -377,7 +625,10 @@
             if (e.hp <= 0) {
               e.alive = false;
               score += 150;
+              sfx.explode();
               spawnExplosion(sx, e.y, "#f43f5e", 16);
+            } else {
+              sfx.hit();
             }
             bullets.splice(i, 1);
             removed = true;
@@ -396,7 +647,10 @@
             if (c.hp <= 0) {
               c.alive = false;
               score += 200;
+              sfx.explode();
               spawnExplosion(sx, c.y, "#f59e0b", 16);
+            } else {
+              sfx.hit();
             }
             bullets.splice(i, 1);
             removed = true;
@@ -415,9 +669,12 @@
             bullets.splice(i, 1);
             if (boss.hp <= 0) {
               boss.alive = false;
-              score += 2000;
-              spawnExplosion(bx, boss.y, "#c084fc", 45);
+              score += 3000;
+              sfx.win();
+              spawnExplosion(bx, boss.y, "#c084fc", 55);
               victory = true;
+            } else {
+              sfx.hit();
             }
           }
         }
@@ -429,12 +686,13 @@
         const sx = e.x - cameraX;
         if (sx < -60 || sx > canvas.width + 80) continue;
 
-        const nextEx = e.x - 0.5;
+        const moveSpeed = e.fast ? 2.4 : 0.5;
+        const nextEx = e.x - moveSpeed;
         if (!collidesWithTerrain(nextEx - cameraX, e.y, e.w, e.h)) {
           e.x = nextEx;
         }
-        e.phase += 0.04;
-        const nextEy = e.baseY + Math.sin(e.phase) * 16;
+        e.phase += e.fast ? 0.08 : 0.04;
+        const nextEy = e.baseY + Math.sin(e.phase) * (e.fast ? 28 : 16);
         if (!collidesWithTerrain(e.x - cameraX, nextEy, e.w, e.h)) {
           e.y = nextEy;
         }
@@ -448,8 +706,8 @@
 
         e.shootTimer--;
         if (e.shootTimer <= 0) {
-          e.shootTimer = 150;
-          enemyBullets.push({ x: sx - 20, y: e.y, vx: -2.6, vy: 0, color: "#fb7185" });
+          e.shootTimer = e.fast ? 95 : 150;
+          enemyBullets.push({ x: sx - 20, y: e.y, vx: -3.0, vy: 0, color: "#fb7185", r: 5 });
         }
       }
 
@@ -472,34 +730,105 @@
             y: c.y,
             vx: Math.cos(angle) * 2.4,
             vy: Math.sin(angle) * 2.4,
-            color: "#fbbf24"
+            color: "#fbbf24",
+            r: 5
           });
         }
       }
 
-      // Update Boss
+      // Update Boss (Multi-Phase AI & 3 Attack Patterns)
       if (boss && boss.alive) {
         const bx = boss.x - cameraX;
         if (bx < canvas.width + 80) {
-          boss.y += boss.vy;
-          if (boss.y < 130 || boss.y > canvas.height - 130) boss.vy *= -1;
+          const enraged = boss.hp <= boss.maxHp * 0.5;
+          boss.phaseTimer += enraged ? 0.055 : 0.035;
 
-          if (rectOverlap(jet.x, jet.y, 26, 14, bx, boss.y, boss.w, boss.h)) {
+          // Horizontal figure-8 / thruster weaving + vertical sweep
+          boss.x = boss.baseX - Math.sin(boss.phaseTimer) * (enraged ? 85 : 48);
+          boss.y += boss.vy * (enraged ? 1.55 : 1.0);
+          if (boss.y < 110) {
+            boss.y = 110;
+            boss.vy = Math.abs(boss.vy);
+          } else if (boss.y > canvas.height - 110) {
+            boss.y = canvas.height - 110;
+            boss.vy = -Math.abs(boss.vy);
+          }
+
+          const curBx = boss.x - cameraX;
+          if (rectOverlap(jet.x, jet.y, 26, 14, curBx, boss.y, boss.w, boss.h)) {
             damageJet();
           }
 
           boss.shootTimer--;
           if (boss.shootTimer <= 0) {
-            boss.shootTimer = 90;
-            for (const spread of [-0.25, 0, 0.25]) {
-              const baseAngle = Math.atan2(jet.y - boss.y, jet.x - bx) + spread;
-              enemyBullets.push({
-                x: bx - 50,
-                y: boss.y,
-                vx: Math.cos(baseAngle) * 2.8,
-                vy: Math.sin(baseAngle) * 2.8,
-                color: "#e879f9"
-              });
+            boss.shootTimer = enraged ? 38 : 56;
+            const pattern = boss.attackCycle % 3;
+            boss.attackCycle++;
+            sfx.bossLaser();
+
+            if (pattern === 0) {
+              // Pattern 0: Aimed Indestructible Heavy Plasma Orbs (Must dodge!)
+              const angles = enraged ? [-0.28, -0.1, 0.1, 0.28] : [-0.22, 0, 0.22];
+              const baseAngle = Math.atan2(jet.y - boss.y, jet.x - curBx);
+              for (const offset of angles) {
+                const a = baseAngle + offset;
+                const spd = enraged ? 4.3 : 3.6;
+                enemyBullets.push({
+                  x: curBx - 55,
+                  y: boss.y,
+                  vx: Math.cos(a) * spd,
+                  vy: Math.sin(a) * spd,
+                  color: "#22d3ee",
+                  r: 8,
+                  indestructible: true
+                });
+              }
+            } else if (pattern === 1) {
+              // Pattern 1: Wide 5-Way / 7-Way Fan Curtain from Top & Bottom Turrets
+              const count = enraged ? 7 : 5;
+              for (let k = 0; k < count; k++) {
+                const spread = ((k / (count - 1)) - 0.5) * 1.15;
+                const a = Math.PI + spread;
+                const spd = enraged ? 3.8 : 3.1;
+                enemyBullets.push({
+                  x: curBx - 50,
+                  y: boss.y + (k % 2 === 0 ? -38 : 38),
+                  vx: Math.cos(a) * spd,
+                  vy: Math.sin(a) * spd,
+                  color: "#e879f9",
+                  r: 6
+                });
+              }
+            } else {
+              // Pattern 2: Twin Indestructible Laser Cannons + Interceptor Drone Launch
+              for (const yOff of [-48, 48]) {
+                enemyBullets.push({
+                  x: curBx - 55,
+                  y: boss.y + yOff,
+                  vx: enraged ? -5.2 : -4.4,
+                  vy: 0,
+                  color: "#f43f5e",
+                  r: 8,
+                  indestructible: true
+                });
+              }
+              // Deploy an aggressive interceptor fighter if fewer than 3 active nearby
+              const activeNearby = enemies.filter(e => e.alive && Math.abs((e.x - cameraX) - curBx) < 500).length;
+              if (activeNearby < (enraged ? 3 : 2)) {
+                enemies.push({
+                  x: boss.x - 60,
+                  y: boss.y,
+                  baseY: boss.y,
+                  w: 44,
+                  h: 28,
+                  hp: 2,
+                  type: "X",
+                  fast: true,
+                  phase: Math.random() * Math.PI * 2,
+                  shootTimer: 45,
+                  alive: true
+                });
+              }
             }
           }
         }
@@ -522,7 +851,8 @@
           enemyBullets.splice(i, 1);
           continue;
         }
-        if (rectOverlap(jet.x, jet.y, 22, 12, eb.x, eb.y, 6, 6)) {
+        const hitR = eb.r || 5;
+        if (rectOverlap(jet.x, jet.y, 22, 12, eb.x, eb.y, hitR * 1.6, hitR * 1.6)) {
           enemyBullets.splice(i, 1);
           damageJet();
         }
@@ -643,8 +973,17 @@
       if (boss && boss.alive) {
         const bx = boss.x - cameraX;
         if (bx < canvas.width + 100) {
-          drawBoxEntity(bx, boss.y, boss.w, boss.h, `BOSS (${boss.hp})`, "#e879f9", "rgba(88, 28, 135, 0.85)");
-          ctx.fillStyle = "#f0abfc";
+          const enraged = boss.hp <= boss.maxHp * 0.5;
+          drawBoxEntity(
+            bx,
+            boss.y,
+            boss.w,
+            boss.h,
+            enraged ? `🔥 BOSS OVERDRIVE (${boss.hp})` : `BOSS (${boss.hp})`,
+            enraged ? "#f43f5e" : "#e879f9",
+            enraged ? "rgba(136, 19, 55, 0.88)" : "rgba(88, 28, 135, 0.85)"
+          );
+          ctx.fillStyle = enraged ? "#fda4af" : "#f0abfc";
           ctx.font = "bold 16px monospace";
           ctx.textAlign = "center";
           ctx.fillText("bossbos", bx, boss.y - 20);
@@ -662,12 +1001,25 @@
         ctx.fillRect(b.x - 8, b.y - 2, 16, 4);
       }
 
-      // Draw enemy bullets
+      // Draw enemy bullets (with glowing outer ring for indestructible Boss plasma orbs)
       for (const eb of enemyBullets) {
-        ctx.fillStyle = eb.color;
-        ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 5, 0, Math.PI * 2);
-        ctx.fill();
+        const r = eb.r || 5;
+        if (eb.indestructible) {
+          ctx.save();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.fillStyle = eb.color;
+          ctx.beginPath();
+          ctx.arc(eb.x, eb.y, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          ctx.fillStyle = eb.color;
+          ctx.beginPath();
+          ctx.arc(eb.x, eb.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       // Draw particles
@@ -684,6 +1036,21 @@
       ctx.textAlign = "left";
       const lifeSymbols = Array.from({ length: Math.max(0, jet.lives) }, () => "※").join(" ");
       ctx.fillText(`Life ${lifeSymbols}`, 20, 30);
+
+      // Top-center BOSS HP Bar when Boss is on screen
+      if (boss && boss.alive && boss.x - cameraX < canvas.width + 60) {
+        const barW = 320;
+        const barH = 14;
+        const barX = (canvas.width - barW) / 2;
+        const barY = 16;
+        ctx.fillStyle = "rgba(9, 13, 22, 0.85)";
+        ctx.fillRect(barX - 4, barY - 4, barW + 8, barH + 8);
+        ctx.strokeStyle = "#a855f7";
+        ctx.strokeRect(barX - 4, barY - 4, barW + 8, barH + 8);
+        const ratio = Math.max(0, boss.hp / boss.maxHp);
+        ctx.fillStyle = ratio <= 0.5 ? "#f43f5e" : "#c084fc";
+        ctx.fillRect(barX, barY, barW * ratio, barH);
+      }
 
       // Overlay for Game Over / Victory
       if (gameOver || victory) {
@@ -747,12 +1114,17 @@
     }
 
     window.addEventListener("keydown", e => {
+      getAudio();
       const k = e.key.toLowerCase();
       keys[k] = true;
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k)) {
         e.preventDefault();
       }
       if (k === "r") parseStageMap();
+    });
+
+    window.addEventListener("pointerdown", () => {
+      getAudio();
     });
 
     window.addEventListener("keyup", e => {
@@ -762,6 +1134,7 @@
     document.getElementById("restartBtn").addEventListener("click", parseStageMap);
 
     parseStageMap();
+    getAudio();
     loop();
   </script>
 </body>

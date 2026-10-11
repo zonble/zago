@@ -17,90 +17,95 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background: var(--bg);
-      color: #f5f5f4;
+      justify-content: space-between;
+      background: radial-gradient(circle at center, #78350f 0%, #291507 100%);
+      color: #fef3c7;
       font-family: "PingFang TC", "Noto Sans TC", "SF Mono", sans-serif;
-      padding: 20px;
+      padding: 12px 20px;
     }
     h1 {
-      margin: 0 0 8px;
-      font-size: 1.5rem;
-      letter-spacing: 1px;
+      margin: 0;
+      font-size: clamp(1.3rem, 2.2vw, 1.85rem);
+      color: #fde047;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      letter-spacing: 2px;
     }
     .hud {
       display: flex;
-      gap: 16px;
+      gap: 20px;
       align-items: center;
-      margin-bottom: 14px;
+      font-size: clamp(0.95rem, 1.3vw, 1.15rem);
     }
     button {
-      background: #44403c;
+      background: #ea580c;
       color: #fff;
-      border: 1px solid #78716c;
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 0.9rem;
+      border: 2px solid #431407;
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-size: 0.95rem;
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 3px 0 #431407;
     }
-    button:hover { background: #57534e; }
+    button:hover { background: #c2410c; }
     .frame {
       position: relative;
-      padding: 12px;
-      background: #1c1917;
-      border: 6px double var(--border);
-      border-radius: 8px;
-      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+      padding: 14px;
+      background: #451a03;
+      border: 8px double #fbbf24;
+      border-radius: 12px;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.7);
     }
     /* Exit opening at the bottom center (╠═══════            ═══════╣) */
     .frame::after {
       content: "EXIT 出口";
       position: absolute;
-      bottom: -6px;
+      bottom: -8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 168px;
-      height: 10px;
-      background: var(--bg);
-      color: #fbbf24;
-      font-size: 11px;
+      width: 50%;
+      height: 14px;
+      background: #291507;
+      color: #fde047;
+      font-size: 12px;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
     }
     #board {
       position: relative;
-      width: 336px;  /* 4 cols * 84px */
-      height: 420px; /* 5 rows * 84px */
-      background: var(--board-bg);
+      background: #271206;
     }
     .piece {
       position: absolute;
-      border: 2px solid rgba(255, 255, 255, 0.75);
-      border-radius: 6px;
+      border: 2.5px solid rgba(255, 251, 235, 0.85);
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 1.35rem;
+      font-weight: 900;
+      font-size: clamp(1.3rem, 2.5vh, 2.1rem);
       color: #fff;
       cursor: grab;
       user-select: none;
       transition: left 0.14s ease, top 0.14s ease, box-shadow 0.14s ease;
-      box-shadow: inset 0 2px 4px rgba(255,255,255,0.25), 0 4px 10px rgba(0,0,0,0.4);
+      box-shadow: inset 0 3px 6px rgba(255,255,255,0.3), 0 5px 12px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 3px rgba(0,0,0,0.5);
     }
     .piece:active { cursor: grabbing; }
     .piece.selected {
-      outline: 3px solid #fde047;
+      outline: 4px solid #fde047;
       z-index: 5;
     }
-    .piece.caocao { background: linear-gradient(135deg, #ef4444, #b91c1c); font-size: 1.75rem; letter-spacing: 8px; }
+    .piece.caocao { background: linear-gradient(135deg, #ef4444, #b91c1c); font-size: clamp(1.7rem, 3.3vh, 2.8rem); letter-spacing: 8px; }
     .piece.guanyu { background: linear-gradient(135deg, #f59e0b, #b45309); letter-spacing: 8px; }
     .piece.general {
       background: linear-gradient(135deg, #3b82f6, #1d4ed8);
@@ -110,10 +115,10 @@
     }
     .piece.soldier { background: linear-gradient(135deg, #10b981, #047857); }
     .hint {
-      margin-top: 16px;
-      font-size: 0.9rem;
-      color: #a8a29e;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+      color: #fde68a;
       text-align: center;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -122,6 +127,7 @@
   <div class="hud">
     <span>Moves: <strong id="moves">0</strong></span>
     <button id="resetBtn">Reset Board</button>
+    <button id="soundBtn">🔊 音效開</button>
   </div>
 
   <div class="frame">
@@ -133,8 +139,64 @@
   </div>
 
   <script>
-    const CELL = 84;
-    const GAP = 4;
+    // --- Web Audio API Classical Pentatonic & Wooden Block Sound Engine ---
+    let audioCtx = null;
+    let soundEnabled = true;
+    let bgmTimer = null;
+    let bgmIdx = 0;
+    // Pentatonic scale (宮商角徵羽)
+    const PENTATONIC = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 440.00, 392.00, 329.63, 293.66];
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      if (!bgmTimer && soundEnabled) {
+        bgmTimer = setInterval(() => {
+          if (!soundEnabled) return;
+          playTone(PENTATONIC[bgmIdx % PENTATONIC.length], "sine", 0.28, 0, 0.03);
+          bgmIdx++;
+        }, 360);
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "sine", duration = 0.1, delay = 0, vol = 0.15, slideTo = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + duration);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    const sfx = {
+      tap()   { playTone(260, "triangle", 0.04, 0, 0.14, 180); },
+      slide() { playTone(190, "triangle", 0.09, 0, 0.24, 310); },
+      win()   { [261.63, 329.63, 392.00, 523.25, 659.25].forEach((f, i) => playTone(f, "triangle", 0.22, i * 0.12, 0.22)); }
+    };
+
+    let CELL = 100;
+    const GAP = 6;
+
+    function updateCellSize() {
+      const availW = window.innerWidth - 80;
+      const availH = window.innerHeight - 170;
+      CELL = Math.max(64, Math.floor(Math.min(availW / 4, availH / 5)));
+      const board = document.getElementById("board");
+      board.style.width = `${CELL * 4}px`;
+      board.style.height = `${CELL * 5}px`;
+    }
 
     // Exact "Heng Dao Li Ma" (橫刀立馬) layout from huarondao.md
     const INITIAL_PIECES = [
@@ -156,12 +218,18 @@
     let dragStart = null;
 
     function initGame() {
+      updateCellSize();
       pieces = INITIAL_PIECES.map(p => ({ ...p }));
       moves = 0;
       document.getElementById("status").textContent =
         "Click or drag any block (or select a block and press Arrow Keys / WASD) to slide it.";
       render();
     }
+
+    window.addEventListener("resize", () => {
+      updateCellSize();
+      render();
+    });
 
     function canMove(piece, dx, dy) {
       const nx = piece.x + dx;
@@ -182,6 +250,7 @@
       piece.x += dx;
       piece.y += dy;
       moves++;
+      sfx.slide();
       render();
       checkWin();
       return true;
@@ -194,12 +263,15 @@
       const valid = dirs.filter(([dx, dy]) => canMove(piece, dx, dy));
       if (valid.length === 1) {
         tryMove(piece, valid[0][0], valid[0][1]);
+      } else {
+        sfx.tap();
       }
     }
 
     function checkWin() {
       const cc = pieces.find(p => p.id === "caocao");
       if (cc.x === 1 && cc.y === 3) {
+        sfx.win();
         document.getElementById("status").textContent =
           `🎉 曹操成功脫逃！You solved Huarong Dao in ${moves} moves!`;
       }
@@ -260,6 +332,10 @@
     });
 
     document.getElementById("resetBtn").addEventListener("click", initGame);
+    document.getElementById("soundBtn").addEventListener("click", e => {
+      soundEnabled = !soundEnabled;
+      e.target.textContent = soundEnabled ? "🔊 音效開" : "🔇 靜音";
+    });
     initGame();
   </script>
 </body>

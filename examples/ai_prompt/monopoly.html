@@ -6,11 +6,11 @@
   <title>台灣大富翁 — Taiwan Monopoly</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #1e293b;
-      --tile-bg: #1e293b;
-      --border: #94a3b8;
-      --text: #f8fafc;
+      --bg: #2b580c;
+      --board-felt: #cce3c4;
+      --tile-bg: #fffdf5;
+      --border: #1e293b;
+      --text: #1e293b;
     }
     * { box-sizing: border-box; }
     body {
@@ -18,9 +18,9 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      background: var(--bg);
+      background: radial-gradient(circle at center, #4d8b31 0%, #244712 100%);
       color: var(--text);
-      font-family: "PingFang TC", "Noto Sans TC", "SF Mono", sans-serif;
+      font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
       padding: 8px;
       user-select: none;
     }
@@ -31,77 +31,116 @@
       grid-template-columns: repeat(11, minmax(0, 1fr));
       grid-template-rows: repeat(11, minmax(0, 1fr));
       gap: 4px;
+      background: #1e293b;
+      padding: 5px;
+      border-radius: 12px;
+      border: 4px solid #fbbf24;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
     }
     .tile {
       background: var(--tile-bg);
-      border: 2px solid #475569;
+      border: 2px solid #1e293b;
       border-radius: 6px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 4px 6px;
+      padding: 0 0 3px 0;
       position: relative;
       font-size: clamp(11px, 1.05vw, 15px);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
       overflow: hidden;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    /* Special tile festive backgrounds */
+    .tile.type-start {
+      background: linear-gradient(135deg, #fef08a, #fde047);
+    }
+    .tile.type-chance {
+      background: linear-gradient(135deg, #ffedd5, #fed7aa);
+    }
+    .tile.type-destiny {
+      background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+    }
+    .tile.type-public {
+      background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    }
+    .tile.type-reroll {
+      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    }
+    .tile.type-rest {
+      background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    }
+    .tile.type-police {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
     }
     .tile.has-players {
-      background: #26354d;
-      border-color: #cbd5e1;
+      background: #fef9c3;
+      border-color: #0284c7;
       z-index: 2;
     }
     .tile.has-active-player {
-      background: #2e3b28;
-      border: 3px solid #fde047 !important;
-      box-shadow: 0 0 18px rgba(253, 224, 71, 0.75);
+      background: #fef08a !important;
+      border: 3px solid #dc2626 !important;
+      box-shadow: 0 0 18px rgba(220, 38, 38, 0.85);
       z-index: 4;
     }
     .tile.jail-cell {
-      background: #27272a;
-      border-color: #f97316;
-      border-style: dashed;
+      background: repeating-linear-gradient(
+        90deg,
+        #e2e8f0,
+        #e2e8f0 8px,
+        #94a3b8 8px,
+        #94a3b8 11px
+      );
+      border: 3px solid #ea580c;
     }
     .tile-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: 800;
+      font-weight: 900;
       font-size: clamp(12px, 1.15vw, 16px);
       line-height: 1.15;
       white-space: nowrap;
+      padding: 3px 5px 1px 5px;
+      color: #0f172a;
     }
     .city-bar {
-      height: 6px;
-      border-radius: 3px;
-      margin-bottom: 3px;
+      height: 10px;
+      width: 100%;
+      border-bottom: 2px solid #1e293b;
     }
     .tile-sub {
       font-size: clamp(10px, 0.9vw, 13px);
-      color: #cbd5e1;
+      color: #334155;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      font-weight: 600;
+      font-weight: 800;
+      padding: 0 4px;
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 3px;
+      margin: 0 3px;
     }
     .tokens {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      min-height: 28px;
+      min-height: 26px;
       z-index: 5;
+      padding: 0 2px;
     }
     @keyframes pulseBounce {
       0%, 100% { transform: scale(1) translateY(0); }
-      50% { transform: scale(1.16) translateY(-3px); }
+      50% { transform: scale(1.18) translateY(-3px); }
     }
     .token {
       padding: 2px 6px;
-      height: 26px;
+      height: 25px;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
       color: #fff;
       display: inline-flex;
@@ -109,41 +148,44 @@
       justify-content: center;
       gap: 2px;
       border: 2px solid #fff;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.55);
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
     }
     .token.active-token {
       border-color: #fde047;
-      box-shadow: 0 0 12px #fde047, 0 4px 10px rgba(0, 0, 0, 0.9);
-      animation: pulseBounce 0.9s infinite ease-in-out;
+      box-shadow: 0 0 10px #dc2626, 0 4px 8px rgba(0, 0, 0, 0.7);
+      animation: pulseBounce 0.85s infinite ease-in-out;
     }
     .owner-badge {
-      padding: 1px 5px;
+      padding: 1px 4px;
       border-radius: 4px;
-      font-size: 11px;
-      font-weight: bold;
+      font-size: 10px;
+      font-weight: 900;
       color: #fff;
+      border: 1px solid #1e293b;
     }
 
-    /* Center Dashboard (rows 2..10, cols 2..9) */
+    /* Center Dashboard — Classic Tabletop Felt */
     .center-panel {
       grid-column: 2 / 10;
       grid-row: 2 / 11;
-      background: #111827;
-      border: 2px solid var(--border);
+      background: radial-gradient(circle at center, #d9f2d0 0%, #b5dca5 100%);
+      border: 3px solid #1e293b;
       border-radius: 8px;
-      padding: 18px 24px;
+      padding: 16px 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+      box-shadow: inset 0 0 24px rgba(22, 101, 52, 0.25);
       overflow: hidden;
     }
     .score-section h2 {
       margin: 0 0 10px;
-      font-size: clamp(1.1rem, 1.5vw, 1.5rem);
-      color: #fde047;
+      font-size: clamp(1.15rem, 1.55vw, 1.55rem);
+      color: #b91c1c;
+      text-shadow: 1px 1px 0 #fff;
       letter-spacing: 1px;
+      font-weight: 900;
     }
     .score-list {
       list-style: none;
@@ -154,19 +196,23 @@
       gap: 10px;
     }
     .score-item {
-      background: #1f2937;
-      border: 1px solid #374151;
-      border-left: 6px solid #60a5fa;
-      border-radius: 6px;
-      padding: 10px 14px;
+      background: #fffdf7;
+      border: 2px solid #1e293b;
+      border-left: 8px solid #60a5fa;
+      border-radius: 8px;
+      padding: 9px 14px;
       font-size: clamp(13px, 1.1vw, 16px);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 3px 0 rgba(30, 41, 59, 0.2);
+      color: #0f172a;
     }
     .score-item.active-turn {
-      outline: 2px solid #fde047;
-      background: #263346;
+      background: #fef08a;
+      border-color: #dc2626;
+      box-shadow: 0 4px 0 #dc2626;
+      transform: translateY(-1px);
     }
     .score-item.bankrupt {
       opacity: 0.45;
@@ -176,33 +222,35 @@
       display: inline-block;
       margin-left: 6px;
       padding: 2px 7px;
-      border-radius: 4px;
+      border-radius: 999px;
       font-size: 12px;
-      background: #334155;
+      background: #1e293b;
       color: #fde047;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .event-card {
-      background: #1e293b;
-      border: 1px solid #475569;
-      border-radius: 8px;
+      background: #fffbeb;
+      border: 3px solid #1e293b;
+      border-radius: 12px;
       padding: 16px 20px;
       min-height: 110px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 5px 0 rgba(30, 41, 59, 0.25);
     }
     .event-title {
-      font-weight: bold;
+      font-weight: 900;
       font-size: clamp(1.05rem, 1.35vw, 1.35rem);
-      color: #38bdf8;
+      color: #b91c1c;
     }
     .event-desc {
       font-size: clamp(0.95rem, 1.15vw, 1.15rem);
       line-height: 1.45;
-      color: #e2e8f0;
+      color: #1e293b;
+      font-weight: 600;
     }
 
     .controls-area {
@@ -210,14 +258,18 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      border-top: 1px solid #334155;
-      padding-top: 14px;
+      border-top: 2px dashed #4d7c0f;
+      padding-top: 12px;
     }
     .dice-wrap {
       display: flex;
       align-items: center;
       gap: 12px;
-      min-width: 130px;
+      min-width: 140px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 2px solid #1e293b;
     }
     @keyframes dieTumble {
       0%   { transform: rotate(0deg) scale(1) translateY(0); }
@@ -227,37 +279,35 @@
       100% { transform: rotate(360deg) scale(1) translateY(0); }
     }
     @keyframes dieLandPop {
-      0%   { transform: scale(1.35); box-shadow: 0 0 24px #fde047; }
+      0%   { transform: scale(1.35); box-shadow: 0 0 24px #f59e0b; }
       100% { transform: scale(1); }
     }
     .die-cube {
-      width: 54px;
-      height: 54px;
-      background: linear-gradient(145deg, #ffffff, #e2e8f0);
-      border: 2px solid #cbd5e1;
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(145deg, #ffffff, #f1f5f9);
+      border: 2.5px solid #1e293b;
       border-radius: 12px;
       padding: 7px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(3, 1fr);
       place-items: center;
-      box-shadow: inset 0 -3px 6px rgba(0,0,0,0.2), 0 6px 14px rgba(0,0,0,0.5);
+      box-shadow: inset 0 -3px 5px rgba(0,0,0,0.18), 0 4px 0 #1e293b;
     }
     .die-cube.rolling {
       animation: dieTumble 0.24s infinite linear;
-      border-color: #fde047;
+      border-color: #dc2626;
     }
     .die-cube.landed {
       animation: dieLandPop 0.3s ease-out;
-      border-color: #fde047;
-      box-shadow: 0 0 16px rgba(253, 224, 71, 0.75), 0 6px 14px rgba(0,0,0,0.5);
+      border-color: #dc2626;
     }
     .pip {
       width: 9px;
       height: 9px;
       border-radius: 50%;
-      background: #1e293b;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+      background: #0f172a;
     }
     .pip.red {
       background: #dc2626;
@@ -269,65 +319,76 @@
     }
     .dice-num-label {
       font-size: 1.25rem;
-      font-weight: 800;
-      color: #fde047;
+      font-weight: 900;
+      color: #b91c1c;
     }
     .btn-group {
       display: flex;
       gap: 10px;
     }
     button {
-      background: #2563eb;
+      background: #ef4444;
       color: #fff;
-      border: none;
-      border-radius: 6px;
+      border: 2px solid #1e293b;
+      border-radius: 10px;
       padding: 9px 18px;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 900;
       cursor: pointer;
       font-family: inherit;
-      transition: background 0.15s;
+      box-shadow: 0 4px 0 #1e293b;
+      transition: transform 0.1s, background 0.15s;
     }
-    button:hover:not(:disabled) { background: #1d4ed8; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
-    button.secondary { background: #475569; }
-    button.secondary:hover:not(:disabled) { background: #334155; }
-    button.buy-btn { background: #059669; }
-    button.buy-btn:hover:not(:disabled) { background: #047857; }
+    button:hover:not(:disabled) {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+    button:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #1e293b;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.secondary { background: #3b82f6; }
+    button.secondary:hover:not(:disabled) { background: #2563eb; }
+    button.buy-btn { background: #16a34a; }
+    button.buy-btn:hover:not(:disabled) { background: #15803d; }
 
     /* Setup Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.78);
+      background: rgba(15, 23, 42, 0.72);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 50;
     }
     .modal {
-      background: #1e293b;
-      border: 2px solid #94a3b8;
-      border-radius: 12px;
+      background: #fffbeb;
+      color: #1e293b;
+      border: 4px solid #1e293b;
+      border-radius: 16px;
       padding: 24px 28px;
       width: 420px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 10px 0 #1e293b, 0 20px 50px rgba(0, 0, 0, 0.6);
     }
-    .modal h2 { margin: 0 0 12px; color: #fde047; }
+    .modal h2 { margin: 0 0 12px; color: #b91c1c; font-weight: 900; }
     .setup-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin: 12px 0;
       font-size: 15px;
+      font-weight: bold;
     }
     select {
-      background: #0f172a;
-      color: #fff;
-      border: 1px solid #64748b;
-      border-radius: 6px;
+      background: #fff;
+      color: #1e293b;
+      border: 2px solid #1e293b;
+      border-radius: 8px;
       padding: 6px 10px;
       font-size: 14px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -337,7 +398,7 @@
   <div class="modal-backdrop" id="setupModal">
     <div class="modal">
       <h2>🎲 台灣大富翁設定</h2>
-      <p style="color:#cbd5e1;font-size:14px;margin-top:0;">
+      <p style="color:#475569;font-size:14px;margin-top:0;">
         設定參賽人數與操作方式（每位玩家起始資金 <strong>$20,000</strong>）：
       </p>
       <div class="setup-row">
@@ -950,7 +1011,7 @@
         const herePlayers = players.filter(p => !p.bankrupt && p.inJail === 0 && p.pos === idx);
         const hasActive = herePlayers.some(p => p.id === currentTurn && !gameOver);
 
-        el.className = "tile" +
+        el.className = `tile type-${t.type}` +
           (herePlayers.length > 0 ? " has-players" : "") +
           (hasActive ? " has-active-player" : "");
         el.style.gridRow = t.r + 1;
@@ -1002,7 +1063,7 @@
       jailEl.style.gridRow = 11;
       jailEl.style.gridColumn = 11;
       jailEl.innerHTML = `
-        <div class="tile-header" style="color:#fb923c;">
+        <div class="tile-header" style="color:#c2410c;background:rgba(255,255,255,0.9);border-bottom:2px solid #1e293b;">
           <span>監牢</span>
           <span>⛓️</span>
         </div>
