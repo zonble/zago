@@ -388,10 +388,19 @@ final class MenuBar {
             tmdItems.append(.divider)
         }
         tmdItems.append(contentsOf: [
+            MenuItem(titleKey: "menu.tmd.check", hotkeyChar: "c", commandId: .tmdCheck),
+            MenuItem(titleKey: "menu.tmd.format", hotkeyChar: "f", commandId: .tmdFormat),
+            MenuItem(titleKey: "menu.tmd.inspect", hotkeyChar: "i", commandId: .tmdInspect),
+            .divider,
             MenuItem(titleKey: "menu.tmd.export_midi", hotkeyChar: "m", commandId: .tmdExportMIDI),
             MenuItem(titleKey: "menu.tmd.export_musicxml", hotkeyChar: "x", commandId: .tmdExportMusicXML),
             MenuItem(titleKey: "menu.tmd.export_lilypond", hotkeyChar: "l", commandId: .tmdExportLilyPond),
             MenuItem(titleKey: "menu.tmd.export_abc", hotkeyChar: "a", commandId: .tmdExportABC),
+            MenuItem(titleKey: "menu.tmd.export_chordpro", hotkeyChar: "h", commandId: .tmdExportChordPro),
+            MenuItem(titleKey: "menu.tmd.export_reaper", hotkeyChar: "r", commandId: .tmdExportReaper),
+            MenuItem(titleKey: "menu.tmd.export_utau", hotkeyChar: "u", commandId: .tmdExportUTAU),
+            MenuItem(titleKey: "menu.tmd.export_vsqx", hotkeyChar: "v", commandId: .tmdExportVSQX),
+            MenuItem(titleKey: "menu.tmd.export_vsq", hotkeyChar: "2", commandId: .tmdExportVSQ),
         ])
         if editor?.tmdExportDelegate.isWAVExportSupported ?? true {
             tmdItems.append(MenuItem(titleKey: "menu.tmd.export_wav", hotkeyChar: "w", commandId: .tmdExportWAV))

@@ -30,7 +30,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
-        .package(url: "https://github.com/zonble/TmdSwift.git", from: "0.1.3"),
+        .package(url: "https://github.com/zonble/TmdSwift.git", from: "0.2.5"),
     ],
     targets: [
         .target(
@@ -71,7 +71,8 @@ let package = Package(
             dependencies: ["LogoEngine"]
         ),
         .target(
-            name: "TextTransform"
+            name: "TextTransform",
+            dependencies: ["TextMetrics"]
         ),
         .target(
             name: "Config",
@@ -133,6 +134,10 @@ let package = Package(
                 .product(name: "TmdMusicXML", package: "TmdSwift"),
                 .product(name: "TmdLilyPond", package: "TmdSwift"),
                 .product(name: "TmdABC", package: "TmdSwift"),
+                .product(name: "TmdChordPro", package: "TmdSwift"),
+                .product(name: "TmdReaper", package: "TmdSwift"),
+                .product(name: "TmdUTAU", package: "TmdSwift"),
+                .product(name: "TmdVocaloid", package: "TmdSwift"),
                 .product(name: "TmdAudio", package: "TmdSwift", condition: .when(platforms: [.macOS])),
             ]
         ),
@@ -149,6 +154,10 @@ let package = Package(
                 .product(name: "TmdMusicXML", package: "TmdSwift"),
                 .product(name: "TmdLilyPond", package: "TmdSwift"),
                 .product(name: "TmdABC", package: "TmdSwift"),
+                .product(name: "TmdChordPro", package: "TmdSwift"),
+                .product(name: "TmdReaper", package: "TmdSwift"),
+                .product(name: "TmdUTAU", package: "TmdSwift"),
+                .product(name: "TmdVocaloid", package: "TmdSwift"),
             ],
             path: "Sources/zagoweb"
         ),

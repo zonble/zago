@@ -186,7 +186,7 @@ public final class Editor: @unchecked Sendable {
     let fileWatcherCoordinator: FileWatcherCoordinator
     var language: Language = .detectSystemLanguage()
     var usesExplicitLanguage: Bool = false
-    var l10n: L10n { L10n(language: language) }
+    public var l10n: L10n { L10n(language: language) }
     private let configProvider: () -> EditorConfig
     var currentWatchedPath: String? {
         fileWatcherCoordinator.currentWatchedPath

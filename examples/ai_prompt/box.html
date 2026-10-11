@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sokoban (Box-Pushing) Game</title>
+  <style>
+    :root {
+      --bg: #181a1f;
+      --panel: #21252b;
+      --wall: #4b5263;
+      --wall-border: #3e4451;
+      --floor: #282c34;
+      --player: #61afef;
+      --box: #e5c07b;
+      --box-done: #98c379;
+      --goal: #e06c75;
+      --text: #abb2bf;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(circle at center, #2c313c 0%, #181a1f 100%);
+      color: var(--text);
+      font-family: "SF Mono", "Menlo", "Monaco", "Noto Sans Mono CJK TC", monospace;
+      padding: 10px 16px;
+    }
+    h1 {
+      margin: 0;
+      color: #fde047;
+      font-size: clamp(1.2rem, 2vw, 1.75rem);
+    }
+    .hud {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+    }
+    button {
+      background: #ef4444;
+      color: #fff;
+      border: 2px solid #1e222a;
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #1e222a;
+    }
+    button:hover { background: #dc2626; }
+    #board {
+      width: min(96vw, calc((100vh - 115px) * 2));
+      height: min(calc(96vw / 2), calc(100vh - 115px));
+      display: grid;
+      grid-template-columns: repeat(30, minmax(0, 1fr));
+      grid-template-rows: repeat(15, minmax(0, 1fr));
+      border: 4px solid #fde047;
+      border-radius: 8px;
+      background: var(--floor);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65);
+      user-select: none;
+      overflow: hidden;
+    }
+    .cell {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(14px, min(2.4vw, 4.5vh), 36px);
+      position: relative;
+      line-height: 1;
+    }
+    .wall {
+      background: var(--wall);
+      border: 1px solid var(--wall-border);
+      font-size: clamp(12px, min(2.1vw, 4vh), 32px);
+    }
+    .goal::after {
+      content: "🎯";
+      font-size: clamp(13px, min(2.2vw, 4.2vh), 32px);
+      position: absolute;
+      opacity: 0.9;
+    }
+    .box {
+      z-index: 2;
+      font-size: clamp(15px, min(2.5vw, 4.6vh), 38px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+    }
+    .box.on-goal {
+      background: rgba(152, 195, 121, 0.35);
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(152, 195, 121, 0.85);
+    }
+    .player {
+      z-index: 3;
+      font-size: clamp(15px, min(2.5vw, 4.6vh), 38px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 6px rgba(97, 175, 239, 0.8));
+    }
+    .status {
+      min-height: 24px;
+      color: #98c379;
+      font-weight: bold;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+    }
+  </style>
+</head>
+<body>
+  <h1>Sokoban (Box-Pushing) Game</h1>
+  <div class="hud">
+    <span>Moves: <strong id="moves">0</strong></span>
+    <span>Boxes on Goal: <strong id="score">0 / 2</strong></span>
+    <button id="undoBtn">Undo (Z)</button>
+    <button id="resetBtn">Reset (R)</button>
+    <button id="soundBtn">🔊 Sound: ON</button>
+  </div>
+  <div id="board"></div>
+  <div class="status" id="status">Use Arrow Keys or WASD to move 👷 and push both 📦 onto 🎯.</div>
+
+  <script>
+    // --- Web Audio API Sound Engine ---
+    let audioCtx = null;
+    let soundEnabled = true;
+    let bgmTimer = null;
+    let bgmStep = 0;
+    const BGM_MELODY = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      if (!bgmTimer && soundEnabled) {
+        bgmTimer = setInterval(() => {
+          if (!soundEnabled) return;
+          playTone(BGM_MELODY[bgmStep % BGM_MELODY.length], "triangle", 0.16, 0, 0.025);
+          bgmStep++;
+        }, 280);
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "sine", duration = 0.1, delay = 0, vol = 0.15, slideTo = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + duration);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    const sfx = {
+      step()  { playTone(320, "sine", 0.06, 0, 0.12, 420); },
+      push()  { playTone(160, "triangle", 0.11, 0, 0.22, 110); },
+      goal()  { playTone(587.33, "square", 0.09, 0, 0.14); playTone(880, "square", 0.18, 0.08, 0.16); },
+      bump()  { playTone(110, "sawtooth", 0.07, 0, 0.12, 75); },
+      undo()  { playTone(440, "sine", 0.08, 0, 0.12, 260); },
+      win()   { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => playTone(f, "square", 0.16, i * 0.1, 0.16)); }
+    };
+
+    // Raw ASCII layout directly from box.md
+    const RAW_MAP = [
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwal                    lw",
+      "wallw                  lwallwallwallwal                    lw",
+      "wallw                  lwallwallwallwal      箱            lw",
+      "wallw                  lwallwallwallwal                    lw",
+      "wallw                  lwallwallwallwal               xx   lw",
+      "wallw      人                                              lw",
+      "wallw                                                      lw",
+      "wallw                                                      lw",
+      "wallw                箱           x     wallwallwallwallwallw",
+      "wallw                                   wallwallwallwallwallw",
+      "wallw                                   wallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw"
+    ];
+
+    const ROWS = 15;
+    const COLS = 30;
+    let walls = [];
+    let goals = [];
+    let player = { r: 0, c: 0 };
+    let boxes = [];
+    let history = [];
+    let moves = 0;
+
+    function initGame() {
+      walls = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      goals = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      boxes = [];
+      history = [];
+      moves = 0;
+
+      for (let r = 0; r < ROWS; r++) {
+        let col = 0;
+        let prevCh = "";
+        for (const ch of RAW_MAP[r]) {
+          const w = ch.charCodeAt(0) > 255 ? 2 : 1;
+          const c = Math.min(COLS - 1, Math.floor(col / 2));
+          if (ch === "人") {
+            player = { r, c };
+          } else if (ch === "箱") {
+            boxes.push({ r, c });
+          } else if (ch === "x" && prevCh !== "x") {
+            goals[r][c] = true;
+          } else if (/[wal]/.test(ch)) {
+            walls[r][c] = true;
+          }
+          prevCh = ch;
+          col += w;
+        }
+      }
+      render();
+    }
+
+    function hasBox(r, c) {
+      return boxes.findIndex(b => b.r === r && b.c === c);
+    }
+
+    function move(dr, dc) {
+      const nr = player.r + dr;
+      const nc = player.c + dc;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || walls[nr][nc]) {
+        sfx.bump();
+        return;
+      }
+
+      const boxIdx = hasBox(nr, nc);
+      if (boxIdx !== -1) {
+        const br = nr + dr;
+        const bc = nc + dc;
+        if (br < 0 || br >= ROWS || bc < 0 || bc >= COLS || walls[br][bc] || hasBox(br, bc) !== -1) {
+          sfx.bump();
+          return;
+        }
+        history.push({
+          player: { ...player },
+          boxes: boxes.map(b => ({ ...b }))
+        });
+        boxes[boxIdx].r = br;
+        boxes[boxIdx].c = bc;
+        if (goals[br][bc]) sfx.goal();
+        else sfx.push();
+      } else {
+        history.push({
+          player: { ...player },
+          boxes: boxes.map(b => ({ ...b }))
+        });
+        sfx.step();
+      }
+
+      player.r = nr;
+      player.c = nc;
+      moves++;
+      render();
+      if (boxes.every(b => goals[b.r][b.c])) {
+        sfx.win();
+      }
+    }
+
+    function undo() {
+      if (!history.length) return;
+      sfx.undo();
+      const prev = history.pop();
+      player = prev.player;
+      boxes = prev.boxes;
+      moves--;
+      render();
+    }
+
+    function render() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      let onGoalCount = 0;
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          if (walls[r][c]) {
+            cell.classList.add("wall");
+            cell.textContent = "🧱";
+          } else if (goals[r][c]) {
+            cell.classList.add("goal");
+          }
+
+          const bIdx = hasBox(r, c);
+          if (bIdx !== -1) {
+            const boxEl = document.createElement("div");
+            boxEl.className = "box";
+            if (goals[r][c]) {
+              boxEl.classList.add("on-goal");
+              onGoalCount++;
+            }
+            boxEl.textContent = "📦";
+            cell.appendChild(boxEl);
+          } else if (player.r === r && player.c === c) {
+            const pEl = document.createElement("div");
+            pEl.className = "player";
+            pEl.textContent = "👷";
+            cell.appendChild(pEl);
+          }
+
+          board.appendChild(cell);
+        }
+      }
+
+      document.getElementById("moves").textContent = moves;
+      document.getElementById("score").textContent = `${onGoalCount} / ${boxes.length}`;
+      const status = document.getElementById("status");
+      if (onGoalCount === boxes.length) {
+        status.textContent = `🎉 Stage Clear in ${moves} moves!`;
+      } else {
+        status.textContent = "Use Arrow Keys or WASD to move 👷 and push both 📦 onto 🎯.";
+      }
+    }
+
+    window.addEventListener("keydown", e => {
+      const key = e.key.toLowerCase();
+      if (["arrowup", "w"].includes(key)) { e.preventDefault(); move(-1, 0); }
+      else if (["arrowdown", "s"].includes(key)) { e.preventDefault(); move(1, 0); }
+      else if (["arrowleft", "a"].includes(key)) { e.preventDefault(); move(0, -1); }
+      else if (["arrowright", "d"].includes(key)) { e.preventDefault(); move(0, 1); }
+      else if (key === "z") undo();
+      else if (key === "r") initGame();
+    });
+
+    document.getElementById("undoBtn").addEventListener("click", undo);
+    document.getElementById("resetBtn").addEventListener("click", initGame);
+    document.getElementById("soundBtn").addEventListener("click", e => {
+      soundEnabled = !soundEnabled;
+      e.target.textContent = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+    });
+
+    initGame();
+  </script>
+</body>
+</html>

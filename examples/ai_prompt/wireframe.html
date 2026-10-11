@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZAGO — The Terminal Editor for 2D AI Prompts</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #111827;
+      --panel-alt: #1e293b;
+      --border: #38bdf8;
+      --border-subtle: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-green: #4ade80;
+      --accent-amber: #fbbf24;
+      --accent-purple: #c084fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 15%, #162238 0%, #090d14 70%);
+      color: var(--text);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 22px;
+    }
+
+    /* Outer Frame matching the ┌─────┐ box in wireframe.md */
+    .wireframe-frame {
+      width: 100%;
+      height: 100%;
+      max-width: 1480px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: rgba(17, 24, 39, 0.88);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 28px rgba(56, 189, 248, 0.14);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Header Section (Lines 1-5 of wireframe.md) */
+    header.top-section {
+      padding: 18px 32px;
+      border-bottom: 2px solid var(--border);
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .brand-title {
+      margin: 0;
+      font-family: "SF Mono", "Menlo", "Monaco", monospace;
+      font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-title .cursor-block {
+      display: inline-block;
+      width: 12px;
+      height: 24px;
+      background: var(--accent-green);
+      animation: blink 1s steps(2, start) infinite;
+    }
+    @keyframes blink {
+      to { visibility: hidden; }
+    }
+    .brand-subtitle {
+      margin: 0;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: clamp(0.95rem, 1.25vw, 1.15rem);
+      color: var(--accent-green);
+      letter-spacing: 0.5px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      border-color: var(--accent);
+      background: #0f172a;
+      color: var(--accent);
+    }
+    .btn.active {
+      background: var(--accent);
+      color: #090d14;
+      border-color: var(--accent);
+    }
+
+    /* Main Content Section (Lines 6-30 of wireframe.md) */
+    main.body-section {
+      flex: 1;
+      min-height: 0;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      overflow-y: auto;
+    }
+
+    /* Upper Two-Column Hero (Left Copy + Right `image` Box) */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 32px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .copy-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+    .lead-card {
+      background: rgba(30, 41, 59, 0.55);
+      border-left: 4px solid var(--accent);
+      padding: 12px 18px;
+      border-radius: 0 8px 8px 0;
+      font-size: clamp(0.98rem, 1.22vw, 1.18rem);
+      line-height: 1.55;
+      color: #e2e8f0;
+    }
+    .lead-card strong {
+      color: #fff;
+    }
+    .lead-card.highlight {
+      border-left-color: var(--accent-green);
+      background: rgba(20, 83, 45, 0.25);
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 6px 0 0 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .feature-item {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: clamp(0.88rem, 1.05vw, 1rem);
+      color: var(--accent-amber);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .feature-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-amber);
+    }
+    .feature-item::before {
+      content: "─";
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Right Column: The `image` Box from wireframe.md rendered as a Live ZAGO Terminal */
+    .image-box {
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      background: #070a0f;
+      box-shadow: inset 0 0 24px rgba(56, 189, 248, 0.12), 0 12px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 290px;
+    }
+    .term-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .term-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .term-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .term-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .term-tab {
+      background: #0f172a;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: inherit;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+    .term-tab.active {
+      background: var(--accent);
+      color: #090d14;
+      border-color: var(--accent);
+      font-weight: bold;
+    }
+    .term-screen {
+      flex: 1;
+      padding: 14px 18px;
+      font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+      font-size: clamp(11px, 1.05vw, 14px);
+      line-height: 1.35;
+      color: #e2e8f0;
+      white-space: pre;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .term-cmd-bar {
+      background: #0f172a;
+      border-top: 1px solid #334155;
+      padding: 8px 14px;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .term-cmd-input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: inherit;
+      flex: 1;
+      outline: none;
+    }
+
+    /* Lower Space of Main Box (Lines 21-30 of wireframe.md): Interactive AI Prompt Showcase */
+    .showcase-strip {
+      border-top: 1px dashed #334155;
+      padding-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .showcase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .demo-cards {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .demo-card {
+      text-decoration: none;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      transition: all 0.16s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .demo-card:hover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      transform: translateY(-2px);
+    }
+    .demo-card-title {
+      font-family: "SF Mono", "Menlo", monospace;
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+    .demo-card-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* Bottom Footer Section (Lines 31-33 of wireframe.md) */
+    footer.bottom-section {
+      padding: 12px 32px;
+      border-top: 2px solid var(--border);
+      background: rgba(15, 23, 42, 0.95);
+      text-align: right;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: clamp(0.82rem, 1vw, 0.95rem);
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* Raw Wireframe Modal Overlay for Live Comparison */
+    #rawOverlay {
+      position: absolute;
+      inset: 68px 0 45px 0;
+      background: rgba(7, 10, 15, 0.96);
+      z-index: 20;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #rawOverlay pre {
+      margin: 0;
+      font-family: "SF Mono", "Menlo", "Monaco", monospace;
+      font-size: clamp(10px, 1.15vw, 15px);
+      line-height: 1.25;
+      color: var(--accent-green);
+      background: #05080c;
+      padding: 20px 28px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(74, 222, 128, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="wireframe-frame">
+    <!-- Top Header Box (Lines 1-5 of wireframe.md) -->
+    <header class="top-section">
+      <div class="brand-group">
+        <h1 class="brand-title">ZAGO <span class="cursor-block"></span></h1>
+        <p class="brand-subtitle">- The Terminal Editor for 2D AI prompts</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="wireframeToggleBtn">📐 View Raw Wireframe</button>
+        <button class="btn" id="soundBtn">🔊 Audio: ON</button>
+      </div>
+    </header>
+
+    <!-- Raw ASCII Wireframe Overlay (Toggled by button) -->
+    <div id="rawOverlay">
+      <div style="margin-bottom:10px;font-family:monospace;color:#38bdf8;font-size:0.9rem;">
+        Exact 33-line ASCII specification from <strong>wireframe.md</strong>:
+      </div>
+      <pre id="rawAsciiPre"></pre>
+    </div>
+
+    <!-- Main Body Box (Lines 6-30 of wireframe.md) -->
+    <main class="body-section">
+      <div class="hero-grid">
+        <!-- Left Copy & Bullet Points -->
+        <div class="copy-column">
+          <div class="lead-card">
+            <strong>Natural languages and traditional editors are limited</strong><br />
+            when you are working on a multi-dimensional task.
+          </div>
+
+          <div class="lead-card">
+            <strong>Object-based text diagram tools can generate diagrams,</strong><br />
+            but they cannot edit existing diagrams.
+          </div>
+
+          <div class="lead-card highlight">
+            <strong>Zago is an editor featuring text diagrams</strong><br />
+            for AI prompts for game design, UI layout, and more.
+          </div>
+
+          <ul class="feature-list">
+            <li class="feature-item">Cross Platform</li>
+            <li class="feature-item">Works in your terminal</li>
+            <li class="feature-item">Easy drawing commands</li>
+            <li class="feature-item">CJK aware</li>
+          </ul>
+        </div>
+
+        <!-- Right `image` Box: Interactive ZAGO Terminal Preview -->
+        <div class="image-box">
+          <div class="term-header">
+            <div class="term-dots">
+              <span class="term-dot" style="background:#ef4444"></span>
+              <span class="term-dot" style="background:#f59e0b"></span>
+              <span class="term-dot" style="background:#10b981"></span>
+            </div>
+            <span>zago — interactive 2D canvas [image]</span>
+            <div class="term-tabs">
+              <button class="term-tab active" onclick="setScene(0)">1. Wireframe</button>
+              <button class="term-tab" onclick="setScene(1)">2. CJK Table</button>
+              <button class="term-tab" onclick="setScene(2)">3. LOGO Turtle</button>
+              <button class="term-tab" onclick="setScene(3)">4. Game Map</button>
+            </div>
+          </div>
+
+          <div class="term-screen" id="termScreen"></div>
+
+          <div class="term-cmd-bar">
+            <span>LOGO&gt;</span>
+            <input
+              type="text"
+              class="term-cmd-input"
+              id="cmdInput"
+              value='BOX 42 3 AT:DOWN BOX 42 7 AT:DOWN BOX 42 3'
+              placeholder='Try: BOX 28 8, BOX "ZAGO" "center" "round", TABLE 3 3 10 1, PD REPEAT 4 [ FD 8 RT 90 ]'
+            />
+            <button class="btn" style="padding:3px 10px;font-size:0.75rem;" onclick="runCustomCommand()">Run</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lower Section of Main Box: Interactive Gallery of AI Prompt Demos -->
+      <div class="showcase-strip">
+        <div class="showcase-header">
+          <span>BUILT FROM ZAGO 2D ASCII PROMPTS IN THIS REPOSITORY (CLICK TO PLAY):</span>
+          <span>5 Interactive Demos</span>
+        </div>
+        <div class="demo-cards">
+          <a class="demo-card" href="box.html">
+            <span class="demo-card-title">📦 box.html</span>
+            <span class="demo-card-desc">Sokoban puzzle parsed from 2D wall/box layout</span>
+          </a>
+          <a class="demo-card" href="huarondao.html">
+            <span class="demo-card-title">♟️ huarondao.html</span>
+            <span class="demo-card-desc">Klotski sliding blocks with CJK-aware boxes</span>
+          </a>
+          <a class="demo-card" href="rpg.html">
+            <span class="demo-card-title">⚔️ rpg.html</span>
+            <span class="demo-card-desc">Overworld + Party Status + Command UI wireframe</span>
+          </a>
+          <a class="demo-card" href="shoot.html">
+            <span class="demo-card-title">🚀 shoot.html</span>
+            <span class="demo-card-desc">Gradius side-scroller + full stage minimap</span>
+          </a>
+          <a class="demo-card" href="monopoly.html">
+            <span class="demo-card-title">🎲 monopoly.html</span>
+            <span class="demo-card-desc">Taiwan Monopoly board + Jail + Chance/Destiny</span>
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Footer Box (Lines 31-33 of wireframe.md) -->
+    <footer class="bottom-section">
+      2026 (c) Weizhong Yang a.k.a zonble
+    </footer>
+  </div>
+
+  <script>
+    // Exact 33-line wireframe from wireframe.md
+    const RAW_WIREFRAME = [
+      " ┌─────────────────────────────────────────────────────────────────────────────────────────────┐",
+      " │                                                                                             │",
+      " │  ZAGO                                                                                       │",
+      " │  - The Terminal Editor for 2D AI prompts                                                    │",
+      " ├─────────────────────────────────────────────────────────────────────────────────────────────┤",
+      " │  Natural langauges and traditional editors are limited   ┌────────────────────────────────┐ │",
+      " │  when you are working on a multi-dimention task          │                                │ │",
+      " │                                                          │                                │ │",
+      " │  Object-based text diagrams tools can generate diagrams  │                                │ │",
+      " │  But they cannot edit existing diagrams                  │                                │ │",
+      " │                                                          │                                │ │",
+      " │  Zago is an editor featuring text diagrams               │                                │ │",
+      " │  for AI prompts for game design, UI layout, and more     │             image              │ │",
+      " │                                                          │                                │ │",
+      " │                                                          │                                │ │",
+      " │  - Cross Platform                                        │                                │ │",
+      " │  - Works in your terminal                                │                                │ │",
+      " │  - Easy drawing commands                                 │                                │ │",
+      " │  - CJK aware                                             │                                │ │",
+      " │                                                          └────────────────────────────────┘ │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " │                                                                                             │",
+      " ├─────────────────────────────────────────────────────────────────────────────────────────────┤",
+      " │                                                         2026 (c) Weizhong Yang a.k.a zonble │",
+      " └─────────────────────────────────────────────────────────────────────────────────────────────┘"
+    ].join("\n");
+
+    document.getElementById("rawAsciiPre").textContent = RAW_WIREFRAME;
+
+    // --- Subtle Terminal Synth Sound Effects ---
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playClick(freq = 680, dur = 0.035, vol = 0.06) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, t0);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t0 + dur);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + dur);
+    }
+
+    document.getElementById("soundBtn").addEventListener("click", e => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) playClick(880, 0.06, 0.08);
+      e.target.textContent = soundEnabled ? "🔊 Audio: ON" : "🔇 Audio: OFF";
+    });
+
+    // --- Interactive Terminal Showcase inside the `image` placeholder ---
+    const SCENES = [
+      {
+        cmd: 'BOX 42 4 AT:DOWN BOX 42 7 AT:DOWN BOX 42 3',
+        art: [
+          " ┌────────────────────────────────────────┐",
+          " │ ZAGO                                   │",
+          " │ - The Terminal Editor for 2D AI prompts│",
+          " ├────────────────────────────────────────┤",
+          " │ 2D spatial layout  ┌─────────────────┐ │",
+          " │ in plain text      │                 │ │",
+          " │                    │      image      │ │",
+          " │ - Cross Platform   │     preview     │ │",
+          " │ - CJK aware        └─────────────────┘ │",
+          " ├────────────────────────────────────────┤",
+          " │       2026 (c) Weizhong Yang (zonble)  │",
+          " └────────────────────────────────────────┘"
+        ].join("\n")
+      },
+      {
+        cmd: 'TABLE 4 4 8 1',
+        art: [
+          " ┌────────┬────────┬────────┬────────┐",
+          " │ 角色   │ 等級   │ 生命值 │ 法力值 │",
+          " ├────────┼────────┼────────┼────────┤",
+          " │ 勇者   │ Lv. 12 │ 450 HP │ 120 MP │",
+          " ├────────┼────────┼────────┼────────┤",
+          " │ 法師   │ Lv. 11 │ 280 HP │ 390 MP │",
+          " ├────────┼────────┼────────┼────────┤",
+          " │ 關羽   │ 橫刀   │ 華容道 │ ２格寬 │",
+          " └────────┴────────┴────────┴────────┘",
+          "  * Double-width CJK characters align",
+          "    perfectly with TABLE rows cols cellW!"
+        ].join("\n")
+      },
+      {
+        cmd: 'BOX "User Prompt" "round" NE LINE ARROW 8 RIGHT BOX "ZAGO Canvas" "double"',
+        art: [
+          "   ╭─────────────╮        ╔═════════════╗",
+          "   │ User Prompt │───────▶│ ZAGO Canvas ║",
+          "   ╰─────────────╯        ╚══════╤══════╝",
+          "                                 │",
+          "                                 ▼",
+          "   ╭─────────────╮        ┏━━━━━━━━━━━━━┓",
+          "   │ Working App │◀───────┃  AI Agent   ┃",
+          "   ╰─────────────╯        ┗━━━━━━━━━━━━━┛",
+          "",
+          '   * Styles: "round" ╭─╮, "double" ╔═╗, "heavy" ┏━┓'
+        ].join("\n")
+      },
+      {
+        cmd: 'PD REPEAT 4 [ FD 8 RT 90 ]',
+        art: [
+          " ┌──────┬──────┬──────┬──────┬──────┐  ┌──────┐",
+          " │ 命運 │ 桃園 │ 新竹 │ 苗栗 │ 台中 │  │ 監牢 │",
+          " ├──────┼──────┴──────┴──────┼──────┤  └──────┘",
+          " │ 台北 │                    │ 南投 │",
+          " ├──────┤   FILL / BOX / PD  ├──────┤",
+          " │ 基隆 │                    │ 彰化 │",
+          " ├──────┼──────┬──────┬──────┼──────┤",
+          " │ 機會 │ 花蓮 │ 台東 │ 屏東 │由此去│",
+          " └──────┴──────┴──────┴──────┴──────┘"
+        ].join("\n")
+      }
+    ];
+
+    let currentScene = 0;
+    let typeTimer = null;
+
+    function setScene(idx) {
+      currentScene = idx;
+      document.querySelectorAll(".term-tab").forEach((btn, i) => {
+        btn.classList.toggle("active", i === idx);
+      });
+      const scene = SCENES[idx];
+      document.getElementById("cmdInput").value = scene.cmd;
+      animateAscii(scene.art);
+    }
+
+    function animateAscii(text) {
+      if (typeTimer) clearInterval(typeTimer);
+      const lines = text.split("\n");
+      const screen = document.getElementById("termScreen");
+      screen.textContent = "";
+      let row = 0;
+      typeTimer = setInterval(() => {
+        if (row >= lines.length) {
+          clearInterval(typeTimer);
+          return;
+        }
+        screen.textContent += (row > 0 ? "\n" : "") + lines[row];
+        playClick(520 + row * 28, 0.025, 0.035);
+        row++;
+      }, 45);
+    }
+
+    function runCustomCommand() {
+      const raw = document.getElementById("cmdInput").value.trim();
+      const upper = raw.toUpperCase();
+      playClick(760, 0.05, 0.08);
+
+      // Parse authentic zago Editor LOGO commands:
+      // e.g. BOX "Text" "center" "round" or BOX 28 8 [ROUND|DOUBLE|HEAVY]
+      const strMatch = raw.match(/^BOX\s+"([^"]+)"(?:\s+"?(left|center|right)"?)?(?:\s+"?(round|double|heavy|ascii|light)"?)?/i);
+      if (strMatch) {
+        const text = strMatch[1];
+        const style = (strMatch[3] || "light").toLowerCase();
+        const chars = {
+          light:  ["┌", "─", "┐", "│", "└", "┘"],
+          round:  ["╭", "─", "╮", "│", "╰", "╯"],
+          double: ["╔", "═", "╗", "║", "╚", "╝"],
+          heavy:  ["┏", "━", "┓", "┃", "┗", "┛"],
+          ascii:  ["+", "-", "+", "|", "+", "+"]
+        }[style] || ["┌", "─", "┐", "│", "└", "┘"];
+        const w = text.length + 4;
+        animateAscii([
+          ` ${chars[0]}${chars[1].repeat(w)}${chars[2]}`,
+          ` ${chars[3]}  ${text}  ${chars[3]}`,
+          ` ${chars[4]}${chars[1].repeat(w)}${chars[5]}`
+        ].join("\n"));
+        return;
+      }
+
+      if (upper.startsWith("BOX")) {
+        const parts = raw.split(/\s+/);
+        const w = Math.max(8, Math.min(44, parseInt(parts[1], 10) || 26));
+        const h = Math.max(4, Math.min(13, parseInt(parts[2], 10) || 8));
+        const isRound = upper.includes("ROUND");
+        const isDouble = upper.includes("DOUBLE");
+        const isHeavy = upper.includes("HEAVY");
+        const chars = isRound
+          ? ["╭", "─", "╮", "│", "╰", "╯"]
+          : isDouble
+          ? ["╔", "═", "╗", "║", "╚", "╝"]
+          : isHeavy
+          ? ["┏", "━", "┓", "┃", "┗", "┛"]
+          : ["┌", "─", "┐", "│", "└", "┘"];
+        const top = " " + chars[0] + chars[1].repeat(w - 2) + chars[2];
+        const mid = " " + chars[3] + " ".repeat(w - 2) + chars[3];
+        const bot = " " + chars[4] + chars[1].repeat(w - 2) + chars[5];
+        const rows = [top];
+        for (let i = 0; i < h - 2; i++) {
+          if (i === Math.floor((h - 2) / 2)) {
+            const label = `BOX ${w} ${h}`;
+            const padL = Math.max(0, Math.floor((w - 2 - label.length) / 2));
+            const padR = Math.max(0, w - 2 - label.length - padL);
+            rows.push(" " + chars[3] + " ".repeat(padL) + label + " ".repeat(padR) + chars[3]);
+          } else {
+            rows.push(mid);
+          }
+        }
+        rows.push(bot);
+        animateAscii(rows.join("\n"));
+      } else if (upper.startsWith("TABLE")) {
+        // TABLE rows cols cellWidth [cellHeight]
+        const parts = raw.split(/\s+/);
+        const rCount = Math.max(1, Math.min(5, parseInt(parts[1], 10) || 3));
+        const cCount = Math.max(1, Math.min(5, parseInt(parts[2], 10) || 3));
+        const cellW = Math.max(4, Math.min(12, parseInt(parts[3], 10) || 8));
+        const top = " ┌" + Array.from({ length: cCount }, () => "─".repeat(cellW)).join("┬") + "┐";
+        const sep = " ├" + Array.from({ length: cCount }, () => "─".repeat(cellW)).join("┼") + "┤";
+        const bot = " └" + Array.from({ length: cCount }, () => "─".repeat(cellW)).join("┴") + "┘";
+        const rowStr = " │" + Array.from({ length: cCount }, () => " ".repeat(cellW)).join("│") + "│";
+        const out = [top];
+        for (let r = 0; r < rCount; r++) {
+          out.push(rowStr);
+          if (r < rCount - 1) out.push(sep);
+        }
+        out.push(bot);
+        animateAscii(out.join("\n"));
+      } else if (upper.includes("LINE") || upper.includes("NE")) {
+        setScene(2);
+      } else if (upper.includes("REPEAT") || upper.includes("PD") || upper.includes("FD")) {
+        setScene(3);
+      } else {
+        setScene((currentScene + 1) % SCENES.length);
+      }
+    }
+
+    document.getElementById("cmdInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") runCustomCommand();
+    });
+
+    // Toggle Raw ASCII Wireframe Overlay
+    const rawOverlay = document.getElementById("rawOverlay");
+    const wfBtn = document.getElementById("wireframeToggleBtn");
+    wfBtn.addEventListener("click", () => {
+      const showing = rawOverlay.style.display === "flex";
+      rawOverlay.style.display = showing ? "none" : "flex";
+      wfBtn.classList.toggle("active", !showing);
+      wfBtn.textContent = showing ? "📐 View Raw Wireframe" : "✨ Back to Rendered Page";
+      playClick(showing ? 600 : 840, 0.05, 0.08);
+    });
+
+    // Initialize first scene
+    setScene(0);
+  </script>
+</body>
+</html>

@@ -2,10 +2,10 @@ import Config
 import Foundation
 
 /// Localization manager indexing language translation tables.
-struct L10n: Sendable {
-    let language: Language
+public struct L10n: Sendable {
+    public let language: Language
 
-    init(language: Language = .detectSystemLanguage()) {
+    public init(language: Language = .detectSystemLanguage()) {
         self.language = language
     }
 
@@ -16,12 +16,12 @@ struct L10n: Sendable {
     ]
 
     /// Subscript lookup for localized string key in this L10n instance's language.
-    subscript(_ key: String) -> String {
+    public subscript(_ key: String) -> String {
         Self.string(key, language: language)
     }
 
     /// Pure stateless lookup for localized string key.
-    static func string(_ key: String, language: Language = .detectSystemLanguage()) -> String {
+    public static func string(_ key: String, language: Language = .detectSystemLanguage()) -> String {
         tables[language]?[key] ?? tables[.en]?[key] ?? key
     }
 

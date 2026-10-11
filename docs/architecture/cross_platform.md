@@ -312,7 +312,7 @@ Spell checking is abstracted behind the `SpellChecker` protocol:
 `RelativeDateTimeFormatter` is available in the Apple Foundation implementations
 used by macOS, but is not available in the Foundation implementations used by
 Linux or Windows. The relative-time formatter entry points in
-[`LogoFormatters.swift`](../../Sources/LogoEngine/Formatting/LogoFormatters.swift)
+[`LogoFormatters.swift`](../../Sources/LogoEngine/Utils/Formatting/LogoFormatters.swift)
 are therefore compiled as disabled stubs on Linux and Windows. The keyword and
 metadata remain available for scripts and documentation, but execution reports a
 platform-not-supported Logo error. The Apple implementation keeps Foundation's

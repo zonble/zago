@@ -7,6 +7,11 @@ public enum TMDExportFormat: String, CaseIterable, Sendable {
     case lilypond = "lilypond"
     case abc = "abc"
     case wav = "wav"
+    case chordpro = "chordpro"
+    case reaper = "reaper"
+    case utau = "utau"
+    case vsqx = "vsqx"
+    case vsq = "vsq"
 
     /// Default file extension for the export format.
     public var fileExtension: String {
@@ -16,6 +21,11 @@ public enum TMDExportFormat: String, CaseIterable, Sendable {
         case .lilypond: return "ly"
         case .abc: return "abc"
         case .wav: return "wav"
+        case .chordpro: return "cho"
+        case .reaper: return "rpp"
+        case .utau: return "ust"
+        case .vsqx: return "vsqx"
+        case .vsq: return "vsq"
         }
     }
 
@@ -27,12 +37,18 @@ public enum TMDExportFormat: String, CaseIterable, Sendable {
         case .lilypond: return "LilyPond"
         case .abc: return "ABC"
         case .wav: return "WAV"
+        case .chordpro: return "ChordPro"
+        case .reaper: return "REAPER"
+        case .utau: return "UTAU"
+        case .vsqx: return "VOCALOID4 (VSQX)"
+        case .vsq: return "VOCALOID2 (VSQ)"
         }
     }
 }
 
 /// Abstract delegate protocol implemented by app targets (e.g. zago CLI)
-/// to perform TMD parsing and compilation without coupling the Editor module to TmdSwift.
+/// to perform TMD parsing, compilation, formatting, inspection, and diagnostics
+/// without coupling the Editor module directly to TmdSwift.
 public protocol TMDExportDelegate: AnyObject, Sendable {
     /// Whether the editor should prompt the user for an export path before running export.
     /// Defaults to `true` on CLI targets; WebAssembly / browser targets can return `false` to trigger instant download.
@@ -54,6 +70,16 @@ public protocol TMDExportDelegate: AnyObject, Sendable {
     /// Plays/previews TMD source text in the host environment (e.g. Web Audio synthesizer).
     func playTMD(sourceText: String, title: String) throws
 
+    /// Formats a TMD source string preserving comments and line layout while normalizing whitespace and bar tokens.
+    func formatTMD(sourceText: String) throws -> String
+
+    /// Checks a TMD source text for measure consistency or playback order issues.
+    /// Returns an array of diagnostic messages (or issue descriptions), empty if clean.
+    func checkTMD(sourceText: String) -> [String]
+
+    /// Inspects the TMD score and generates a structured analysis profile report.
+    func inspectTMD(sourceText: String) throws -> String
+
     /// Notifies the host environment that the editor's active buffer changed.
     func notifyActiveBuffer(filePath: String?)
 }
@@ -62,6 +88,9 @@ public extension TMDExportDelegate {
     var shouldPromptForPath: Bool { true }
     var isPlaybackSupported: Bool { false }
     func playTMD(sourceText: String, title: String) throws {}
+    func formatTMD(sourceText: String) throws -> String { sourceText }
+    func checkTMD(sourceText: String) -> [String] { [] }
+    func inspectTMD(sourceText: String) throws -> String { "" }
     func notifyActiveBuffer(filePath: String?) {}
 }
 

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classic 2D Party RPG</title>
+  <style>
+    :root {
+      --bg: #111318;
+      --border: #d4d4d8;
+      --panel-bg: #18181b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: #f4f4f5;
+      font-family: "SF Mono", "Menlo", "PingFang TC", "Noto Sans Mono CJK TC", monospace;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 10px;
+    }
+    .game-shell {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+    .map-box {
+      flex: 1;
+      height: 100%;
+      border: 3px solid var(--border);
+      border-radius: 6px;
+      background: #14281d;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(43, minmax(0, 1fr));
+      grid-template-rows: repeat(26, minmax(0, 1fr));
+      user-select: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+    .tile {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(11px, min(1.55vw, 2.7vh), 24px);
+      font-weight: bold;
+      line-height: 1;
+    }
+    .t-grass { color: #2d4f38; }
+    .t-mountain { background: #3f3222; color: #a1887f; }
+    .t-cave { background: #09090b; color: #f59e0b; box-shadow: inset 0 0 6px #f59e0b; }
+    .t-sea { background: #0c4a6e; color: #38bdf8; }
+    .t-village { background: #365314; color: #fde047; }
+    .t-castle { background: #3f3f46; color: #f87171; }
+    .t-monster { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.8); }
+    .t-hero {
+      background: #2563eb;
+      color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 0 8px #60a5fa;
+      z-index: 3;
+    }
+    .t-mage {
+      background: #9333ea;
+      color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 0 8px #c084fc;
+      z-index: 2;
+    }
+
+    .sidebar {
+      width: clamp(210px, 19vw, 280px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .status-box {
+      border: 3px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-bg);
+      padding: 14px;
+      font-size: clamp(14px, 1.15vw, 17px);
+    }
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .status-table th, .status-table td {
+      padding: 6px 2px;
+      text-align: right;
+    }
+    .status-table th:first-child, .status-table td:first-child {
+      text-align: left;
+    }
+    .menu-box {
+      border: 3px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-bg);
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: clamp(14px, 1.15vw, 17px);
+    }
+    .menu-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .menu-item {
+      padding: 8px 12px;
+      border: 1px solid #3f3f46;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.12s;
+    }
+    .menu-item:hover, .menu-item.active {
+      background: #27272a;
+      border-color: #fde047;
+      color: #fde047;
+    }
+    .log-box {
+      width: 100%;
+      border: 3px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-bg);
+      padding: 10px 16px;
+      font-size: clamp(14px, 1.15vw, 17px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 54px;
+    }
+    .battle-actions {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      background: #27272a;
+      color: #fff;
+      border: 1px solid #a1a1aa;
+      padding: 5px 12px;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover { background: #3f3f46; border-color: #fde047; }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <!-- Left Panel: Overworld Map -->
+    <div class="map-box" id="map"></div>
+
+    <!-- Right Panels: Party Status & Command Menu -->
+    <div class="sidebar">
+      <div class="status-box">
+        <table class="status-table">
+          <thead>
+            <tr><th></th><th>HP</th><th>MP</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:#60a5fa;font-weight:bold;">勇者</td>
+              <td id="heroHp">180</td>
+              <td id="heroMp">0</td>
+            </tr>
+            <tr>
+              <td style="color:#c084fc;font-weight:bold;">法師</td>
+              <td id="mageHp">50</td>
+              <td id="mageMp">300</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;font-size:12px;color:#a1a1aa;border-top:1px dashed #3f3f46;padding-top:8px;">
+          <div>Gold: <span id="gold" style="color:#fde047">120</span> G</div>
+          <div>Potions: <span id="potions">3</span></div>
+        </div>
+      </div>
+
+      <div class="menu-box">
+        <ul class="menu-list">
+          <li class="menu-item" onclick="useMenu('equip')">裝備</li>
+          <li class="menu-item" onclick="useMenu('skill')">技能</li>
+          <li class="menu-item" onclick="useMenu('magic')">魔法</li>
+          <li class="menu-item" onclick="useMenu('item')">道具</li>
+          <li class="menu-item" onclick="useMenu('save')">存檔</li>
+          <li class="menu-item" id="soundMenuBtn" onclick="toggleSound()">🔊 音效：開</li>
+        </ul>
+        <div style="font-size:11px;color:#71717a;">
+          WASD / Arrows: Move<br/>
+          Click right menu to act
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="log-box">
+    <div id="logText">使用方向鍵或 WASD 移動「🤺」，「🧙」會自動跟隨在後。造訪村莊、城堡、山洞或與「👹」戰鬥！</div>
+    <div class="battle-actions" id="battleControls" style="display:none;">
+      <button onclick="battleAction('attack')">勇者斬擊</button>
+      <button onclick="battleAction('skill')">勇者重擊</button>
+      <button onclick="battleAction('fireball')">法師火球 (20 MP)</button>
+      <button onclick="battleAction('heal')">法師治癒 (15 MP)</button>
+      <button onclick="battleAction('run')">逃跑</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Web Audio API 8-Bit RPG Sound & BGM Engine ---
+    let audioCtx = null;
+    let soundEnabled = true;
+    let bgmTimer = null;
+    let bgmIdx = 0;
+    const FIELD_BGM  = [261.63, 329.63, 392.00, 523.25, 493.88, 392.00, 329.63, 293.66];
+    const BATTLE_BGM = [196.00, 233.08, 261.63, 277.18, 261.63, 233.08, 196.00, 174.61];
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      if (!bgmTimer && soundEnabled) {
+        bgmTimer = setInterval(() => {
+          if (!soundEnabled) return;
+          const notes = state.inBattle ? BATTLE_BGM : FIELD_BGM;
+          playTone(notes[bgmIdx % notes.length], state.inBattle ? "sawtooth" : "triangle", 0.16, 0, 0.028);
+          bgmIdx++;
+        }, 230);
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "square", duration = 0.1, delay = 0, vol = 0.14, slideTo = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + duration);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    const sfx = {
+      step()      { playTone(240, "triangle", 0.045, 0, 0.1, 300); },
+      bump()      { playTone(110, "sawtooth", 0.08, 0, 0.14, 70); },
+      encounter() { [440, 392, 440, 392, 587.33].forEach((f, i) => playTone(f, "sawtooth", 0.09, i * 0.07, 0.18)); },
+      slash()     { playTone(620, "sawtooth", 0.12, 0, 0.2, 140); },
+      fireball()  { playTone(180, "sawtooth", 0.28, 0, 0.22, 760); },
+      heal()      { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => playTone(f, "sine", 0.14, i * 0.06, 0.16)); },
+      victory()   { [523.25, 523.25, 523.25, 523.25, 415.3, 466.16, 523.25].forEach((f, i) => playTone(f, "square", 0.14, i * 0.11, 0.16)); }
+    };
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundMenuBtn").textContent = soundEnabled ? "🔊 音效：開" : "🔇 音效：關";
+    }
+
+    // Exact 26 interior lines from the left map box of rpg.md
+    const RAW_MAP_LINES = [
+      "                                                         山山山山山山山山山山山山山山山",
+      "                                                         山山山山山山山山山山山山山山山",
+      "                                                         山山山山山山山山山山山山山山山",
+      "           村莊                                          山山山山山山山山山山山山山山山",
+      "           村莊                              怪          山山山山山山山山山山山山山山山",
+      "                                                         山山山山山山山山山山山山山山山",
+      "                                                         山山山山山山山洞山山山山山山山",
+      "                                                                           山山山山山山",
+      "                                                                           山山山山山山",
+      "                                                                           山山山山山山",
+      "                                                                           山山山山山山",
+      "                                    法                                     山山山山山山",
+      " 海海                               勇                                                 ",
+      " 海海                                                                                  ",
+      " 海海海海海海海海海海海海                                                              ",
+      " 海海海海海海海海海海海海                                                              ",
+      " 海海海海海海海海海海海海                                          城堡城              ",
+      " 海海海海海海海海海海海海                                          城堡城              ",
+      " 海海海海海海海海海海海海                                          城堡城              ",
+      " 海海海海海海海海海海海海海                                                            ",
+      " 海海海海海海海海海海海海海                     怪                                     ",
+      " 海海海海海海海海海海海海海                                                            ",
+      " 海海海海海海海海海海海海海                                                            ",
+      " 海海海海海海海海海海海海海                                                            ",
+      " 海海海海海海海海海海海海海                                                            ",
+      " 海海海海海海海海海海海海海                                                            "
+    ];
+
+    const ROWS = 26;
+    const COLS = 43;
+
+    let grid = [];
+    let state = {
+      hero: { r: 12, c: 18, hp: 180, maxHp: 180, mp: 0, maxMp: 0 },
+      mage: { r: 11, c: 18, hp: 50, maxHp: 50, mp: 300, maxMp: 300 },
+      gold: 120,
+      potions: 3,
+      monsters: [],
+      inBattle: null
+    };
+
+    function initMap() {
+      grid = Array.from({ length: ROWS }, () => Array(COLS).fill(" "));
+      state.monsters = [];
+
+      for (let r = 0; r < ROWS; r++) {
+        let col = 0;
+        for (const ch of RAW_MAP_LINES[r]) {
+          const w = ch.charCodeAt(0) > 255 ? 2 : 1;
+          const c = Math.floor(col / 2);
+          if (c < COLS && ch !== " ") {
+            if (ch === "勇") {
+              state.hero.r = r;
+              state.hero.c = c;
+            } else if (ch === "法") {
+              state.mage.r = r;
+              state.mage.c = c;
+            } else if (ch === "怪") {
+              state.monsters.push({ r, c, name: "荒野魔物", hp: 90, maxHp: 90, atk: 18, reward: 50 });
+            } else {
+              grid[r][c] = ch;
+            }
+          }
+          col += w;
+        }
+      }
+
+      const saved = localStorage.getItem("zago_rpg_save");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          Object.assign(state, parsed);
+          setLog("已載入上次的存檔進度！");
+        } catch (_) {}
+      }
+      render();
+    }
+
+    function setLog(msg) {
+      document.getElementById("logText").textContent = msg;
+    }
+
+    function startBattle(enemy) {
+      sfx.encounter();
+      state.inBattle = enemy;
+      document.getElementById("battleControls").style.display = "flex";
+      setLog(`⚔️ 遭遇 ${enemy.name} (HP: ${enemy.hp}/${enemy.maxHp})！請選擇戰鬥指令：`);
+    }
+
+    function battleAction(type) {
+      const enemy = state.inBattle;
+      if (!enemy) return;
+
+      let msg = "";
+      if (type === "run") {
+        sfx.step();
+        state.inBattle = null;
+        document.getElementById("battleControls").style.display = "none";
+        setLog("💨 隊伍成功脫離了戰鬥！");
+        render();
+        return;
+      } else if (type === "attack") {
+        sfx.slash();
+        const dmg = 28 + Math.floor(Math.random() * 10);
+        enemy.hp -= dmg;
+        msg = `🗡️ 勇者揮劍斬擊，對 ${enemy.name} 造成 ${dmg} 點傷害！`;
+      } else if (type === "skill") {
+        sfx.slash();
+        const dmg = 42 + Math.floor(Math.random() * 12);
+        enemy.hp -= dmg;
+        msg = `💥 勇者使出渾身重擊，造成 ${dmg} 點傷害！`;
+      } else if (type === "fireball") {
+        if (state.mage.mp < 20) {
+          sfx.bump();
+          setLog("法師 MP 不足，無法詠唱火球術！");
+          return;
+        }
+        sfx.fireball();
+        state.mage.mp -= 20;
+        const dmg = 65 + Math.floor(Math.random() * 15);
+        enemy.hp -= dmg;
+        msg = `🔥 法師詠唱大爆炎，對 ${enemy.name} 造成 ${dmg} 點魔法傷害！`;
+      } else if (type === "heal") {
+        if (state.mage.mp < 15) {
+          sfx.bump();
+          setLog("法師 MP 不足！");
+          return;
+        }
+        sfx.heal();
+        state.mage.mp -= 15;
+        state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 60);
+        state.mage.hp = Math.min(state.mage.maxHp, state.mage.hp + 40);
+        msg = `✨ 法師施展治癒之光，隊伍回復生命值！`;
+      }
+
+      if (enemy.hp <= 0) {
+        sfx.victory();
+        state.gold += enemy.reward;
+        state.monsters = state.monsters.filter(m => m !== enemy);
+        state.inBattle = null;
+        document.getElementById("battleControls").style.display = "none";
+        setLog(`${msg} 🎉 擊敗了 ${enemy.name}！獲得 ${enemy.reward} G！`);
+        render();
+        return;
+      }
+
+      // Enemy counterattack
+      const target = Math.random() < 0.7 ? state.hero : state.mage;
+      const targetName = target === state.hero ? "勇者" : "法師";
+      const edmg = Math.max(5, enemy.atk + Math.floor(Math.random() * 8) - 4);
+      target.hp = Math.max(1, target.hp - edmg);
+      setLog(`${msg} ${enemy.name} (HP ${enemy.hp}) 反擊，${targetName} 受到 ${edmg} 點傷害！`);
+      render();
+    }
+
+    function moveParty(dr, dc) {
+      if (state.inBattle) return;
+      const nr = state.hero.r + dr;
+      const nc = state.hero.c + dc;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return;
+
+      const tile = grid[nr][nc];
+      if (tile === "山" || tile === "海") {
+        sfx.bump();
+        setLog(tile === "山" ? "⛰️ 險峻的群山阻擋了去路。" : "🌊 湛藍的大海無法徒步跨越。");
+        return;
+      }
+
+      // Check monster collision
+      const mon = state.monsters.find(m => m.r === nr && m.c === nc);
+      if (mon) {
+        startBattle(mon);
+        return;
+      }
+
+      // Mage follows Hero's previous tile
+      state.mage.r = state.hero.r;
+      state.mage.c = state.hero.c;
+      state.hero.r = nr;
+      state.hero.c = nc;
+
+      if (tile === "村" || tile === "莊") {
+        sfx.heal();
+        state.hero.hp = state.hero.maxHp;
+        state.mage.hp = state.mage.maxHp;
+        state.mage.mp = state.mage.maxMp;
+        setLog("🏡 抵達【村莊】旅店休息，勇者與法師的 HP / MP 完全恢復了！");
+      } else if (tile === "城" || tile === "堡") {
+        sfx.heal();
+        setLog("🏰 抵達【王都城堡】！國王：「請消滅原野上的『👹』並探索北方群山中的『🕳️』山洞！」");
+      } else if (tile === "洞") {
+        startBattle({ name: "山洞魔龍 Boss", hp: 220, maxHp: 220, atk: 26, reward: 300 });
+      } else {
+        sfx.step();
+        setLog(`隊伍移動至 (${nc}, ${nr})。`);
+      }
+
+      render();
+    }
+
+    function useMenu(action) {
+      if (action === "equip") {
+        sfx.step();
+        setLog("🛡️ 【裝備】勇者：鋼鐵長劍 + 鎖子甲 (HP上限 180) ｜ 法師：賢者之杖 + 絲綢長袍 (MP上限 300)");
+      } else if (action === "skill") {
+        sfx.step();
+        setLog("⚔️ 【技能】勇者掌握「渾身重擊」與「斬擊」，遇敵時可無消耗施展！");
+      } else if (action === "magic") {
+        if (state.mage.mp >= 15) {
+          sfx.heal();
+          state.mage.mp -= 15;
+          state.hero.hp = state.hero.maxHp;
+          state.mage.hp = state.mage.maxHp;
+          setLog("✨ 【魔法】法師消耗 15 MP 施展全體治癒，勇者與法師 HP 全滿！");
+          render();
+        } else {
+          sfx.bump();
+          setLog("法師 MP 不足！請前往左上角【村莊】休息補充 MP。");
+        }
+      } else if (action === "item") {
+        if (state.potions > 0) {
+          sfx.heal();
+          state.potions--;
+          state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 80);
+          state.mage.mp = Math.min(state.mage.maxMp, state.mage.mp + 80);
+          setLog("🧪 【道具】使用了秘藥！勇者回復 80 HP、法師回復 80 MP。");
+          render();
+        } else {
+          sfx.bump();
+          setLog("背包裡的藥水已經用完了！");
+        }
+      } else if (action === "save") {
+        sfx.heal();
+        localStorage.setItem("zago_rpg_save", JSON.stringify(state));
+        setLog("💾 【存檔】遊戲進度已儲存至瀏覽器！");
+      }
+    }
+
+    function render() {
+      const mapEl = document.getElementById("map");
+      mapEl.innerHTML = "";
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const d = document.createElement("div");
+          d.className = "tile";
+          const ch = grid[r][c];
+          const mon = state.monsters.find(m => m.r === r && m.c === c);
+
+          if (state.hero.r === r && state.hero.c === c) {
+            d.classList.add("t-hero");
+            d.textContent = "🤺";
+          } else if (state.mage.r === r && state.mage.c === c) {
+            d.classList.add("t-mage");
+            d.textContent = "🧙";
+          } else if (mon) {
+            d.classList.add("t-monster");
+            d.textContent = "👹";
+          } else if (ch === "山") {
+            d.classList.add("t-mountain");
+            d.textContent = "⛰️";
+          } else if (ch === "洞") {
+            d.classList.add("t-cave");
+            d.textContent = "🕳️";
+          } else if (ch === "海") {
+            d.classList.add("t-sea");
+            d.textContent = "🌊";
+          } else if (ch === "村" || ch === "莊") {
+            d.classList.add("t-village");
+            d.textContent = "🏠";
+          } else if (ch === "城" || ch === "堡") {
+            d.classList.add("t-castle");
+            d.textContent = "🏰";
+          } else {
+            d.classList.add("t-grass");
+            d.textContent = "·";
+          }
+          mapEl.appendChild(d);
+        }
+      }
+
+      document.getElementById("heroHp").textContent = state.hero.hp;
+      document.getElementById("heroMp").textContent = state.hero.mp;
+      document.getElementById("mageHp").textContent = state.mage.hp;
+      document.getElementById("mageMp").textContent = state.mage.mp;
+      document.getElementById("gold").textContent = state.gold;
+      document.getElementById("potions").textContent = state.potions;
+    }
+
+    window.addEventListener("keydown", e => {
+      const k = e.key.toLowerCase();
+      if (["arrowup", "w"].includes(k)) { e.preventDefault(); moveParty(-1, 0); }
+      else if (["arrowdown", "s"].includes(k)) { e.preventDefault(); moveParty(1, 0); }
+      else if (["arrowleft", "a"].includes(k)) { e.preventDefault(); moveParty(0, -1); }
+      else if (["arrowright", "d"].includes(k)) { e.preventDefault(); moveParty(0, 1); }
+    });
+
+    initMap();
+  </script>
+</body>
+</html>

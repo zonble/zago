@@ -79,14 +79,10 @@ import Testing
         #expect(editor.buffer.lineIndex == 1)
         #expect(editor.buffer.columnIndex == 11)
 
-        // Right click opens Menu Bar
+        // Right click clears selection and does not open Menu Bar
         let rightClick = MouseEvent(action: .press(.right), col: 10, row: 2)
         editor.handleMouseEvent(rightClick)
-        #expect(editor.isMenuBarActive == true)
-
-        // Click outside dismisses Menu Bar
-        let outsideClick = MouseEvent(action: .press(.left), col: 40, row: 15)
-        editor.handleMouseEvent(outsideClick)
+        #expect(editor.buffer.selectionMark == nil)
         #expect(editor.isMenuBarActive == false)
     }
 

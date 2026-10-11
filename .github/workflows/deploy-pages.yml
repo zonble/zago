@@ -24,6 +24,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v7
 
+      - name: Configure Git Submodule Policy
+        run: git config --global submodule.docs.update none
+
       - name: Build Swift Wasm Docker Image
         run: |
           docker build -t zago-wasm-builder -f Dockerfile_wasm .

@@ -1,5 +1,5 @@
 {
-  "originHash" : "fabce22f41cddb8b0135bf05fbef88499a8eaa8c63b8a5f5d8d7f8e31d584c00",
+  "originHash" : "fc71e788191eb7153e916107589a39ce155796c5a50b6600f68521e88af4257a",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/zonble/TmdSwift.git",
       "state" : {
-        "revision" : "da3997db330245160e0d309e27b5531797e91c61",
-        "version" : "0.1.3"
+        "revision" : "5e60013b57e4a2a931bb112b6c81a07fccff6f48",
+        "version" : "0.2.5"
       }
     }
   ],

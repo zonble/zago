@@ -105,4 +105,50 @@ public struct TMDSyntaxDefinition: SyntaxDefinition {
 
         return headings.isEmpty ? nil : DocumentOutline(headings: headings)
     }
+
+    public func detectEmbeddedLanguageName(in lines: [String], bufferLineIndex: Int) -> String? {
+        guard bufferLineIndex >= 0 && bufferLineIndex < lines.count else { return nil }
+        var inBlockComment = false
+
+        for i in 0...bufferLineIndex {
+            let line = lines[i]
+            let startedInComment = inBlockComment
+            var sawClose = false
+            var offset = line.startIndex
+
+            while offset < line.endIndex {
+                if !inBlockComment {
+                    if let openRange = line[offset...].range(of: "/*") {
+                        inBlockComment = true
+                        offset = openRange.upperBound
+                    } else {
+                        break
+                    }
+                } else {
+                    if let closeRange = line[offset...].range(of: "*/") {
+                        inBlockComment = false
+                        sawClose = true
+                        offset = closeRange.upperBound
+                    } else {
+                        break
+                    }
+                }
+            }
+
+            if i == bufferLineIndex {
+                // If this line ends still inside a block comment,
+                // or if it started inside a block comment and closed on this line
+                if inBlockComment {
+                    return "BlockComment"
+                }
+                if startedInComment && sawClose {
+                    // Check if the remainder of the line after */ is empty
+                    // In TMD scores, block comments typically span entire lines
+                    return "BlockComment"
+                }
+            }
+        }
+
+        return nil
+    }
 }

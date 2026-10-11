@@ -31,7 +31,7 @@ struct ConfigAndToolsTests {
     }
     @Test func testZagoVersionAndTitleBarDisplay() throws {
         #expect(!ZagoVersion.current.isEmpty)
-        #expect(ZagoVersion.current == "1.4.6")
+        #expect(ZagoVersion.current == "1.5.1")
 
         let editor = Editor()
         let titleLine = editor.renderer.renderTitleOrMenuBar(editor: editor, cols: 80)
@@ -804,7 +804,7 @@ struct ConfigAndToolsTests {
         final class AtomicCounter: @unchecked Sendable { var value = 0 }
         let counter = AtomicCounter()
 
-        let fileIO = LocalEditorFileIOStrategy.shared
+        let fileIO = LocalEditorFileIOStrategy()
         let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(
             "test_prod_watcher_\(UUID().uuidString).txt"
         ).path
@@ -842,7 +842,7 @@ struct ConfigAndToolsTests {
         let terminal = TestEditorTerminal.shared
         let editor = Editor(
             options: EditorOptions(filePaths: [tmpFile], autoReload: true),
-            dependencies: EditorDependencies(fileIOStrategy: LocalEditorFileIOStrategy.shared, terminal: terminal)
+            dependencies: EditorDependencies(fileIOStrategy: LocalEditorFileIOStrategy(), terminal: terminal)
         )
         defer {
             editor.stopFileWatcherForCurrentBuffer()
@@ -1358,5 +1358,89 @@ struct ConfigAndToolsTests {
         let selected = view.show()
         #expect(selected?.title == "Heading 4")
     }
+
+    @Test func testCIAndWasmBuildScriptsConfigureSubmoduleSkipAndAllBranches() throws {
+        let dockerfile = try String(contentsOfFile: "Dockerfile_wasm", encoding: .utf8)
+        #expect(dockerfile.contains("submodule.docs.update none"))
+
+        let buildWasm = try String(contentsOfFile: "build-wasm.sh", encoding: .utf8)
+        #expect(buildWasm.contains("submodule.docs.update none"))
+
+        let ciWorkflow = try String(contentsOfFile: ".github/workflows/ci.yml", encoding: .utf8)
+        #expect(ciWorkflow.contains("submodule.docs.update none"))
+        #expect(!ciWorkflow.contains("branches: [ main, dev, web ]"))
+
+        let deployWorkflow = try String(contentsOfFile: ".github/workflows/deploy-pages.yml", encoding: .utf8)
+        #expect(deployWorkflow.contains("submodule.docs.update none"))
+
+        let releaseWorkflow = try String(contentsOfFile: ".github/workflows/release.yml", encoding: .utf8)
+        #expect(releaseWorkflow.contains("submodule.docs.update none"))
+    }
+
+    @Test func testMissingL10nKeysAndLocalizedFillAndIPCStatusMessages() throws {
+        let enL10n = L10n(language: .en)
+        let zhL10n = L10n(language: .zh_TW)
+
+        #expect(enL10n["describe_command.general_category"] == "General")
+        #expect(zhL10n["describe_command.general_category"] == "一般")
+
+        let zhEditor = Editor(language: .zh_TW)
+        zhEditor.menuBar.updateCategories(for: zhEditor)
+        let dialog = DescribeCommandDialogView(
+            terminal: zhEditor.terminal,
+            editor: zhEditor,
+            symbol: "edit.join_line",
+            language: .zh_TW
+        )
+        let details = dialog.buildSymbolDetails(for: "edit.join_line", l10n: zhL10n, maxLineWidth: 70)
+        let joinedDetails = details.joined(separator: "\n")
+        #expect(!joinedDetails.contains("describe_command.general_category"))
+        #expect(joinedDetails.contains("編輯器指令 (一般)"))
+
+        // Fill status messages in zh_TW
+        zhEditor.buffer.lines = ["open text"]
+        _ = zhEditor.runLogoScript("FILL \"\"")
+        #expect(zhEditor.statusMessage == "需要填滿文字")
+
+        _ = zhEditor.runLogoScript("FILL \"x\"")
+        #expect(zhEditor.statusMessage == "[ 填滿操作需要封閉區域或明確指定尺寸 ]")
+
+        // IPC status messages in zh_TW
+        let ipcHandler = ZagoEditorIPCEffectHandler(editor: zhEditor, terminal: zhEditor.terminal)
+        ipcHandler.editor(zhEditor, didEmit: .ipcEnabled(true))
+        #expect(zhEditor.statusMessage.contains("[IPC] Socket："))
+        ipcHandler.editor(zhEditor, didEmit: .ipcEnabled(false))
+        #expect(zhEditor.statusMessage == "[已停用 IPC]")
+    }
+
+    @Test func testNoSingletonAndUnifiedUnicodeClassificationSSOT() throws {
+        let localFileIOSource = try String(
+            contentsOfFile: "Sources/zago/FileSystem/LocalEditorFileIOStrategy.swift",
+            encoding: .utf8
+        )
+        #expect(!localFileIOSource.contains("static let shared"))
+
+        let classifierSource = try String(
+            contentsOfFile: "Sources/TextTransform/TextUnicodeClassifier.swift",
+            encoding: .utf8
+        )
+        #expect(classifierSource.contains("import TextMetrics"))
+        #expect(!classifierSource.contains("0x4E00...0x9FFF"))
+        #expect(!classifierSource.contains("0x3000...0x303F"))
+    }
+
+    @Test func testAgentMdAndDocsUseRelativeLinksAndCurrentProjectName() throws {
+        let agentMd = try String(contentsOfFile: "AGENT.md", encoding: .utf8)
+        #expect(!agentMd.contains("Tests/seTests"))
+        #expect(!agentMd.contains(".serc"))
+        #expect(!agentMd.contains("When working on `se`"))
+        #expect(FileManager.default.fileExists(atPath: "Sources/Editor/Controllers/Editor/Editor+Commands.swift"))
+        #expect(FileManager.default.fileExists(atPath: "Sources/zago/Terminal/PosixTerminal.swift"))
+        #expect(FileManager.default.fileExists(atPath: "docs/development/test.md"))
+        #expect(FileManager.default.fileExists(atPath: "docs/features/encoding.md"))
+    }
 }
+
+
+
 
