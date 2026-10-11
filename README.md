@@ -6,8 +6,8 @@
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 
-- **Natural languages and traditional editors are limited** when you are working on a **multi-dimensional task**.
-- **Object-based text diagram tools can generate diagrams**, but they cannot edit existing diagrams.
+- **Natural languages and traditional editors are limited** when you are working on a multi-dimensional task.
+- **Dedicated ASCII drawing apps can export diagrams to plain text**, but once exported, they cannot edit existing plain-text diagrams in place.
 - **`zago` is a terminal editor featuring text diagrams for AI prompts**—for game design, UI layout, and more.
 
 ![Text diagrams to games](zago.png)
