@@ -12,6 +12,10 @@
 
 ![Text diagrams to games](zago.png)
 
+> [!TIP]
+>
+> You can try zago on [Web](https://zonble.github.io/zago/)
+
 ## Table of Contents
 
 - [`zago`: The Terminal Editor for 2D AI Prompts](#zago-the-terminal-editor-for-2d-ai-prompts)
@@ -183,11 +187,14 @@ In all modes, ordinary typing remains **modeless**—just type to insert text.
 
 ### 1. 2D Canvas Mode (`F8` / `M+V`)
 
-Unlocks 2D virtual space navigation beyond line ends so you can treat your document as a 2D grid:
+Unlocks 2D virtual space navigation beyond line ends so you can treat your document as a freeform 2D canvas:
 
-- Move freely anywhere on the 2D plane without inserting trailing spaces until you draw or type.
-- Draw 2D lines with `Shift+Arrows` and arrow-headed connector lines with `Ctrl+Arrows` (or `Ctrl+Shift+Arrows`).
-- Rectangular 2D block selection (`^6` / `M+A`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without shifting surrounding columns.
+- **Mouse Click & Drag on the 2D Grid**: Click anywhere on the canvas (even past line ends) to place the cursor, or **click and drag with the mouse** (or press `M+B` / `Ctrl+^`) to mark a rectangular 2D block.
+- **Drag-Select + `FRAME` / `FILL`**:
+  - Select a rectangular region with the mouse, press `Esc`, and type **`FRAME`** (or `FRAME "round"`, `FRAME "double"`) to wrap a border frame around that exact rectangle without overwriting the content inside.
+  - Select a rectangular region and type **`FILL "earth"`** or **`FILL "wall"`** to tile text across the marked block (or press `Backspace` to clear the block with spaces in place).
+- **Direct Keyboard Line Drawing**: Draw 2D lines with `Shift+Arrows` and arrow-headed connector lines with `Ctrl+Arrows` (or `Ctrl+Shift+Arrows`), with automatic junction blending (`┼`, `├`, `┬`, `┴`).
+- **2D Block Clipboard**: Copy (`M+W`), cut (`^K`), and paste (`^U`) rectangular blocks anywhere on the canvas without shifting surrounding columns.
 
 > [!TIP]
 > On Windows Terminal or some Linux terminals, `Ctrl+Shift+Arrow` may be bound to terminal scrolling by default. You can either use `Ctrl+Arrow` in `zago` or unbind the conflicting shortcut in your terminal settings.
@@ -217,10 +224,15 @@ Press `Esc` in the editor to open the command bar, or run commands from the CLI 
 - **Boxes, Frames, & Fills**:
 
   ```logo
+  # After dragging a rectangular selection with the mouse in Canvas Mode:
+  FRAME
+  FRAME "round"
+  FILL "earth"
+
+  # Or draw by explicit dimensions / text at the cursor:
   BOX 30 5
   BOX "ZAGO" "center" "round"
-  BOX 24 4 DOUBLE AT:DOWN
-  GOTO 2 2 FILL "wall"
+  FRAME 24 6 "double"
   ```
 
   Supported border styles: `LIGHT` (`┌─┐`), `ROUND` (`╭─╮`), `DOUBLE` (`╔═╗`), `HEAVY` (`┏━┓`), `ASCII` (`+-+`).
