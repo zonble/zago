@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Huarong Dao (Klotski) — 華容道</title>
+  <style>
+    :root {
+      --bg: #1c1917;
+      --board-bg: #292524;
+      --border: #d6d3d1;
+      --caocao: #dc2626;
+      --guanyu: #d97706;
+      --general: #2563eb;
+      --soldier: #059669;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      color: #f5f5f4;
+      font-family: "PingFang TC", "Noto Sans TC", "SF Mono", sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+    .hud {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    button {
+      background: #44403c;
+      color: #fff;
+      border: 1px solid #78716c;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button:hover { background: #57534e; }
+    .frame {
+      position: relative;
+      padding: 12px;
+      background: #1c1917;
+      border: 6px double var(--border);
+      border-radius: 8px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+    }
+    /* Exit opening at the bottom center (╠═══════            ═══════╣) */
+    .frame::after {
+      content: "EXIT 出口";
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 168px;
+      height: 10px;
+      background: var(--bg);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 2px;
+    }
+    #board {
+      position: relative;
+      width: 336px;  /* 4 cols * 84px */
+      height: 420px; /* 5 rows * 84px */
+      background: var(--board-bg);
+    }
+    .piece {
+      position: absolute;
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.35rem;
+      color: #fff;
+      cursor: grab;
+      user-select: none;
+      transition: left 0.14s ease, top 0.14s ease, box-shadow 0.14s ease;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.25), 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .piece:active { cursor: grabbing; }
+    .piece.selected {
+      outline: 3px solid #fde047;
+      z-index: 5;
+    }
+    .piece.caocao { background: linear-gradient(135deg, #ef4444, #b91c1c); font-size: 1.75rem; letter-spacing: 8px; }
+    .piece.guanyu { background: linear-gradient(135deg, #f59e0b, #b45309); letter-spacing: 8px; }
+    .piece.general {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 10px;
+    }
+    .piece.soldier { background: linear-gradient(135deg, #10b981, #047857); }
+    .hint {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #a8a29e;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Huarong Dao (Klotski) — 華容道</h1>
+  <div class="hud">
+    <span>Moves: <strong id="moves">0</strong></span>
+    <button id="resetBtn">Reset Board</button>
+  </div>
+
+  <div class="frame">
+    <div id="board"></div>
+  </div>
+
+  <div class="hint" id="status">
+    Click or drag any block (or select a block and press Arrow Keys / WASD) to slide it.
+  </div>
+
+  <script>
+    const CELL = 84;
+    const GAP = 4;
+
+    // Exact "Heng Dao Li Ma" (橫刀立馬) layout from huarondao.md
+    const INITIAL_PIECES = [
+      { id: "machao",   name: "馬超", x: 0, y: 0, w: 1, h: 2, type: "general" },
+      { id: "caocao",   name: "曹操", x: 1, y: 0, w: 2, h: 2, type: "caocao" },
+      { id: "huang",    name: "黃忠", x: 3, y: 0, w: 1, h: 2, type: "general" },
+      { id: "zhaoyun",  name: "趙雲", x: 0, y: 2, w: 1, h: 2, type: "general" },
+      { id: "guanyu",   name: "關羽", x: 1, y: 2, w: 2, h: 1, type: "guanyu" },
+      { id: "zhangfei", name: "張飛", x: 3, y: 2, w: 1, h: 2, type: "general" },
+      { id: "zu1",      name: "卒",   x: 1, y: 3, w: 1, h: 1, type: "soldier" },
+      { id: "zu2",      name: "卒",   x: 2, y: 3, w: 1, h: 1, type: "soldier" },
+      { id: "zu3",      name: "卒",   x: 0, y: 4, w: 1, h: 1, type: "soldier" },
+      { id: "zu4",      name: "卒",   x: 3, y: 4, w: 1, h: 1, type: "soldier" }
+    ];
+
+    let pieces = [];
+    let selectedId = "zu1";
+    let moves = 0;
+    let dragStart = null;
+
+    function initGame() {
+      pieces = INITIAL_PIECES.map(p => ({ ...p }));
+      moves = 0;
+      document.getElementById("status").textContent =
+        "Click or drag any block (or select a block and press Arrow Keys / WASD) to slide it.";
+      render();
+    }
+
+    function canMove(piece, dx, dy) {
+      const nx = piece.x + dx;
+      const ny = piece.y + dy;
+      if (nx < 0 || ny < 0 || nx + piece.w > 4 || ny + piece.h > 5) return false;
+
+      for (const other of pieces) {
+        if (other.id === piece.id) continue;
+        const overlapX = nx < other.x + other.w && nx + piece.w > other.x;
+        const overlapY = ny < other.y + other.h && ny + piece.h > other.y;
+        if (overlapX && overlapY) return false;
+      }
+      return true;
+    }
+
+    function tryMove(piece, dx, dy) {
+      if (!canMove(piece, dx, dy)) return false;
+      piece.x += dx;
+      piece.y += dy;
+      moves++;
+      render();
+      checkWin();
+      return true;
+    }
+
+    function autoSlide(piece) {
+      const dirs = [
+        [0, 1], [0, -1], [-1, 0], [1, 0]
+      ];
+      const valid = dirs.filter(([dx, dy]) => canMove(piece, dx, dy));
+      if (valid.length === 1) {
+        tryMove(piece, valid[0][0], valid[0][1]);
+      }
+    }
+
+    function checkWin() {
+      const cc = pieces.find(p => p.id === "caocao");
+      if (cc.x === 1 && cc.y === 3) {
+        document.getElementById("status").textContent =
+          `🎉 曹操成功脫逃！You solved Huarong Dao in ${moves} moves!`;
+      }
+    }
+
+    function render() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      document.getElementById("moves").textContent = moves;
+
+      for (const p of pieces) {
+        const el = document.createElement("div");
+        el.className = `piece ${p.type}` + (p.id === selectedId ? " selected" : "");
+        el.style.left = `${p.x * CELL + GAP / 2}px`;
+        el.style.top = `${p.y * CELL + GAP / 2}px`;
+        el.style.width = `${p.w * CELL - GAP}px`;
+        el.style.height = `${p.h * CELL - GAP}px`;
+        el.textContent = p.name;
+
+        el.addEventListener("pointerdown", e => {
+          selectedId = p.id;
+          dragStart = { x: e.clientX, y: e.clientY, piece: p, moved: false };
+          el.setPointerCapture(e.pointerId);
+          render();
+        });
+
+        el.addEventListener("pointermove", e => {
+          if (!dragStart || dragStart.piece.id !== p.id || dragStart.moved) return;
+          const dx = e.clientX - dragStart.x;
+          const dy = e.clientY - dragStart.y;
+          if (Math.abs(dx) < 24 && Math.abs(dy) < 24) return;
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (tryMove(p, dx > 0 ? 1 : -1, 0)) dragStart.moved = true;
+          } else {
+            if (tryMove(p, 0, dy > 0 ? 1 : -1)) dragStart.moved = true;
+          }
+        });
+
+        el.addEventListener("pointerup", () => {
+          if (dragStart && !dragStart.moved) {
+            autoSlide(p);
+          }
+          dragStart = null;
+        });
+
+        board.appendChild(el);
+      }
+    }
+
+    window.addEventListener("keydown", e => {
+      const p = pieces.find(x => x.id === selectedId);
+      if (!p) return;
+      const k = e.key.toLowerCase();
+      if (["arrowup", "w"].includes(k)) { e.preventDefault(); tryMove(p, 0, -1); }
+      else if (["arrowdown", "s"].includes(k)) { e.preventDefault(); tryMove(p, 0, 1); }
+      else if (["arrowleft", "a"].includes(k)) { e.preventDefault(); tryMove(p, -1, 0); }
+      else if (["arrowright", "d"].includes(k)) { e.preventDefault(); tryMove(p, 1, 0); }
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", initGame);
+    initGame();
+  </script>
+</body>
+</html>

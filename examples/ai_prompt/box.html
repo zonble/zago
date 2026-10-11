@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sokoban (Box-Pushing) Game</title>
+  <style>
+    :root {
+      --bg: #181a1f;
+      --panel: #21252b;
+      --wall: #4b5263;
+      --wall-border: #3e4451;
+      --floor: #282c34;
+      --player: #61afef;
+      --box: #e5c07b;
+      --box-done: #98c379;
+      --goal: #e06c75;
+      --text: #abb2bf;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "SF Mono", "Menlo", "Monaco", "Noto Sans Mono CJK TC", monospace;
+      padding: 20px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      color: #fff;
+      font-size: 1.5rem;
+    }
+    .hud {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+    button {
+      background: #3a3f4b;
+      color: #fff;
+      border: 1px solid #5c6370;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button:hover { background: #4b5263; }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(30, 26px);
+      grid-template-rows: repeat(15, 26px);
+      border: 3px solid #abb2bf;
+      background: var(--floor);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      user-select: none;
+    }
+    .cell {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+    }
+    .wall {
+      background: var(--wall);
+      border: 1px solid var(--wall-border);
+      font-size: 16px;
+    }
+    .goal::after {
+      content: "🎯";
+      font-size: 16px;
+      position: absolute;
+      opacity: 0.85;
+    }
+    .box {
+      z-index: 2;
+      font-size: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+    }
+    .box.on-goal {
+      background: rgba(152, 195, 121, 0.35);
+      border-radius: 4px;
+      box-shadow: 0 0 8px rgba(152, 195, 121, 0.8);
+    }
+    .player {
+      z-index: 3;
+      font-size: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 6px rgba(97, 175, 239, 0.8));
+    }
+    .status {
+      margin-top: 14px;
+      min-height: 24px;
+      color: #98c379;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sokoban (Box-Pushing) Game</h1>
+  <div class="hud">
+    <span>Moves: <strong id="moves">0</strong></span>
+    <span>Boxes on Goal: <strong id="score">0 / 2</strong></span>
+    <button id="undoBtn">Undo (Z)</button>
+    <button id="resetBtn">Reset (R)</button>
+  </div>
+  <div id="board"></div>
+  <div class="status" id="status">Use Arrow Keys or WASD to move 👷 and push both 📦 onto 🎯.</div>
+
+  <script>
+    // Raw ASCII layout directly from box.md
+    const RAW_MAP = [
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwal                    lw",
+      "wallw                  lwallwallwallwal                    lw",
+      "wallw                  lwallwallwallwal      箱            lw",
+      "wallw                  lwallwallwallwal                    lw",
+      "wallw                  lwallwallwallwal               xx   lw",
+      "wallw      人                                              lw",
+      "wallw                                                      lw",
+      "wallw                                                      lw",
+      "wallw                箱           x     wallwallwallwallwallw",
+      "wallw                                   wallwallwallwallwallw",
+      "wallw                                   wallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw",
+      "wallwallwallwallwallwallwallwallwallwallwallwallwallwallwallw"
+    ];
+
+    const ROWS = 15;
+    const COLS = 30;
+    let walls = [];
+    let goals = [];
+    let player = { r: 0, c: 0 };
+    let boxes = [];
+    let history = [];
+    let moves = 0;
+
+    function initGame() {
+      walls = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      goals = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      boxes = [];
+      history = [];
+      moves = 0;
+
+      for (let r = 0; r < ROWS; r++) {
+        let col = 0;
+        let prevCh = "";
+        for (const ch of RAW_MAP[r]) {
+          const w = ch.charCodeAt(0) > 255 ? 2 : 1;
+          const c = Math.min(COLS - 1, Math.floor(col / 2));
+          if (ch === "人") {
+            player = { r, c };
+          } else if (ch === "箱") {
+            boxes.push({ r, c });
+          } else if (ch === "x" && prevCh !== "x") {
+            goals[r][c] = true;
+          } else if (/[wal]/.test(ch)) {
+            walls[r][c] = true;
+          }
+          prevCh = ch;
+          col += w;
+        }
+      }
+      render();
+    }
+
+    function hasBox(r, c) {
+      return boxes.findIndex(b => b.r === r && b.c === c);
+    }
+
+    function move(dr, dc) {
+      const nr = player.r + dr;
+      const nc = player.c + dc;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || walls[nr][nc]) return;
+
+      const boxIdx = hasBox(nr, nc);
+      if (boxIdx !== -1) {
+        const br = nr + dr;
+        const bc = nc + dc;
+        if (br < 0 || br >= ROWS || bc < 0 || bc >= COLS || walls[br][bc] || hasBox(br, bc) !== -1) {
+          return;
+        }
+        history.push({
+          player: { ...player },
+          boxes: boxes.map(b => ({ ...b }))
+        });
+        boxes[boxIdx].r = br;
+        boxes[boxIdx].c = bc;
+      } else {
+        history.push({
+          player: { ...player },
+          boxes: boxes.map(b => ({ ...b }))
+        });
+      }
+
+      player.r = nr;
+      player.c = nc;
+      moves++;
+      render();
+    }
+
+    function undo() {
+      if (!history.length) return;
+      const prev = history.pop();
+      player = prev.player;
+      boxes = prev.boxes;
+      moves--;
+      render();
+    }
+
+    function render() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      let onGoalCount = 0;
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          if (walls[r][c]) {
+            cell.classList.add("wall");
+            cell.textContent = "🧱";
+          } else if (goals[r][c]) {
+            cell.classList.add("goal");
+          }
+
+          const bIdx = hasBox(r, c);
+          if (bIdx !== -1) {
+            const boxEl = document.createElement("div");
+            boxEl.className = "box";
+            if (goals[r][c]) {
+              boxEl.classList.add("on-goal");
+              onGoalCount++;
+            }
+            boxEl.textContent = "📦";
+            cell.appendChild(boxEl);
+          } else if (player.r === r && player.c === c) {
+            const pEl = document.createElement("div");
+            pEl.className = "player";
+            pEl.textContent = "👷";
+            cell.appendChild(pEl);
+          }
+
+          board.appendChild(cell);
+        }
+      }
+
+      document.getElementById("moves").textContent = moves;
+      document.getElementById("score").textContent = `${onGoalCount} / ${boxes.length}`;
+      const status = document.getElementById("status");
+      if (onGoalCount === boxes.length) {
+        status.textContent = `🎉 Stage Clear in ${moves} moves!`;
+      } else {
+        status.textContent = "Use Arrow Keys or WASD to move 👷 and push both 📦 onto 🎯.";
+      }
+    }
+
+    window.addEventListener("keydown", e => {
+      const key = e.key.toLowerCase();
+      if (["arrowup", "w"].includes(key)) { e.preventDefault(); move(-1, 0); }
+      else if (["arrowdown", "s"].includes(key)) { e.preventDefault(); move(1, 0); }
+      else if (["arrowleft", "a"].includes(key)) { e.preventDefault(); move(0, -1); }
+      else if (["arrowright", "d"].includes(key)) { e.preventDefault(); move(0, 1); }
+      else if (key === "z") undo();
+      else if (key === "r") initGame();
+    });
+
+    document.getElementById("undoBtn").addEventListener("click", undo);
+    document.getElementById("resetBtn").addEventListener("click", initGame);
+
+    initGame();
+  </script>
+</body>
+</html>
