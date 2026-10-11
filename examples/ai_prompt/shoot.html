@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Side-Scrolling Shoot 'Em Up — JET vs BOSS</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --border: #d4d4d8;
+      --earth: #78350f;
+      --earth-edge: #b45309;
+      --jet: #38bdf8;
+      --enemy: #f43f5e;
+      --canon: #f59e0b;
+      --boss: #a855f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: #f4f4f5;
+      font-family: "SF Mono", "Menlo", "Monaco", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      user-select: none;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      letter-spacing: 1px;
+    }
+    .hud-bar {
+      width: 840px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    canvas {
+      border: 2px solid var(--border);
+      background: radial-gradient(ellipse at center, #111827 0%, #090d16 100%);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+      display: block;
+    }
+    .minimap-label {
+      width: 840px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+    }
+    #minimap {
+      border: 1px solid #52525b;
+      background: #090d16;
+    }
+    button {
+      background: #27272a;
+      color: #fff;
+      border: 1px solid #71717a;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button:hover { background: #3f3f46; }
+  </style>
+</head>
+<body>
+  <h1>Side-Scrolling Shoot 'Em Up (Gradius Style)</h1>
+  <div class="hud-bar">
+    <span>Controls: <strong>WASD / Arrow Keys</strong> to fly, <strong>Space</strong> to shoot</span>
+    <span>Score: <strong id="scoreEl">0</strong></span>
+    <button id="restartBtn">Restart (R)</button>
+  </div>
+
+  <!-- Main Screen Viewport -->
+  <canvas id="game" width="840" height="450"></canvas>
+
+  <!-- Full Stage Map Progress Preview -->
+  <div class="minimap-label">
+    <span>STAGE MAP PROGRESS (Directly parsed from shoot.md)</span>
+    <span id="stageStatus">Scrolling Cavern...</span>
+  </div>
+  <canvas id="minimap" width="840" height="81"></canvas>
+
+  <script>
+    // Exact 9 interior rows of the "Map" block from shoot.md
+    const RAW_STAGE_MAP = [
+      "                       earthearthearthearthearthearthearthearthearthearthearthearthearthearthearthearthearthearthea ",
+      "            X                     eart            C                          x   earchearchearch                    ",
+      "               X               C  eart    X                        xx     x           C                             ",
+      "                                  eart                                                    x                 bossbos ",
+      "                   X                                X X X          C    C                                     bossbos ",
+      "                                                                  earthearth      x       x                 bossbos ",
+      "                                          X                  earthearthearthear                                     ",
+      "                                  C               C          earthearthearthear       C   x                         ",
+      "             eartheartheartheartheartheartheartheartheartheareartheartheartheararthearthearthearthearthearthearthea "
+    ];
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const miniCanvas = document.getElementById("minimap");
+    const miniCtx = miniCanvas.getContext("2d");
+
+    const MAP_ROWS = RAW_STAGE_MAP.length; // 9 rows
+    const MAP_COLS = Math.max(...RAW_STAGE_MAP.map(r => r.length)); // 118 cols
+    const TILE_W = 36;
+    const TILE_H = canvas.height / MAP_ROWS; // 50px per row
+    const WORLD_W = MAP_COLS * TILE_W;
+
+    let terrain = [];
+    let enemies = [];
+    let cannons = [];
+    let bullets = [];
+    let enemyBullets = [];
+    let particles = [];
+    let boss = null;
+    let keys = {};
+    let cameraX = 0;
+    let score = 0;
+    let gameOver = false;
+    let victory = false;
+    let stars = Array.from({ length: 70 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      s: 1 + Math.random() * 1.5
+    }));
+
+    let jet = {
+      x: 90,
+      y: canvas.height / 2,
+      w: 54,
+      h: 26,
+      lives: 3,
+      invuln: 0,
+      fireCooldown: 0
+    };
+
+    function parseStageMap() {
+      terrain = Array.from({ length: MAP_ROWS }, () => Array(MAP_COLS).fill(false));
+      enemies = [];
+      cannons = [];
+      bullets = [];
+      enemyBullets = [];
+      particles = [];
+      boss = null;
+      cameraX = 0;
+      score = 0;
+      gameOver = false;
+      victory = false;
+
+      let bossCells = [];
+
+      for (let r = 0; r < MAP_ROWS; r++) {
+        const line = RAW_STAGE_MAP[r];
+        for (let c = 0; c < line.length; c++) {
+          const ch = line[c];
+          if (/[earthc]/.test(ch)) {
+            terrain[r][c] = true;
+          } else if (ch === "X" || ch === "x") {
+            // Merge adjacent 'xx' into a single enemy or wave
+            if (c > 0 && (line[c - 1] === "x" || line[c - 1] === "X")) continue;
+            enemies.push({
+              x: c * TILE_W,
+              y: r * TILE_H + TILE_H / 2,
+              baseY: r * TILE_H + TILE_H / 2,
+              w: 44,
+              h: 28,
+              hp: 1,
+              type: ch,
+              phase: Math.random() * Math.PI * 2,
+              shootTimer: 110 + Math.floor(Math.random() * 90),
+              alive: true
+            });
+          } else if (ch === "C") {
+            const onCeiling = r <= 3;
+            cannons.push({
+              x: c * TILE_W,
+              y: r * TILE_H + (onCeiling ? 14 : TILE_H - 14),
+              w: 38,
+              h: 26,
+              hp: 2,
+              onCeiling,
+              shootTimer: 130 + Math.floor(Math.random() * 80),
+              alive: true
+            });
+          } else if (/[bos]/.test(ch)) {
+            bossCells.push({ r, c });
+          }
+        }
+      }
+
+      if (bossCells.length) {
+        const minC = Math.min(...bossCells.map(b => b.c));
+        const minR = Math.min(...bossCells.map(b => b.r));
+        const maxR = Math.max(...bossCells.map(b => b.r));
+        boss = {
+          x: minC * TILE_W + 40,
+          y: ((minR + maxR + 1) / 2) * TILE_H,
+          w: 110,
+          h: 150,
+          hp: 30,
+          maxHp: 30,
+          vy: 1.3,
+          shootTimer: 85,
+          alive: true
+        };
+      }
+
+      jet.x = 90;
+      jet.y = canvas.height / 2;
+      jet.lives = 3;
+      jet.invuln = 90;
+    }
+
+    function spawnExplosion(x, y, color, count = 14) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1 + Math.random() * 4;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 20 + Math.random() * 15,
+          color
+        });
+      }
+    }
+
+    function damageJet() {
+      if (jet.invuln > 0 || gameOver || victory) return;
+      jet.lives--;
+      jet.invuln = 120;
+      spawnExplosion(jet.x, jet.y, "#38bdf8", 22);
+      if (jet.lives <= 0) {
+        gameOver = true;
+      }
+    }
+
+    function rectOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+      return Math.abs(ax - bx) * 2 < (aw + bw) && Math.abs(ay - by) * 2 < (ah + bh);
+    }
+
+    function collidesWithTerrain(screenX, screenY, w, h) {
+      const worldX = cameraX + screenX;
+      const startCol = Math.max(0, Math.floor((worldX - w / 2) / TILE_W));
+      const endCol = Math.min(MAP_COLS - 1, Math.floor((worldX + w / 2) / TILE_W));
+      const startRow = Math.max(0, Math.floor((screenY - h / 2) / TILE_H));
+      const endRow = Math.min(MAP_ROWS - 1, Math.floor((screenY + h / 2) / TILE_H));
+
+      for (let r = startRow; r <= endRow; r++) {
+        for (let c = startCol; c <= endCol; c++) {
+          if (terrain[r][c]) {
+            const tx = c * TILE_W - cameraX + TILE_W / 2;
+            const ty = r * TILE_H + TILE_H / 2;
+            if (rectOverlap(screenX, screenY, w, h, tx, ty, TILE_W, TILE_H)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    function update() {
+      if (gameOver || victory) return;
+
+      // Scroll camera until reaching the Boss arena at the right end
+      const maxCameraX = WORLD_W - canvas.width;
+      if (cameraX < maxCameraX) {
+        cameraX = Math.min(maxCameraX, cameraX + 1.4);
+        document.getElementById("stageStatus").textContent =
+          `Scrolling Cavern (${Math.floor((cameraX / maxCameraX) * 100)}%)`;
+      } else {
+        document.getElementById("stageStatus").textContent = "⚠️ BOSS ENGAGED!";
+      }
+
+      // Move JET with solid axis-separated wall collision (cannot pass through earth walls)
+      const speed = 4.6;
+      let dx = 0;
+      let dy = 0;
+      if (keys["arrowup"] || keys["w"]) dy -= speed;
+      if (keys["arrowdown"] || keys["s"]) dy += speed;
+      if (keys["arrowleft"] || keys["a"]) dx -= speed;
+      if (keys["arrowright"] || keys["d"]) dx += speed;
+
+      const nextX = Math.max(40, Math.min(canvas.width - 60, jet.x + dx));
+      if (!collidesWithTerrain(nextX, jet.y, 48, 22)) {
+        jet.x = nextX;
+      }
+
+      const nextY = Math.max(24, Math.min(canvas.height - 24, jet.y + dy));
+      if (!collidesWithTerrain(jet.x, nextY, 48, 22)) {
+        jet.y = nextY;
+      }
+
+      // If scrolling terrain pushes into JET from the right, push JET left or slide vertically to open space
+      if (collidesWithTerrain(jet.x, jet.y, 48, 22)) {
+        if (!collidesWithTerrain(jet.x - 2, jet.y, 48, 22) && jet.x > 40) {
+          jet.x -= 2;
+        } else {
+          // Find nearest open vertical gap at jet.x and damage jet
+          damageJet();
+          for (let offset = 4; offset < canvas.height; offset += 4) {
+            if (jet.y + offset < canvas.height - 24 && !collidesWithTerrain(jet.x, jet.y + offset, 48, 22)) {
+              jet.y += offset;
+              break;
+            }
+            if (jet.y - offset > 24 && !collidesWithTerrain(jet.x, jet.y - offset, 48, 22)) {
+              jet.y -= offset;
+              break;
+            }
+          }
+        }
+      }
+
+      if (jet.invuln > 0) jet.invuln--;
+      if (jet.fireCooldown > 0) jet.fireCooldown--;
+
+      // Shoot twin lasers (Space / Z / Enter)
+      if ((keys[" "] || keys["z"] || keys["enter"]) && jet.fireCooldown === 0) {
+        bullets.push({ x: jet.x + 30, y: jet.y - 5, vx: 11, vy: 0 });
+        bullets.push({ x: jet.x + 30, y: jet.y + 9, vx: 11, vy: 0 });
+        jet.fireCooldown = 8;
+      }
+
+      // Update player bullets
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        if (b.x > canvas.width + 20) {
+          bullets.splice(i, 1);
+          continue;
+        }
+
+        // Player bullets can shoot down enemy projectiles!
+        let intercepted = false;
+        for (let j = enemyBullets.length - 1; j >= 0; j--) {
+          const eb = enemyBullets[j];
+          if (rectOverlap(b.x, b.y, 16, 10, eb.x, eb.y, 12, 12)) {
+            spawnExplosion(eb.x, eb.y, "#fde047", 4);
+            enemyBullets.splice(j, 1);
+            bullets.splice(i, 1);
+            intercepted = true;
+            break;
+          }
+        }
+        if (intercepted) continue;
+
+        // Hit terrain?
+        const wc = Math.floor((cameraX + b.x) / TILE_W);
+        const wr = Math.floor(b.y / TILE_H);
+        if (wr >= 0 && wr < MAP_ROWS && wc >= 0 && wc < MAP_COLS && terrain[wr][wc]) {
+          spawnExplosion(b.x, b.y, "#f59e0b", 4);
+          bullets.splice(i, 1);
+          continue;
+        }
+
+        // Hit flying enemies
+        let removed = false;
+        for (const e of enemies) {
+          if (!e.alive) continue;
+          const sx = e.x - cameraX;
+          if (rectOverlap(b.x, b.y, 14, 8, sx, e.y, e.w, e.h)) {
+            e.hp--;
+            spawnExplosion(b.x, b.y, "#f43f5e", 6);
+            if (e.hp <= 0) {
+              e.alive = false;
+              score += 150;
+              spawnExplosion(sx, e.y, "#f43f5e", 16);
+            }
+            bullets.splice(i, 1);
+            removed = true;
+            break;
+          }
+        }
+        if (removed) continue;
+
+        // Hit cannons
+        for (const c of cannons) {
+          if (!c.alive) continue;
+          const sx = c.x - cameraX;
+          if (rectOverlap(b.x, b.y, 14, 8, sx, c.y, c.w, c.h)) {
+            c.hp--;
+            spawnExplosion(b.x, b.y, "#f59e0b", 6);
+            if (c.hp <= 0) {
+              c.alive = false;
+              score += 200;
+              spawnExplosion(sx, c.y, "#f59e0b", 16);
+            }
+            bullets.splice(i, 1);
+            removed = true;
+            break;
+          }
+        }
+        if (removed) continue;
+
+        // Hit Boss
+        if (boss && boss.alive) {
+          const bx = boss.x - cameraX;
+          if (bx < canvas.width + 60 && rectOverlap(b.x, b.y, 14, 8, bx, boss.y, boss.w, boss.h)) {
+            boss.hp--;
+            score += 25;
+            spawnExplosion(b.x, b.y, "#c084fc", 7);
+            bullets.splice(i, 1);
+            if (boss.hp <= 0) {
+              boss.alive = false;
+              score += 2000;
+              spawnExplosion(bx, boss.y, "#c084fc", 45);
+              victory = true;
+            }
+          }
+        }
+      }
+
+      // Update active flying enemies (cannot pass through terrain walls either)
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        const sx = e.x - cameraX;
+        if (sx < -60 || sx > canvas.width + 80) continue;
+
+        const nextEx = e.x - 0.5;
+        if (!collidesWithTerrain(nextEx - cameraX, e.y, e.w, e.h)) {
+          e.x = nextEx;
+        }
+        e.phase += 0.04;
+        const nextEy = e.baseY + Math.sin(e.phase) * 16;
+        if (!collidesWithTerrain(e.x - cameraX, nextEy, e.w, e.h)) {
+          e.y = nextEy;
+        }
+
+        if (rectOverlap(jet.x, jet.y, 26, 14, sx, e.y, e.w, e.h)) {
+          e.alive = false;
+          spawnExplosion(sx, e.y, "#f43f5e", 14);
+          damageJet();
+          continue;
+        }
+
+        e.shootTimer--;
+        if (e.shootTimer <= 0) {
+          e.shootTimer = 150;
+          enemyBullets.push({ x: sx - 20, y: e.y, vx: -2.6, vy: 0, color: "#fb7185" });
+        }
+      }
+
+      // Update active ground/ceiling cannons
+      for (const c of cannons) {
+        if (!c.alive) continue;
+        const sx = c.x - cameraX;
+        if (sx < -50 || sx > canvas.width + 50) continue;
+
+        if (rectOverlap(jet.x, jet.y, 26, 14, sx, c.y, c.w, c.h)) {
+          damageJet();
+        }
+
+        c.shootTimer--;
+        if (c.shootTimer <= 0) {
+          c.shootTimer = 170;
+          const angle = Math.atan2(jet.y - c.y, jet.x - sx);
+          enemyBullets.push({
+            x: sx,
+            y: c.y,
+            vx: Math.cos(angle) * 2.4,
+            vy: Math.sin(angle) * 2.4,
+            color: "#fbbf24"
+          });
+        }
+      }
+
+      // Update Boss
+      if (boss && boss.alive) {
+        const bx = boss.x - cameraX;
+        if (bx < canvas.width + 80) {
+          boss.y += boss.vy;
+          if (boss.y < 130 || boss.y > canvas.height - 130) boss.vy *= -1;
+
+          if (rectOverlap(jet.x, jet.y, 26, 14, bx, boss.y, boss.w, boss.h)) {
+            damageJet();
+          }
+
+          boss.shootTimer--;
+          if (boss.shootTimer <= 0) {
+            boss.shootTimer = 90;
+            for (const spread of [-0.25, 0, 0.25]) {
+              const baseAngle = Math.atan2(jet.y - boss.y, jet.x - bx) + spread;
+              enemyBullets.push({
+                x: bx - 50,
+                y: boss.y,
+                vx: Math.cos(baseAngle) * 2.8,
+                vy: Math.sin(baseAngle) * 2.8,
+                color: "#e879f9"
+              });
+            }
+          }
+        }
+      }
+
+      // Update enemy bullets (also blocked by earth walls!)
+      for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const eb = enemyBullets[i];
+        eb.x += eb.vx;
+        eb.y += eb.vy;
+        if (eb.x < -20 || eb.x > canvas.width + 20 || eb.y < -20 || eb.y > canvas.height + 20) {
+          enemyBullets.splice(i, 1);
+          continue;
+        }
+        // Enemy bullets hit earth walls and stop
+        const wc = Math.floor((cameraX + eb.x) / TILE_W);
+        const wr = Math.floor(eb.y / TILE_H);
+        if (wr >= 0 && wr < MAP_ROWS && wc >= 0 && wc < MAP_COLS && terrain[wr][wc]) {
+          spawnExplosion(eb.x, eb.y, eb.color, 3);
+          enemyBullets.splice(i, 1);
+          continue;
+        }
+        if (rectOverlap(jet.x, jet.y, 22, 12, eb.x, eb.y, 6, 6)) {
+          enemyBullets.splice(i, 1);
+          damageJet();
+        }
+      }
+
+      // Update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      document.getElementById("scoreEl").textContent = score;
+    }
+
+    // Draw the player's JET matching the ASCII box art in shoot.md
+    function drawJet(x, y) {
+      if (jet.invuln > 0 && Math.floor(jet.invuln / 4) % 2 === 1) return;
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Thruster flame
+      ctx.fillStyle = "#f97316";
+      ctx.fillRect(-36 - Math.random() * 8, -2, 14, 4);
+
+      // Tail fin ┌─┐
+      ctx.fillStyle = "#0284c7";
+      ctx.strokeStyle = "#e0f2fe";
+      ctx.lineWidth = 2;
+      ctx.fillRect(-22, -16, 12, 10);
+      ctx.strokeRect(-22, -16, 12, 10);
+
+      // Main fuselage └──────┐ / └────────┘
+      ctx.fillStyle = "#0ea5e9";
+      ctx.fillRect(-22, -6, 42, 16);
+      ctx.strokeRect(-22, -6, 42, 16);
+
+      // Nose cone "JET"
+      ctx.fillStyle = "#38bdf8";
+      ctx.beginPath();
+      ctx.moveTo(20, -6);
+      ctx.lineTo(34, 2);
+      ctx.lineTo(20, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 11px monospace";
+      ctx.fillText("JET", -10, 5);
+      ctx.restore();
+    }
+
+    function drawBoxEntity(x, y, w, h, label, borderColor, fillColor) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = fillColor;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+      ctx.strokeRect(-w / 2, -h / 2, w, h);
+
+      ctx.fillStyle = borderColor;
+      ctx.font = "bold 12px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(label, 0, -h / 2 - 5);
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Stars background
+      ctx.fillStyle = "rgba(255,255,255,0.45)";
+      for (const s of stars) {
+        const sx = (s.x - cameraX * 0.25 % canvas.width + canvas.width) % canvas.width;
+        ctx.fillRect(sx, s.y, s.s, s.s);
+      }
+
+      // Draw scrolling "earth" terrain
+      const startCol = Math.max(0, Math.floor(cameraX / TILE_W));
+      const endCol = Math.min(MAP_COLS - 1, Math.ceil((cameraX + canvas.width) / TILE_W));
+      for (let r = 0; r < MAP_ROWS; r++) {
+        for (let c = startCol; c <= endCol; c++) {
+          if (terrain[r][c]) {
+            const sx = c * TILE_W - cameraX;
+            const sy = r * TILE_H;
+            ctx.fillStyle = "#451a03";
+            ctx.fillRect(sx, sy, TILE_W + 1, TILE_H);
+            ctx.strokeStyle = "#78350f";
+            ctx.strokeRect(sx, sy, TILE_W, TILE_H);
+            ctx.fillStyle = "#a16207";
+            ctx.font = "11px monospace";
+            ctx.fillText("earth", sx + 2, sy + TILE_H / 2 + 4);
+          }
+        }
+      }
+
+      // Draw enemies (`enemy` box from Main screen)
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        const sx = e.x - cameraX;
+        if (sx < -60 || sx > canvas.width + 60) continue;
+        drawBoxEntity(sx, e.y, e.w, e.h, "enemy", "#fb7185", "rgba(159, 18, 57, 0.75)");
+      }
+
+      // Draw cannons (`canon` box from Main screen)
+      for (const c of cannons) {
+        if (!c.alive) continue;
+        const sx = c.x - cameraX;
+        if (sx < -60 || sx > canvas.width + 60) continue;
+        drawBoxEntity(sx, c.y, c.w, c.h, "canon", "#fbbf24", "rgba(146, 64, 14, 0.85)");
+      }
+
+      // Draw Boss (`bossbos` at end of Map)
+      if (boss && boss.alive) {
+        const bx = boss.x - cameraX;
+        if (bx < canvas.width + 100) {
+          drawBoxEntity(bx, boss.y, boss.w, boss.h, `BOSS (${boss.hp})`, "#e879f9", "rgba(88, 28, 135, 0.85)");
+          ctx.fillStyle = "#f0abfc";
+          ctx.font = "bold 16px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("bossbos", bx, boss.y - 20);
+          ctx.fillText("bossbos", bx, boss.y + 4);
+          ctx.fillText("bossbos", bx, boss.y + 28);
+        }
+      }
+
+      // Draw JET
+      drawJet(jet.x, jet.y);
+
+      // Draw player bullets
+      ctx.fillStyle = "#38bdf8";
+      for (const b of bullets) {
+        ctx.fillRect(b.x - 8, b.y - 2, 16, 4);
+      }
+
+      // Draw enemy bullets
+      for (const eb of enemyBullets) {
+        ctx.fillStyle = eb.color;
+        ctx.beginPath();
+        ctx.arc(eb.x, eb.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw particles
+      for (const p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 3, 3);
+      }
+
+      // Top-left HUD: "Life ※ ※ ※" matching Main screen
+      ctx.fillStyle = "rgba(9, 13, 22, 0.78)";
+      ctx.fillRect(12, 10, 175, 30);
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 16px monospace";
+      ctx.textAlign = "left";
+      const lifeSymbols = Array.from({ length: Math.max(0, jet.lives) }, () => "※").join(" ");
+      ctx.fillText(`Life ${lifeSymbols}`, 20, 30);
+
+      // Overlay for Game Over / Victory
+      if (gameOver || victory) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = victory ? "#4ade80" : "#f87171";
+        ctx.font = "bold 34px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(victory ? "STAGE CLEAR! BOSS DEFEATED!" : "GAME OVER", canvas.width / 2, canvas.height / 2 - 10);
+        ctx.fillStyle = "#e4e4e7";
+        ctx.font = "16px monospace";
+        ctx.fillText("Press R or click Restart to play again", canvas.width / 2, canvas.height / 2 + 28);
+      }
+
+      renderMinimap();
+    }
+
+    function renderMinimap() {
+      miniCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
+      const cw = miniCanvas.width / MAP_COLS;
+      const ch = miniCanvas.height / MAP_ROWS;
+
+      for (let r = 0; r < MAP_ROWS; r++) {
+        for (let c = 0; c < MAP_COLS; c++) {
+          if (terrain[r][c]) {
+            miniCtx.fillStyle = "#78350f";
+            miniCtx.fillRect(c * cw, r * ch, cw + 0.5, ch + 0.5);
+          }
+        }
+      }
+
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        miniCtx.fillStyle = "#f43f5e";
+        miniCtx.fillRect((e.x / WORLD_W) * miniCanvas.width, (e.y / canvas.height) * miniCanvas.height, 4, 4);
+      }
+
+      for (const c of cannons) {
+        if (!c.alive) continue;
+        miniCtx.fillStyle = "#fbbf24";
+        miniCtx.fillRect((c.x / WORLD_W) * miniCanvas.width, (c.y / canvas.height) * miniCanvas.height, 4, 4);
+      }
+
+      if (boss && boss.alive) {
+        miniCtx.fillStyle = "#c084fc";
+        miniCtx.fillRect((boss.x / WORLD_W) * miniCanvas.width - 4, 3 * ch, 10, 3 * ch);
+      }
+
+      // Current viewport window rectangle on minimap
+      const vx = (cameraX / WORLD_W) * miniCanvas.width;
+      const vw = (canvas.width / WORLD_W) * miniCanvas.width;
+      miniCtx.strokeStyle = "#38bdf8";
+      miniCtx.lineWidth = 1.5;
+      miniCtx.strokeRect(vx, 1, vw, miniCanvas.height - 2);
+    }
+
+    function loop() {
+      update();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener("keydown", e => {
+      const k = e.key.toLowerCase();
+      keys[k] = true;
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k)) {
+        e.preventDefault();
+      }
+      if (k === "r") parseStageMap();
+    });
+
+    window.addEventListener("keyup", e => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", parseStageMap);
+
+    parseStageMap();
+    loop();
+  </script>
+</body>
+</html>
