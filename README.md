@@ -1,15 +1,12 @@
 # `zago`: The Terminal Editor for 2D AI Prompts
 
-![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![macOS + Linux + Windows](https://img.shields.io/badge/macOS%20%2B%20Linux%20%2B%20Windows-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
-![2D AI Prompts](https://img.shields.io/badge/2D%20AI%20Prompts-ready-0284c7)
-![Tables](https://img.shields.io/badge/Pipe%20Tables-editable-0f766e)
-![Diagrams](https://img.shields.io/badge/Text%20Diagrams-inline-7c3aed)
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
+![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 
-- **Natural languages and traditional editors are limited** when you are working on a multi-dimensional task.
+- **Natural languages and traditional editors are limited** when you are working on a **multi-dimensional task**.
 - **Object-based text diagram tools can generate diagrams**, but they cannot edit existing diagrams.
 - **`zago` is a terminal editor featuring text diagrams for AI prompts**—for game design, UI layout, and more.
 
