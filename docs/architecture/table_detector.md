@@ -151,7 +151,7 @@ public struct TableCell: Equatable, Codable, Sendable {
 
 ## 🧪 Test Coverage & Invariant Matrix
 
-The test suite in [`Tests/TableCellDetectorTests.swift`](file:///Users/zonble/Work/zago/Tests/TableCellDetectorTests.swift) and [`Tests/TableModeTests.swift`](file:///Users/zonble/Work/zago/Tests/TableModeTests.swift) continuously asserts the following topological invariants:
+The test suite in [`Tests/TableCellDetectorTests.swift`](../../Tests/TableCellDetectorTests.swift) and [`Tests/TableModeTests.swift`](../../Tests/TableModeTests.swift) continuously asserts the following topological invariants:
 
 | Scenario | Tested Invariant | Assertion |
 | :--- | :--- | :--- |
@@ -164,7 +164,7 @@ The test suite in [`Tests/TableCellDetectorTests.swift`](file:///Users/zonble/Wo
 | **Frame Cursors** | Cursor resting directly on top, bottom, left, or right frame | Returns `nil` |
 
 Key end-to-end integration tests:
-* [`Tests/TableModeTests.swift`](file:///Users/zonble/Work/zago/Tests/TableModeTests.swift)
+* [`Tests/TableModeTests.swift`](../../Tests/TableModeTests.swift)
   * `testTableModeToggleWithCJKInDiagram`: End-to-end `F7` Table Mode toggle and editing with CJK characters.
   * `testTableModeRejectsF7InGapBetweenBoxes`: Asserts rejection in whitespace gaps between boxes.
   * `testTableModeRejectsF7OnBrokenBoxWithX`: Asserts rejection inside broken boxes.

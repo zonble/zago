@@ -64,7 +64,7 @@ To add a new language dialect or domain-specific vocabulary to `zago`, implement
 
 ### 1. The `LogoParserPlugin` Protocol
 
-Defined in [`Sources/LogoEngine/Plugins/LogoParserPlugin.swift`](file:///Users/zonble/Work/zago/Sources/LogoEngine/Plugins/LogoParserPlugin.swift):
+Defined in [`Sources/LogoEngine/Plugins/LogoParserPlugin.swift`](../../Sources/LogoEngine/Plugins/LogoParserPlugin.swift):
 
 ```swift
 public protocol LogoParserPlugin: Sendable {
@@ -196,7 +196,7 @@ public struct LogoJapanesePlugin: LogoParserPlugin {
 ### 3. Registering the Plugin
 
 #### Option A: Register as a Built-in Dialect
-Add the plugin instance to `LogoLocalizationRegistry.allDialects` in [`Sources/LogoLocalization/LogoLocalizationRegistry.swift`](file:///Users/zonble/Work/zago/Sources/LogoLocalization/LogoLocalizationRegistry.swift):
+Add the plugin instance to `LogoLocalizationRegistry.allDialects` in [`Sources/LogoLocalization/LogoLocalizationRegistry.swift`](../../Sources/LogoLocalization/LogoLocalizationRegistry.swift):
 
 ```swift
 public enum LogoLocalizationRegistry {
@@ -260,8 +260,8 @@ func testJapaneseDialectParsing() {
 
 ## 📁 Source References
 
-- **Protocol Definition**: [`Sources/LogoEngine/Plugins/LogoParserPlugin.swift`](file:///Users/zonble/Work/zago/Sources/LogoEngine/Plugins/LogoParserPlugin.swift)
-- **Plugin Registry**: [`Sources/LogoEngine/Plugins/LogoPluginRegistry.swift`](file:///Users/zonble/Work/zago/Sources/LogoEngine/Plugins/LogoPluginRegistry.swift)
-- **Built-in Registry**: [`Sources/LogoLocalization/LogoLocalizationRegistry.swift`](file:///Users/zonble/Work/zago/Sources/LogoLocalization/LogoLocalizationRegistry.swift)
-- **Traditional Chinese Plugin**: [`Sources/LogoLocalization/Chinese/LogoTraditionalChinesePlugin.swift`](file:///Users/zonble/Work/zago/Sources/LogoLocalization/Chinese/LogoTraditionalChinesePlugin.swift)
-- **Localization Tests**: [`Tests/LogoLocalizationTests.swift`](file:///Users/zonble/Work/zago/Tests/LogoLocalizationTests.swift)
+- **Protocol Definition**: [`Sources/LogoEngine/Plugins/LogoParserPlugin.swift`](../../Sources/LogoEngine/Plugins/LogoParserPlugin.swift)
+- **Plugin Registry**: [`Sources/LogoEngine/Plugins/LogoPluginRegistry.swift`](../../Sources/LogoEngine/Plugins/LogoPluginRegistry.swift)
+- **Built-in Registry**: [`Sources/LogoLocalization/LogoLocalizationRegistry.swift`](../../Sources/LogoLocalization/LogoLocalizationRegistry.swift)
+- **Traditional Chinese Plugin**: [`Sources/LogoLocalization/Chinese/LogoTraditionalChinesePlugin.swift`](../../Sources/LogoLocalization/Chinese/LogoTraditionalChinesePlugin.swift)
+- **Localization Tests**: [`Tests/LogoLocalizationTests.swift`](../../Tests/LogoLocalizationTests.swift)
