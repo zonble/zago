@@ -1,191 +1,143 @@
-# `zago`: An Editor for the Many Natures of Text
+# `zago`: The Terminal Editor for 2D AI Prompts
 
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![macOS + Linux + Windows](https://img.shields.io/badge/macOS%20%2B%20Linux%20%2B%20Windows-supported-blue)
 ![Terminal UI](https://img.shields.io/badge/Terminal-UI-334155)
-![Markdown first](https://img.shields.io/badge/Markdown-first-2563eb)
+![2D AI Prompts](https://img.shields.io/badge/2D%20AI%20Prompts-ready-0284c7)
 ![Tables](https://img.shields.io/badge/Pipe%20Tables-editable-0f766e)
 ![Diagrams](https://img.shields.io/badge/Text%20Diagrams-inline-7c3aed)
 ![CJK aware](https://img.shields.io/badge/CJK-aware-16a34a)
 ![Emoji safe](https://img.shields.io/badge/Emoji-safe-f59e0b)
 
-AI-generated documents rarely have one fixed nature. A single piece of
-text may contain prose, code, a table, a diagram, an instruction, and a
-suggestion that still needs to be checked. Human beings then have to
-read it, reorganize it, draw in it, execute parts of it, and decide what
-it should become.
+- **Natural languages and traditional editors are limited** when you are working on a multi-dimensional task.
+- **Object-based text diagram tools can generate diagrams**, but they cannot edit existing diagrams.
+- **`zago` is a terminal editor featuring text diagrams for AI prompts**—for game design, UI layout, and more.
 
-Most tools respond by sending each nature of text to a different
-application. `zago` takes the opposite approach: keep the text in one
-visible space, and let the editor expose a different property of that
-text when the work requires it.
+![Text diagrams to games](zago.png)
 
-Text Mode treats it as a stream. Table Mode treats it as structure.
-Canvas Mode treats it as a two-dimensional space. The buffer remains
-ordinary, readable text throughout.
+## Table of Contents
 
-`zago` is a terminal editor for this kind of work: writing, structuring,
-drawing, transforming, and collaborating with AI around the text
-currently in focus. The human chooses the focus; AI can inspect that
-text and propose an operation without taking over the document.
-
-## Why zago?
-
-`zago` is for people who do not want to split a mixed document between a
-text editor, a table tool, a diagram app, and an AI chat window just to
-make one piece of work understandable. It keeps the surrounding context
-present while the editing model changes.
-
-`zago` does not replace your existing code editor, such as vim, emacs,
-VSCode and so on. It is an alternative tool to help you to edit mixed
-documents.
-
-## Who is zago for?
-
-- **AI-agent users** who write Markdown instructions, specs, notes, and review
-  context from the terminal.
-- **Markdown writers** who want prose, headings, links, tables, and diagrams in
-  one terminal tool.
-- **Technical writers** who prefer plain-text documents that remain readable in
-  Git diffs, SSH sessions, pull requests, and README files.
-- **People drawing text diagrams** who do not want to leave the document just to
-  open a diagramming app.
-- **CJK and emoji perfectionists** who need terminal display width to be correct
-  when boxes, status-icon tables, rulers, and wrapped prose are involved.
-- **Keyboard-first document builders** who like nano-style editing, but want a
-  sharper toolbox for mixed plain-text work.
-
-![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
-
-- [`zago`: An Editor for the Many Natures of Text](#zago-an-editor-for-the-many-natures-of-text)
-  - [Why zago?](#why-zago)
-  - [Who is zago for?](#who-is-zago-for)
-  - [Features](#features)
-  - [Requirements](#requirements)
-  - [Quick Start](#quick-start)
+- [`zago`: The Terminal Editor for 2D AI Prompts](#zago-the-terminal-editor-for-2d-ai-prompts)
+  - [Table of Contents](#table-of-contents)
+  - [Why 2D AI Prompts?](#why-2d-ai-prompts)
+  - [2D AI Prompt Showcase (`examples/ai_prompt`)](#2d-ai-prompt-showcase-examplesai_prompt)
+    - [1. UI Layout Wireframe (`wireframe.md` → `wireframe.html`)](#1-ui-layout-wireframe-wireframemd--wireframehtml)
+    - [2. Side-Scrolling Shoot 'Em Up (`shoot.md` → `shoot.html`)](#2-side-scrolling-shoot-em-up-shootmd--shoothtml)
+  - [Key Highlights](#key-highlights)
+  - [Quick Start \& Installation](#quick-start--installation)
+    - [Requirements](#requirements)
     - [Install on macOS / Linux from Homebrew tap](#install-on-macos--linux-from-homebrew-tap)
     - [Install with Mint](#install-with-mint)
     - [Install on Linux (x86\_64 / arm64)](#install-on-linux-x86_64--arm64)
     - [Install on Arch Linux](#install-on-arch-linux)
     - [Install on Windows (PowerShell)](#install-on-windows-powershell)
-  - [Build](#build)
-    - [macOS](#macos)
-    - [Linux](#linux)
-    - [Windows / Developers](#windows--developers)
-  - [Text Mode \& 2D Canvas Mode](#text-mode--2d-canvas-mode)
-  - [Table Mode](#table-mode)
-  - [Text Processing in Text Mode](#text-processing-in-text-mode)
-  - [IPC Mode to Interact with AI Agents](#ipc-mode-to-interact-with-ai-agents)
-  - [Command Examples](#command-examples)
-  - [LOGO Environment](#logo-environment)
-  - [CLI Usage \& Headless Scripting](#cli-usage--headless-scripting)
-    - [1. Interactive Editor \& System `$EDITOR` Mode](#1-interactive-editor--system-editor-mode)
-    - [2. Headless Scripting \& Unix Pipe Filter](#2-headless-scripting--unix-pipe-filter)
-    - [Command-Line Options](#command-line-options)
-  - [Extra: zago Supports TMD](#extra-zago-supports-tmd)
-    - [What You Can Do with TMD in zago](#what-you-can-do-with-tmd-in-zago)
-  - [FAQ, Sort Of](#faq-sort-of)
-    - [How do I preview rendered HTML?](#how-do-i-preview-rendered-html)
-    - [Why a TUI app when Electron apps exist?](#why-a-tui-app-when-electron-apps-exist)
-    - [Why not Vim or Emacs?](#why-not-vim-or-emacs)
-    - [Why Swift?](#why-swift)
-    - [Isn't LOGO for 80s kids?](#isnt-logo-for-80s-kids)
-    - [How do I erase a wrong line or box in Canvas Mode?](#how-do-i-erase-a-wrong-line-or-box-in-canvas-mode)
+  - [Build from Source](#build-from-source)
+    - [macOS \& Linux](#macos--linux)
+    - [Windows (Developers)](#windows-developers)
+  - [Three Editing Modes in One Buffer](#three-editing-modes-in-one-buffer)
+    - [1. 2D Canvas Mode (`F8` / `M+V`)](#1-2d-canvas-mode-f8--mv)
+    - [2. Table Mode (`F7` / `M+T`)](#2-table-mode-f7--mt)
+    - [3. Text Mode](#3-text-mode)
+  - [Easy Drawing Commands (Editor LOGO)](#easy-drawing-commands-editor-logo)
+  - [IPC Mode for Bidirectional AI Collaboration](#ipc-mode-for-bidirectional-ai-collaboration)
+  - [CLI Usage \& Headless Unix Pipe Scripting](#cli-usage--headless-unix-pipe-scripting)
+  - [Extra: TMD (Timebase Markdown) Music Score Support](#extra-tmd-timebase-markdown-music-score-support)
   - [Documentation](#documentation)
-  - [Tests](#tests)
-  - [License](#license)
+  - [Tests \& License](#tests--license)
 
-## Features
+## Why 2D AI Prompts?
 
-- Markdown-first editing: write prose, jump through local document
-  links, navigate headings, and keep README-style documents close to
-  their final form.
-- Table-aware editing: format Markdown pipe tables, move between table
-  cells, and edit table content without breaking borders.
-- Plain-text diagramming: draw boxes, arrow connector lines, fills, and
-  table layouts directly in the buffer.
-- Text processing for writers: count chars, words, lines, CJK chars, and
-  emojis; normalize CJK/ASCII spacing; transform selected text between
-  scripts.
-- Unicode-aware layout: CJK and emoji such as ✅, ❌, and ⚠️ keep boxes,
-  tables, fills, rulers, and connector lines aligned.
-- Modeless typing & dual spatial modes: Ordinary typing always inserts
-  text directly. Press `M+V` to toggle between standard text stream mode
-  and 2D Canvas Mode for freeform grid navigation and block editing.
-- Nano-compatible controls: `^O` save, `^X` exit, `^W` search, `M+W`
-  copy, `^K` cut, `^U` paste, `^J` justify, `^Z` undo.
-- Dynamic softwrap, visual paragraph reflow, syntax highlighting, and
-  Nano `.nanorc` syntax loading.
-- Multi-buffer editing, file auto-reload.
-- TMD (Timebase Markdown) score editing: syntax highlighting, section
-  outline navigation (`M+\`), score templates, and one-click export to
-  MIDI, MusicXML, LilyPond, ABC, and WAV audio.
-- Natural command prompt: press `Esc` and run editing commands such as
-  `BOX 30 4`, `LINE`, `FILL "hi`, or `REPEAT 5 [...]`.
-- Lightweight automation: reuse command sequences with variables, loops,
-  and procedures when editing becomes repetitive.
+When prompting AI coding assistants, **a 2D ASCII diagram is worth a thousand words of prose**.
 
-## Requirements
+Ever tried describing a multi-column UI wireframe or a game stage layout in plain English? You write paragraphs of relative positions (*"put the image box on the right, aligned with the first three paragraphs..."*), and the AI still gets it wrong.
 
-- macOS 14.0+, Linux, or Windows
-- On Windows, use Windows Terminal or another VT-enabled console with
-  UTF-8 input enabled _(Note: `Ctrl+Shift+Up` and `Ctrl+Shift+Down` may
-  be intercepted by Windows Terminal's default hotkeys; disable them in
-  **Settings -> Actions** to avoid conflicts with Canvas Mode arrow
-  drawing)_
-- Swift 6.0+
-- VT100 / ANSI-compatible terminal
+Or ever tried editing an existing ASCII diagram in Vim or VS Code, only to watch every right-hand `│` border break alignment the moment you type a character? And once a diagram is saved as plain text inside a `.md` file, object-based drawing apps like ASCIIFlow can no longer edit those boxes as shapes.
 
-## Quick Start
+With `zago`, you sketch and edit the 2D layout directly inside your Markdown file in the terminal:
+
+```text
+ ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+ │  ZAGO                                                                                       │
+ │  - The Terminal Editor for 2D AI prompts                                                    │
+ ├─────────────────────────────────────────────────────────────────────────────────────────────┤
+ │  Natural languages and traditional editors are limited   ┌────────────────────────────────┐ │
+ │  when you are working on a multi-dimensional task        │                                │ │
+ │                                                          │                                │ │
+ │  Object-based text diagram tools can generate diagrams   │             image              │ │
+ │  But they cannot edit existing diagrams                  │                                │ │
+ │                                                          │                                │ │
+ │  - Cross Platform         - Easy drawing commands        │                                │ │
+ │  - Works in your terminal - CJK aware                    └────────────────────────────────┘ │
+ ├─────────────────────────────────────────────────────────────────────────────────────────────┤
+ │                                                         2026 (c) Weizhong Yang a.k.a zonble │
+ └─────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+Instead of switching between a code editor, an external ASCII drawing web app, a table generator, and an AI chat window, `zago` keeps everything in one plain-text buffer:
+
+1. **Text Mode** treats the buffer as a linear stream for writing Markdown instructions and specs.
+2. **2D Canvas Mode** (`F8` / `M+V`) treats the buffer as a freeform 2D coordinate plane where you can draw boxes, arrows, and rectangular blocks anywhere—and **edit existing plain-text diagrams in place**.
+3. **Table Mode** (`F7` / `M+T`) treats tables as structured cells while keeping borders aligned across ASCII, CJK, and emoji characters.
+
+![zago editing a Markdown document with a plain-text diagram and LOGO command output](zago.gif)
+
+## 2D AI Prompt Showcase (`examples/ai_prompt`)
+
+The [`examples/ai_prompt/`](examples/ai_prompt) directory shows how plain-text 2D layouts drawn in `zago` act as unambiguous spatial specifications that AI agents can turn directly into working HTML5 applications:
+
+### 1. UI Layout Wireframe ([`wireframe.md`](examples/ai_prompt/wireframe.md) → [`wireframe.html`](examples/ai_prompt/wireframe.html))
+
+Draw the page header, two-column hero split, feature list, `image` placeholder box, and right-aligned footer in `zago`—and let the AI generate a responsive product landing page with an interactive terminal preview.
+
+### 2. Side-Scrolling Shoot 'Em Up ([`shoot.md`](examples/ai_prompt/shoot.md) → [`shoot.html`](examples/ai_prompt/shoot.html))
+
+Sketch both the **Main Screen HUD** (`Life ※ ※ ※`, `JET` ship silhouette, `enemy`, `canon`, `earth` walls) and the **Full Scrolling Stage Map** (`X` enemy waves, `C` cannons, cavern ceiling/floor terrain, and the `bossbos` arena at the end):
+
+From that single 2D prompt, the AI builds a full-screen Gradius-style arcade shooter complete with terrain collision, a live stage-progress minimap, cosmic synth music, and a multi-phase Boss battle.
+
+## Key Highlights
+
+- **Cross Platform**: Runs natively on **macOS**, **Linux** (`x86_64` / `arm64`), and **Windows**.
+- **Works in Your Terminal**: Zero Electron overhead; works over local shells, tmux, and remote SSH sessions with familiar Nano-compatible shortcuts (`^O` save, `^X` exit, `^W` search, `M+W` copy, `^K` cut, `^U` paste, `^Z` undo).
+- **Edit Existing Diagrams In Place**: Open any Markdown or source file containing ASCII/Unicode boxes and modify, resize, move, or rewire them directly in 2D Canvas Mode.
+- **Easy Drawing Commands**: Press `Esc` to invoke Editor LOGO commands like `BOX 30 5`, `BOX "Title" "center" "round"`, `LINE ARROW`, `TABLE 3 4 10 1`, `FILL "wall"`, or turtle graphics (`PD REPEAT 4 [ FD 8 RT 90 ]`).
+- **CJK & Emoji Display-Width Aware**: Fullwidth East Asian characters and emojis (`✅`, `❌`, `⚠️`) are measured by true terminal display column width (`displayWidth = 2`), keeping boxes, tables, and rulers aligned.
+- **Agent IPC & Ghost Text Preview**: AI agents can connect to `zago ipc` or invoke the bundled `zago` skill (`zago install-skill`) to push non-destructive Dim Gray 2D ghost text overlays (`Alt+A` to accept, `Alt+R` to reject).
+
+## Quick Start & Installation
+
+### Requirements
+
+- **macOS 14.0+**, **Linux**, or **Windows**
+- A VT100 / ANSI-compatible terminal with UTF-8 enabled (on Windows, use Windows Terminal)
+- Swift 6.0+ *(only required if building from source)*
 
 ### Install on macOS / Linux from Homebrew tap
 
 ```bash
 brew tap zonble/zago
-brew tap --trust zonble/zago  # allow this third-party tap
+brew tap trust zonble/zago  # allow this third-party tap
 brew install zago
-zago notes.txt
+zago notes.md
 ```
-
-If Homebrew refuses to install from an untrusted third-party tap, run
-the `brew tap --trust zonble/zago` line and install again.
-
-On Linux, the Homebrew formula builds zago with Homebrew's `swift`
-package. Without Homebrew, install Swift 6 from your distribution or
-Swift.org and use the source build commands below.
 
 ### Install with [Mint](https://github.com/yonaskolb/Mint)
 
 ```bash
 mint install zonble/zago
-zago notes.txt
-```
-
-Or run without installing:
-
-```bash
-mint run zonble/zago notes.txt
+zago notes.md
 ```
 
 ### Install on Linux (x86_64 / arm64)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh
-zago notes.txt
+zago notes.md
 ```
 
-This downloads the pre-built static binary for your architecture
-(`x86_64` or `aarch64`) to `~/.local/bin`. No Swift toolchain required.
-
-To install to a custom path, set `INSTALL_DIR`:
-
-```bash
-INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/zonble/zago/main/install.sh | sh
-```
+This downloads the pre-built static binary (`x86_64` or `aarch64`) to `~/.local/bin` without requiring a Swift toolchain. Set `INSTALL_DIR=/usr/local/bin` to customize the destination.
 
 ### Install on Arch Linux
-
-You can install the package by cloning the packaging source and building it locally:
 
 ```bash
 git clone https://github.com/cawa0505/aur-zago.git zago-bin
@@ -193,9 +145,7 @@ cd zago-bin
 makepkg -si
 ```
 
-This package installs a precompiled static binary. It is maintained and
-automatically updated to track upstream releases via GitHub Actions at
-[cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
+Maintained and automatically updated via GitHub Actions at [cawa0505/aur-zago](https://github.com/cawa0505/aur-zago).
 
 ### Install on Windows (PowerShell)
 
@@ -203,212 +153,87 @@ automatically updated to track upstream releases via GitHub Actions at
 irm https://raw.githubusercontent.com/zonble/zago/main/install.ps1 | iex
 ```
 
-This downloads the pre-built `zago.exe` to
-`%LOCALAPPDATA%\Programs\zago` and configures your User PATH
-automatically. No Swift SDK required.
+Downloads the pre-built `zago.exe` to `%LOCALAPPDATA%\Programs\zago` and configures your User `PATH` automatically.
 
-## Build
+## Build from Source
 
-### macOS
+### macOS & Linux
 
 ```bash
 git clone https://github.com/zonble/zago.git
 cd zago
 swift build -c release
-.build/release/zago notes.txt
-.build/release/zago notes.txt --wrap 80
-.build/release/zago notes.txt --ruler
-.build/release/zago --init        # optional: create a starter ~/.zagorc
+.build/release/zago notes.md
 ```
 
-### Linux
+On Linux, if Swift 6.0+ is not yet installed, install it via Homebrew (`brew install swift`), [swiftly](https://swiftlang.github.io/swiftly/), or [Swift.org](https://www.swift.org/download/). You can also install the built binary to `~/.local/bin` with `PREFIX="$HOME/.local" ./build.sh`.
 
-1. Install Swift 6.0+ toolchain using your distribution package manager,
-   [swiftly](https://swiftlang.github.io/swiftly/), or from
-   [Swift.org](https://www.swift.org/download/):
+### Windows (Developers)
 
-   ```bash
-   # On Linux with Homebrew:
-   brew install swift
-
-   # Or install via swiftly:
-   curl -O https://swiftlang.github.io/swiftly/swiftly-installer.sh
-   bash swiftly-installer.sh
-   swiftly install 6.0
-   ```
-
-2. Clone and build:
-
-   ```bash
-   git clone https://github.com/zonble/zago.git
-   cd zago
-   swift build -c release
-   ```
-
-3. Run the binary or install using `build.sh`:
-
-   ```bash
-   .build/release/zago notes.txt
-
-   # Or install to ~/.local/bin (or /usr/local/bin):
-   PREFIX="$HOME/.local" ./build.sh
-   ```
-
-### Windows / Developers
-
-_(Note: End users do not need to build from source or install Swift SDK.
-Use the PowerShell `irm` command above to install the pre-built
-binary.)_
-
-1. Install the Swift SDK using `winget`:
-
-   ```powershell
-   winget install Swift.Toolchain
-   ```
-
-2. Run PowerShell or Command Prompt as **Administrator** (required
-   because dependencies such as `swift-argument-parser` create symbolic
-   links on Windows during the build process).
-
-3. Clone and build:
+1. Install the Swift toolchain via `winget install Swift.Toolchain`.
+2. Open PowerShell as **Administrator** and build:
 
    ```powershell
    git clone https://github.com/zonble/zago.git
    cd zago
-   swift build
-   ```
-
-   To build a release version:
-
-   ```powershell
    swift build -c release
+   .build\release\zago.exe notes.md
    ```
 
-   Then run the executable:
+## Three Editing Modes in One Buffer
 
-   ```powershell
-   .build\release\zago.exe notes.txt
-   ```
+In all modes, ordinary typing remains **modeless**—just type to insert text.
 
-## Text Mode & 2D Canvas Mode
+### 1. 2D Canvas Mode (`F8` / `M+V`)
 
-`zago` provides two complementary spatial editing modes. In both modes,
-typing remains modeless and inserts characters directly:
+Unlocks 2D virtual space navigation beyond line ends so you can treat your document as a 2D grid:
 
-- **Text Mode** (Default): Standard linear text editing for prose and
-  code. Selections follow linear text streams.
-- **Canvas Mode** (`F8` or `M+V`): Unlocks 2D virtual space navigation
-  beyond line ends. Supports 2D lines (`Shift+Arrows`), lines with
-  arrows (`Ctrl+Shift+Arrows` or `Ctrl+Arrows`), block copy (`M+W`),
-  block cut (`^K`), and block paste (`^U`) without distorting
-  surrounding text layout.
+- Move freely anywhere on the 2D plane without inserting trailing spaces until you draw or type.
+- Draw 2D lines with `Shift+Arrows` and arrow-headed connector lines with `Ctrl+Arrows` (or `Ctrl+Shift+Arrows`).
+- Rectangular 2D block selection (`^6` / `M+A`), block copy (`M+W`), block cut (`^K`), and block paste (`^U`) without shifting surrounding columns.
 
 > [!TIP]
->
-> **Windows Terminal Shortcut Tip**: In Windows Terminal,
-> `Ctrl+Shift+Up` and `Ctrl+Shift+Down` are bound by default to terminal
-> actions (such as scrolling). To use these shortcuts for drawing
-> vertical arrows in Canvas Mode, disable or unbind them in Windows
-> Terminal via **Settings -> Actions**. Or, you can use Ctrl + Arrow
-> keys alternatively.
+> On Windows Terminal or some Linux terminals, `Ctrl+Shift+Arrow` may be bound to terminal scrolling by default. You can either use `Ctrl+Arrow` in `zago` or unbind the conflicting shortcut in your terminal settings.
 
-> [!TIP]
->
-> Lots of terminal apps on Linux map Shift+Control+Arrow to terminal
-> scrolling. If you want to use these keys for Canvas Mode block
-> selection, you may need to disable that behavior in your terminal
-> emulator.
+For details on 1D vs. 2D selection and clipboard behavior, see [Mark, selection, and canvas behavior](docs/user/mark.md).
 
-For details on selection rules and clipboard separation, see 
-[Mark, selection, and canvas behavior](docs/user/mark.md).
+### 2. Table Mode (`F7` / `M+T`)
 
-## Table Mode
+Press `F7` or `M+T` inside any Markdown pipe table or Unicode box table:
 
-You can use the `F7` or `M+T` to enter Table Mode. In Table Mode, the
-cursor moves between table cells, and the table borders are preserved.
-Press `F7` again to exit Table Mode and return to Text Mode or Canvas
-Mode.
+- Navigate smoothly between cells while keeping table borders intact.
+- Edit CJK, ASCII, and emoji content inside cells with automatic column-width alignment.
 
-## Text Processing in Text Mode
+### 3. Text Mode
 
-`zago` is still a text editor. The diagram tools sit on top of ordinary
-prose editing rather than replacing it:
+Standard linear text editing enhanced for technical and multilingual writers:
 
-- Linear text selection in Text Mode and Table Mode, including
-  `Shift+Arrow` and `Shift+Home` / `Shift+End`, with selected text
-  replaced by typing.
-- Nano compatible syntax highlight: You can use the syntax highlight
-  configuration files for Nano in `zago`, just edit `.zagorc` like
-  `.nanorc`.
-- Paragraph justification (`^J`) for mixed CJK and Latin prose, using
-  display width instead of byte or scalar counts.
-- Selection-based text transforms from the Tools menu:
-  Traditional/Simplified Chinese conversion,
-  Latin/Hiragana/Katakana/Romaji transliteration, and CJK/ASCII spacing
-  normalization.
-- Text counts from the Tools menu. With a selection, `Word Count`
-  reports that selection; without a selection, it reports the whole
-  document. The status includes chars, words, lines, and only shows CJK
-  chars or emojis when present.
-- Optional sub line numbers for fixed-width prose drafting: when a wrap
-  column is set, long physical lines can show visual-row numbers and
-  paragraph character counts.
-- Document link navigation with `M+O` for local Markdown, Org,
-  reStructuredText, and AsciiDoc links.
-- Heading navigation and outline picker for Markdown, Org,
-  reStructuredText, and AsciiDoc documents.
+- **Markdown Outline & Link Navigation**: Jump across headings (`Alt+]` / `Alt+[` or `M+\`) and follow local document links (`M+O`) across Markdown, Org, reStructuredText, and AsciiDoc files.
+- **CJK-Aware Justification (`^J`)**: Wraps and justifies mixed CJK/Latin paragraphs using visual display columns rather than byte counts.
+- **Built-In Text Transformations**: Convert between Traditional and Simplified Chinese, normalize CJK/ASCII spacing, transliterate scripts (`Hiragana`, `Katakana`, `Latin`), and inspect character/word/CJK/emoji counts from the Tools menu.
+- **Nano `.nanorc` Syntax Highlighting**: Load standard `.nanorc` syntax rules via `~/.zagorc`.
 
-## IPC Mode to Interact with AI Agents
+## Easy Drawing Commands (Editor LOGO)
 
-`zago` supports a simple IPC protocol for AI agents to inspect the
-current buffer and propose LOGO commands to transform it. The let AI
-agents know how to interact with `zago`, please install the skill and
-mcp server:
+Press `Esc` in the editor to open the command bar, or run commands from the CLI with `zago -e`. `zago` features a built-in **Editor LOGO** engine for generating and manipulating 2D shapes:
 
-```sh
-zago --install-skill
-```
-
-To enable IPC mode, run `zago` with the `--ipc` flag.
-
-```sh
-zago --ipc notes.txt
-```
-
-Then, you can use prompts like `Write a summay of the current file using
-zago skill` to let the AI agent propose an update. When the AI agent
-sends the proposal, you can use Meta+A key to accept the proposal and
-apply the changes to the buffer.
-
-## Command Examples
-
-Press `Esc` to enter the command prompt. Commands use Editor LOGO syntax
-for editing actions, shape generation, and turtle graphics:
-
-- **Box & Fill**:
+- **Boxes, Frames, & Fills**:
 
   ```logo
-  BOX 30 5 CENTER ROUND
-  DRAWBOX 30 4 ROUND
-  GOTO 2 2
-  FILL "hi
-  ```
-- **Movement & Text Insertion**:
-  ```logo
-  MOVE HOME  TYPE "Hi MOVE END
-  ```
-- **Loops & Lists**:
-
-  ```logo
-  REPEAT 5 [ TYPE :# ". List item" NL ]
+  BOX 30 5
+  BOX "ZAGO" "center" "round"
+  BOX 24 4 DOUBLE AT:DOWN
+  GOTO 2 2 FILL "wall"
   ```
 
-- **Procedures**:
+  Supported border styles: `LIGHT` (`┌─┐`), `ROUND` (`╭─╮`), `DOUBLE` (`╔═╗`), `HEAVY` (`┏━┓`), `ASCII` (`+-+`).
+  Exit position modifiers (`AT:NE`, `AT:SE`, `AT:SW`, `AT:NW`, `AT:DOWN`) make chaining horizontal or vertical layouts effortless.
+
+- **Tables & Connector Lines**:
 
   ```logo
-  TO TITLE :text
-    BOX :text CENTER ROUND
-  END
+  TABLE 3 4 10 1
+  BOX "Client" "round" NE LINE ARROW 10 RIGHT BOX "Server" "double"
   ```
 
 - **ASCII Architecture Diagram**:
@@ -420,6 +245,8 @@ for editing actions, shape generation, and turtle graphics:
   GOTO 6 2 TYPE "     server     "
   ```
 
+  Produces:
+
   ```text
   ┌────────────────┐
   │     client     │
@@ -430,170 +257,92 @@ for editing actions, shape generation, and turtle graphics:
   └────────────────┘
   ```
 
-For the complete command reference, see [Editor LOGO Documentation](docs/logo/reference.md) and the [User Manual (繁體中文手冊)](https://github.com/zonble/zago/wiki/zago-help-zh-tw).
+- **Turtle Graphics & Loops**:
 
-## LOGO Environment
+  ```logo
+  PD REPEAT 4 [ FD 8 RT 90 ]
+  REPEAT 5 [ TYPE :# ". Item" NL ]
+  ```
 
-`zago` has the feature to debug LOGO code and lookup built-in primitives
-and custom procedures. By default the debugger and error output are
-hidden, but you can type `set debug on` in the command bar to enable
-them.
+For the full language specification, see the [Editor LOGO Reference](docs/logo/reference.md).
 
-You can use the `logo break` command in the command bar to add or remove
-a break point. When the program stops on a break point, you can use
-commands like `logo continue`, `logo step`, `logo abort` and `logo eval`
-to control the debugger.
+## IPC Mode for Bidirectional AI Collaboration
 
-To know the details of a LOGO primitive, just type `help-cmd` in the
-command bar. For example: `help-cmd BOX`.
+Not only can you write 2D prompts *for* AI agents, AI agents can also draw and propose 2D edits *back into* your active `zago` session over IPC:
 
-## CLI Usage & Headless Scripting
+1. **Install the AI Skill**:
 
-`zago` operates as an interactive TUI editor, a system `$EDITOR`, and a
-headless Unix pipe filter.
+   ```bash
+   zago install-skill
+   ```
 
-### 1. Interactive Editor & System `$EDITOR` Mode
+2. **Start `zago` with IPC enabled**:
 
-Open files, jump to specific lines, edit piped stdin streams, or use
-`zago` as `export EDITOR=zago`:
+   ```bash
+   zago ipc architecture.md
+   ```
 
-```bash
-# Open one or more files in the terminal TUI editor
-zago notes.txt file2.txt --wrap 80 --ruler
+3. **Review Ghost Text Proposals**:
+   When an AI agent proposes a diagram or edit over the socket, `zago` renders it as a **Dim Gray 2D Ghost Text Overlay** at the target coordinates. Press `Alt+A` to accept and commit it into the buffer, or `Alt+R` to reject.
 
-# Open file and jump directly to line 42, column 10
-zago +42:10 notes.txt
+## CLI Usage & Headless Unix Pipe Scripting
 
-# Open files in read-only mode
-zago -R /var/log/syslog
-```
-
-### 2. Headless Scripting & Unix Pipe Filter
-
-Execute LOGO scripts or inline LOGO code on stdin piped text or files
-without opening a TUI window, printing the resulting ASCII output
-directly to `stdout`:
+`zago` works both as an interactive terminal editor (`export EDITOR=zago`) and as a headless CLI diagram generator / Unix pipe filter:
 
 ```bash
-# Pipe stdin text into LOGO filter and wrap it in an ASCII box
+# Open a file at line 42, column 10 with an 80-column ruler
+zago +42:10 prompt.md wrap 80 ruler
+
+# Generate a 3-step flowchart in headless mode and print to stdout
+zago -e 'BOX "Input" "round" AT:DOWN VLINE 2 BOX "Process" "double" AT:DOWN VLINE 2 BOX "Output" "round"'
+
+# Pipe stdin text into zago and wrap it in a box
 uptime | zago -e "box buffertext"
 
-# Execute inline LOGO code and print output
-zago -e "BOX 20 4 GOTO 2 2 INSET \"Hello World\""
-
-# Process input file with a LOGO script and redirect output
-cat data.txt | zago -s format_report.logo > diagram.txt
-
-# Pipe generated diagram directly to clipboard
-zago --run generate_architecture.logo | pbcopy
+# Run a .logo script and copy the resulting 2D diagram to clipboard
+zago -s architecture.logo | pbcopy
 ```
 
-### Command-Line Options
+| Option | Description |
+| : | : |
+| `files` | File(s) to open, `-` for stdin pipe, or `+LINE[:COL]` cursor jump |
+| `-w`, `wrap <col>` | Set softwrap column width (e.g., `80`) |
+| `-r`, `ruler` | Display column ruler bar above the viewport |
+| `-R`, `readonly` | Open file(s) in read-only mode |
+| `-e`, `eval <code>` | Execute inline Editor LOGO code in headless mode and output to `stdout` |
+| `-s`, `run`, `script <file>` | Execute a `.logo` script file in headless mode |
+| `ipc` / `no-ipc` | Enable or disable the JSON-RPC 2.0 IPC socket server |
+| `install-skill` | Install the `zago` AI skill definition to local agent directories |
+| `init` | Generate a starter `~/.zagorc` configuration file |
+| `lang <en/zh_TW>` | Set interface language |
 
-| Option                           | Flag | Description                                                             |
-| :------------------------------- | :--- | :---------------------------------------------------------------------- |
-| `files`                          |      | File(s) to open, `-` for stdin pipe, or `+LINE[:COL]` cursor jump.      |
-| `-w`, `--wrap <col>`             |      | Specify softwrap column width (e.g. 80).                                |
-| `-r`, `--ruler`                  |      | Display WordStar-style ruler bar above viewport.                        |
-| `-R`, `--readonly`               |      | Open file(s) in read-only mode.                                         |
-| `-e`, `--eval <code>`            |      | Execute inline LOGO code in headless mode (supports Unix stdin pipe).   |
-| `-s`, `--run`, `--script <file>` |      | Execute a LOGO script file in headless mode (supports Unix stdin pipe). |
-| `--init`                         |      | Generate default `~/.zagorc` configuration file.                        |
-| `--syntax <true/false>`          |      | Enable or disable syntax highlighting.                                  |
-| `--lang <en/zh_TW>`              |      | Set interface language.                                                 |
-| `--spell-lang <lang>`            |      | Set spell checker language (e.g. en_US, de_DE, fr_FR).                  |
+## Extra: TMD (Timebase Markdown) Music Score Support
 
-## Extra: zago Supports TMD
+Beyond 2D AI prompts and diagrams, `zago` includes built-in support for **TMD (Timebase Markdown)**—a plain-text music notation format for numbered musical notation (Jianpu), chord charts, and multi-track arrangements:
 
-Beyond Markdown documents and terminal diagrams, `zago` includes built-in support for **TMD (Timebase Markdown)**—a human-readable, plain-text score format for writing numbered musical notation (簡譜 / Jianpu), chord charts, and multi-track musical arrangements.
-
-### What You Can Do with TMD in zago
-
-- **Syntax Highlighting & Structure**: Full syntax coloring for notes (`1`–`7`), octave shifts (`'`, `,`), duration modifiers (`_`, `^`), chord symbols (e.g., `[C]`, `[Am7]`, `[G/B]`), time signatures (`<4/4>`), key and tempo directives (`?= C`, `!= 120`), and block comments.
-- **Section Outline Jump**: Press `M+\` (or `Esc \`) to open the Document Outline popover and jump directly between song sections (`[Verse]`, `[Chorus]`, instrument parts).
-- **Ready-to-Use Snippets**: Insert complete score templates, verse blocks, or chord progressions via the top menu bar (`TMD -> Snippets`).
-- **One-Click Export**: Easily convert your text score to standard music formats from the interactive menu bar or commands:
-  - **MIDI** (`.mid`) for DAWs and synthesizers
-  - **MusicXML** (`.xml`) for notation software like MuseScore, Sibelius, or Finale
-  - **LilyPond** (`.ly`) for publication-grade sheet music typesetting
-  - **ABC** (`.abc`) for folk and traditional music workflows
-  - **WAV audio** (`.wav`) via native audio synthesis (macOS)
-- **Web & Terminal Parity**: In both the desktop CLI and the WebAssembly browser edition, TMD files can be edited and exported directly (with automatic browser file downloads in web mode).
-
-## FAQ, Sort Of
-
-### How do I preview rendered HTML?
-
-You probably don't.
-
-In agent-facing Markdown, the source is the interface. AI agents read
-the Markdown itself; they do not need a rendered HTML preview. `zago`
-focuses on making that source easier to write, shape, and maintain.
-
-### Why a TUI app when Electron apps exist?
-
-For the same reason AI agent CLIs exist: the terminal is still the
-shortest path between code, files, tools, and remote machines.
-
-### Why not Vim or Emacs?
-
-The features I want are not just Markdown syntax helpers. They touch the
-editor's interaction model: Text Mode and Canvas Mode, table-cell
-editing, rectangular canvas blocks, LOGO commands, selection-based text
-tools, status lines, menus, and key bindings.
-
-In a powerful plugin ecosystem, that kind of opinionated workflow can
-easily fight the host editor, existing user habits, and other plugins.
-`zago` keeps the surface smaller so these pieces can be designed as one
-coherent Markdown writing flow.
-
-### Why Swift?
-
-`zago` is built for writing, not for coding. Swift and Apple's
-Foundation framework provide rich, high-level, and expressive APIs for
-text transformations, Unicode scalar handling, linguistic analysis, ICU
-word boundaries, and CJK text processing. This makes Swift a natural fit
-for crafting an editor dedicated to prose, structure, and plain-text
-drawing.
-
-On a personal note, my past development experience is deeply rooted in
-the Apple ecosystem. Writing `zago` in Swift allows me to build and
-iterate on these text and terminal abstractions with maximum fluency and
-joy.
-
-### Isn't LOGO for 80s kids?
-
-Yes. BTW, I am an 80s kid. :p
-
-Also, LOGO is still a pretty good little language for movement, repetition,
-shapes, and text macros.
-
-### How do I erase a wrong line or box in Canvas Mode?
-
-Type spaces over it, or use Canvas Mode block cut when the shape is rectangular.
+- Syntax highlighting for notes, octaves, durations, chords (`[Cmaj7]`), time signatures (`<4/4>`), and directives.
+- Section outline jump (`M+\`) and ready-to-use score templates (`TMD -> Snippets`).
+- One-click export to **MIDI** (`.mid`), **MusicXML** (`.xml`), **LilyPond** (`.ly`), **ABC** (`.abc`), and **WAV audio** (`.wav`).
 
 ## Documentation
 
-- [User Manual / 繁體中文使用手冊](https://github.com/zonble/zago/wiki/zago-help-zh-tw)
 - [Editor basics](docs/user/editor.md)
+- [Mark, selection, and 2D canvas behavior](docs/user/mark.md)
 - [Search behavior](docs/user/search.md)
-- [Mark, selection, and canvas behavior](docs/user/mark.md)
-- [Editor LOGO command language](docs/logo/reference.md)
-- [Configuration and key bindings](docs/user/configuration.md)
+- [Editor LOGO command language reference](docs/logo/reference.md)
 - [Pen mode and turtle drawing](docs/logo/pen_mode.md)
 - [Diagram snippets & menu rules](docs/features/diagram_snippets.md)
-- [Spell checker architecture & plan](docs/features/spell_checker.md)
+- [Configuration and key bindings](docs/user/configuration.md)
+- [Spell checker architecture](docs/features/spell_checker.md)
 - [File encoding & auto-detection](docs/features/encoding.md)
 - [Homebrew tap](docs/development/homebrew_tap.md)
 - [Release & preview builds](docs/development/release.md)
 - [Changelog](CHANGELOG.md)
 
-## Tests
+## Tests & License
 
-Run `swift test`.
-
-## License
+Run `swift test` to execute the test suite.
 
 MIT License. Copyright (c) 2026 Weizhong Yang a.k.a. zonble.
 
-_Note: The name `zago` stands for "zonble's nano + LOGO"._
+*Note: The name `zago` stands for "zonble's nano + LOGO".*
