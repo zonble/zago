@@ -1428,7 +1428,19 @@ struct ConfigAndToolsTests {
         #expect(!classifierSource.contains("0x4E00...0x9FFF"))
         #expect(!classifierSource.contains("0x3000...0x303F"))
     }
+
+    @Test func testAgentMdAndDocsUseRelativeLinksAndCurrentProjectName() throws {
+        let agentMd = try String(contentsOfFile: "AGENT.md", encoding: .utf8)
+        #expect(!agentMd.contains("Tests/seTests"))
+        #expect(!agentMd.contains(".serc"))
+        #expect(!agentMd.contains("When working on `se`"))
+        #expect(FileManager.default.fileExists(atPath: "Sources/Editor/Controllers/Editor/Editor+Commands.swift"))
+        #expect(FileManager.default.fileExists(atPath: "Sources/zago/Terminal/PosixTerminal.swift"))
+        #expect(FileManager.default.fileExists(atPath: "docs/development/test.md"))
+        #expect(FileManager.default.fileExists(atPath: "docs/features/encoding.md"))
+    }
 }
+
 
 
 

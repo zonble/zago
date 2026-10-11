@@ -216,7 +216,7 @@ All border and arrow keywords are fully supported in Traditional Chinese:
 
 ## 🛠️ Implementation References
 
-- **Parser Engine**: [`Sources/Drawing/StyleDSL.swift`](file:///Users/zonble/Work/zago/Sources/Drawing/StyleDSL.swift)
-- **Box Rendering**: [`Sources/Drawing/BoxStyle.swift`](file:///Users/zonble/Work/zago/Sources/Drawing/BoxStyle.swift)
-- **Line Rendering**: [`Sources/Drawing/LineDrawer.swift`](file:///Users/zonble/Work/zago/Sources/Drawing/LineDrawer.swift)
-- **Unit & Property Tests**: [`Tests/StyleDSLTests.swift`](file:///Users/zonble/Work/zago/Tests/StyleDSLTests.swift)
+- **Parser Engine**: [`Sources/Drawing/StyleDSL.swift`](../../Sources/Drawing/StyleDSL.swift)
+- **Box Rendering**: [`Sources/Drawing/BoxStyle.swift`](../../Sources/Drawing/BoxStyle.swift)
+- **Line Rendering**: [`Sources/Drawing/LineDrawer.swift`](../../Sources/Drawing/LineDrawer.swift)
+- **Unit & Property Tests**: [`Tests/StyleDSLTests.swift`](../../Tests/StyleDSLTests.swift)

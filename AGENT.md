@@ -28,54 +28,54 @@ This document serves as the authoritative guide for AI Coding Agents (such as An
 ```text
 zago/
 ├── Package.swift                             # Swift Package Manager manifest
-├── README.md                                  # Short user-facing project entry point
+├── README.md                                  # User-facing project entry point (English)
+├── README.zh_TW.md                            # User-facing project entry point (Traditional Chinese)
 ├── AGENT.md                                   # AI Agent technical specification (this file)
 ├── docs/
 │   ├── README.md                              # Documentation index
-│   ├── logo.md                                # LOGO command language guide
-│   ├── configuration.md                       # .zagorc, key bindings, and Nano syntax loading
-│   └── logo_pen_mode.md                       # Turtle/pen mode drawing guide
+│   ├── architecture/                          # MVC, command system, keymap, threading, and Wasm architecture
+│   ├── development/                           # Testing guidelines (test.md), release, and Wasm build docs
+│   ├── features/                              # Encoding, file watcher, git integration, mouse, spell checker, TMD
+│   ├── logo/                                  # Editor LOGO reference, dialects, pen mode, styles, and debugger
+│   └── user/                                  # User configuration (.zagorc), modes, search, and directory mode
 ├── Sources/
-│   ├── zago/
-│   │   └── zago.swift                         # Main CLI entry point (swift-argument-parser)
+│   ├── zago/                                  # Main CLI entry point, POSIX/Windows terminals, local file I/O & IPC
+│   ├── zagoweb/                               # WebAssembly (WASI) entry point and browser bridge
 │   ├── TextMetrics/
-│   │   └── DisplayWidth.swift                  # Single source of truth for terminal display width
+│   │   └── DisplayWidth.swift                 # Single source of truth for terminal display width & CJK/Emoji scalars
+│   ├── TextTransform/                         # CJK spacing, punctuation normalization, and text reflow
+│   ├── Drawing/                               # Box, line, arrow, and fill rendering primitives
+│   ├── LogoEngine/                            # Editor LOGO interpreter, AST, primitives, and evaluation engine
+│   ├── LogoLocalization/                      # Localized LOGO dialect plugins (Traditional Chinese, Japanese, etc.)
+│   ├── Config/                                # ~/.zagorc & ./.zagorc configuration loader and runtime settings
+│   ├── Syntax/                                # Syntax highlighting engine, .nanorc parser, and PipeTableFormatter
+│   ├── IPCServer/                             # Unix domain socket / Windows TCP IPC and MCP servers
 │   └── Editor/
-│       ├── Terminal.swift                     # POSIX termios raw mode & ANSI escape sequences
-│       ├── TextBuffer.swift                   # Core line buffer, string insertion, range cutting
-│       ├── LayoutEngine.swift                 # Softwrap computation & VirtualLine coordinate mapping
 │       ├── Command.swift                      # Command & CommandRegistry key dispatch system
-│       ├── ConfigLoader.swift                 # Parser for ~/.zagorc and ./.zagorc configuration directives
-│       ├── SpellChecker.swift                 # Misspelled word identification & location scanning
-│       ├── Editor.swift                       # Core Editor lifecycle, state properties, & run loop
-│       ├── Editor+Commands.swift              # Default keybindings & command registrations
-│       ├── Editor+Viewport.swift              # Viewport scrolling, virtual line cursor mapping, screen refresh
-│       ├── Editor+Prompts.swift               # Bottom prompt input modes (save, exit, search, insert, spell)
-│       ├── Editor+Undo.swift                  # UndoSnapshot stack management & restore
-│       ├── HelpView.swift                     # Full-screen ^G / F1 interactive help viewer
-│       ├── SyntaxHighlighter.swift            # Highlighting engine & GNU .nanorc parser
-│       ├── Syntax/
-│       │   ├── SyntaxDefinition.swift         # Protocol-oriented language syntax template base
-│       │   ├── SwiftSyntax.swift              # Swift syntax rules
-│       │   ├── PythonSyntax.swift             # Python syntax rules
-│       │   ├── CSyntax.swift                  # C/C++ syntax rules
-│       │   ├── JSONSyntax.swift               # JSON syntax rules
-│       │   ├── MarkdownSyntax.swift           # Markdown syntax rules
-│       │   └── ShellSyntax.swift              # Shell script syntax rules
+│       ├── Commands/                          # Discrete EditorCommand implementations
+│       ├── Controllers/
+│       │   ├── Editor/
+│       │   │   ├── Editor.swift               # Core Editor lifecycle, state properties, & run loop
+│       │   │   ├── Editor+Commands.swift      # Default keybindings & command registrations
+│       │   │   ├── Editor+Viewport.swift      # Viewport scrolling, virtual line cursor mapping, screen refresh
+│       │   │   ├── Editor+Prompts.swift       # Bottom prompt input modes (save, exit, search, insert, spell)
+│       │   │   ├── Editor+Undo.swift          # UndoSnapshot stack management & restore
+│       │   │   └── Editor+Logo.swift          # LogoEngineDelegate integration
+│       │   └── Subcontrollers/                # Canvas, Table, MenuBar, Prompt, Search, and Debugger controllers
+│       ├── Models/                            # TextBuffer, LayoutEngine, and UndoSnapshot models
+│       ├── Views/                             # Terminal Renderer, MenuBar, StatusBar, and interactive Dialogs
 │       └── Localization/
 │           ├── Localization.swift             # L10n manager & system POSIX locale detector
 │           ├── EnglishStrings.swift           # English translation table (en)
 │           └── TraditionalChineseStrings.swift # Traditional Chinese translation table (zh_TW)
-└── Tests/
-    └── seTests/
-        └── seTests.swift                      # 20+ automated unit tests covering all subsystems
+└── Tests/                                     # Automated Swift Testing suites covering all modules
 ```
 
 ---
 
 ## 3. Build, Verification, and Test Commands
 
-When working on `se`, AI agents **MUST** execute the build and test suite after making code modifications to ensure non-breaking changes:
+When working on `zago`, AI agents **MUST** execute the build and test suite after making code modifications to ensure non-breaking changes:
 
 ### Build Debug Target
 ```bash
@@ -107,7 +107,7 @@ swift test
 - **Shortcut Naming Convention in UI & Documentation**:
   - Control key combinations MUST be represented in `^<key>` format (e.g., `^Q`, `^N`, `^W`, `^BS`).
   - Alt / Meta key combinations MUST be represented in `M+<key>` format (e.g., `M+T`, `M+S`, `M+L`, `M+.`, `M+,`).
-- To add a new editor feature, register a new `Command` instance in [`Editor+Commands.swift`](Sources/Editor/Editor+Commands.swift):
+- To add a new editor feature, register a new `Command` instance in [`Editor+Commands.swift`](Sources/Editor/Controllers/Editor/Editor+Commands.swift):
   ```swift
   commandRegistry.register(Command(
       id: "feature.id",
@@ -123,11 +123,11 @@ swift test
 - Standard ASCII characters have a display width of `1`. Full-width CJK characters (Kanji/Hanzi, Hiragana, Katakana, Full-width Punctuation, Emoji) have a display width of `2`.
 - [`TextMetrics`](Sources/TextMetrics) is the single source of truth for terminal column width. Terminal positioning, line padding, softwrap, table layout, LOGO box/fill rendering, and tests MUST use `String.displayWidth`, `Character.displayWidth`, or `paddedToDisplayWidth(_:)` from this module.
 - Do **not** add new `wcwidth`, Unicode scalar range checks, `logoDisplayWidth`, CJK width helpers, or local display-width extensions in `Editor`, `LogoEngine`, tests, or feature files. If display width behavior must change, update [`Sources/TextMetrics/DisplayWidth.swift`](Sources/TextMetrics/DisplayWidth.swift) and its focused tests.
-- Tokenization helpers may classify text for reflow, but they must derive wide-character decisions from `Character.displayWidth >= 2`; they must not maintain independent CJK/wide Unicode tables.
+- Tokenization helpers may classify text for reflow, but they must derive wide-character decisions from `TextMetrics`; they must not maintain independent CJK/wide Unicode tables.
 - Never use `String.count` for calculating visual layout bounds in the UI title bar, help bar, or screen cursor placement.
 
 ### C. Editor File Modularization Guidelines
-Keep `Editor.swift` clean and compact (under 200 lines). When adding new features to `Editor`, place them in the corresponding extension file:
+Keep `Editor.swift` focused and modular. When adding new features to `Editor`, place them in the corresponding extension file under [`Sources/Editor/Controllers/Editor/`](Sources/Editor/Controllers/Editor/):
 - **`Editor+Commands.swift`**: Adding or modifying keybindings and command registration logic.
 - **`Editor+Viewport.swift`**: Viewport bounds calculation, soft-wrap virtual cursor mapping, and screen refresh trigger.
 - **`Editor+Prompts.swift`**: Adding new prompt modes, dialog inputs, or interactive queries.
@@ -160,11 +160,11 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 3. **Swift 6 Safety**: Avoid nonisolated global state mutations unless explicitly marked as thread-safe or `@MainActor` isolated.
 4. **Sanity Check Terminal Output**: Output ANSI escape sequences using buffer concatenation and flush output efficiently with `fflush(nil)`.
 5. **No File Overcrowding**: If an extension file grows beyond 300 lines, evaluate splitting it into a dedicated helper module.
-6. **Strict Test-Driven Development (TDD)**: AI agents MUST follow TDD. Before fixing a bug or adding features, write automated unit tests first in `Tests/seTests/seTests.swift` to assert the contract/behavior, run `swift test` to observe failure if applicable, implement the code fix, and verify zero test failures.
+6. **Strict Test-Driven Development (TDD)**: AI agents MUST follow TDD. Before fixing a bug or adding features, write automated unit tests first in [`Tests/`](Tests/) to assert the contract/behavior, run `swift test` to observe failure if applicable, implement the code fix, and verify zero test failures.
 7. **No Unsolicited Git Commits**: AI agents MUST NOT execute `git commit` unless the user explicitly requests a commit (e.g., "commit", "git commit"). Leave code changes in the working directory for user review.
 8. **Avoid Singletons & Direct Editor Class Dependencies**: Avoid global mutable singletons (`public static let shared`). Services MUST be passed via protocol abstractions or `EditorDependencies`. Secondary components, background services, and sub-systems MUST NOT depend directly on the monolithic `Editor` class.
-9. **Mandatory Unique Temporary File Paths for Windows CI**: When writing unit tests that create temporary files in `FileManager.default.temporaryDirectory`, AI agents MUST ALWAYS append `UUID().uuidString` to the temporary file path (e.g., `"test_gen_\(UUID().uuidString).serc"`). Hardcoded static file names cause Win32 Error 32 (`ERROR_SHARING_VIOLATION`) on Windows when tests execute concurrently or when file watchers hold open file handles. See [Testing Guidelines & Best Practices](docs/test.md).
-10. **Relative Paths Only in Markdown Documentation**: AI agents MUST NOT use local machine absolute paths (such as `file:///Users/...` or `/Users/...`) in Markdown documentation (`docs/*.md`, `README.md`, `AGENT.md`, etc.). Always use clean, relative Markdown file links (e.g. `[PosixTerminal](Sources/zago/PosixTerminal.swift)` or `[encoding.md](docs/encoding.md)`).
+9. **Mandatory Unique Temporary File Paths for Windows CI**: When writing unit tests that create temporary files in `FileManager.default.temporaryDirectory`, AI agents MUST ALWAYS append `UUID().uuidString` to the temporary file path (e.g., `"test_gen_\(UUID().uuidString).zagorc"`). Hardcoded static file names cause Win32 Error 32 (`ERROR_SHARING_VIOLATION`) on Windows when tests execute concurrently or when file watchers hold open file handles. See [Testing Guidelines & Best Practices](docs/development/test.md).
+10. **Relative Paths Only in Markdown Documentation**: AI agents MUST NOT use local machine absolute paths (such as `file:///Users/...` or `/Users/...`) in Markdown documentation (`docs/*.md`, `README.md`, `AGENT.md`, etc.). Always use clean, relative Markdown file links (e.g. `[PosixTerminal](Sources/zago/Terminal/PosixTerminal.swift)` or `[encoding.md](docs/features/encoding.md)`).
 11. **Strongly-Typed Protocol Design Over String Catch-Alls**: Never aggregate disparate keyword domains or parsing responsibilities into catch-all string methods (e.g. `resolveKeyword(_:domain:)`). Always design distinct, strongly-typed parser methods on protocols (e.g. `parseBorderStyle`, `parseCalendarIdentifier`, `parseDateTimeStylePreset`, `parseNumberStyle`, `parseListType`).
 12. **Strict Token Boundary & Prefix Guards**: In LOGO parsers, dialects, and plugins, NEVER blindly strip quotes (`"`, `'`) or variable colons (`:`) with `trimmingCharacters` before looking up identifiers, primitives, or operators. Quoted literals (e.g. `"大於`, `"FORWARD`) and variable references (`:x`) MUST evaluate strictly as literals or variable values, and MUST NOT be resolved into primitives or operators.
 13. **Grammatical Filler Tokens (Noise Words) Policy**: Grammatical filler tokens (such as `為`, `次`, `則`, `到`) MUST only be skipped during argument parsing when encountered as bare, unquoted tokens. They MUST NEVER be skipped or stripped when quoted (`"為`), in variable references (`:為`), or inside list literals (`[...]`).
@@ -176,6 +176,7 @@ Keep `Editor.swift` clean and compact (under 200 lines). When adding new feature
 
 ## 6. Common Development Tasks Checklist
 
-- [ ] **Adding a syntax language**: Create a new class under `Sources/Editor/Syntax/` inheriting from `SyntaxDefinition`, and register it in `SyntaxHighlighter.swift`.
-- [ ] **Adding a new keybinding**: Register the command in `Editor+Commands.swift`, add help bar label in `Localization/`, and update `HelpView.swift`.
-- [ ] **Adding a user configuration flag**: Add property to `EditorConfig` in `ConfigLoader.swift`, update parser directives, and connect in `Editor.init`.
+- [ ] **Adding a syntax language**: Create a new type under [`Sources/Syntax/`](Sources/Syntax/) conforming to `SyntaxDefinition`, and register it in [`SyntaxHighlighter.swift`](Sources/Syntax/SyntaxHighlighter.swift).
+- [ ] **Adding a new keybinding**: Register the command in [`Editor+Commands.swift`](Sources/Editor/Controllers/Editor/Editor+Commands.swift), add help bar label in [`Localization/`](Sources/Editor/Localization/), and update [`HelpContent.swift`](Sources/Editor/Views/Dialogs/HelpContent.swift).
+- [ ] **Adding a user configuration flag**: Add property to `EditorConfig` in [`EditorConfig.swift`](Sources/Config/EditorConfig.swift), update parser directives in [`ConfigLoader.swift`](Sources/Config/ConfigLoader.swift), and connect in [`Editor.swift`](Sources/Editor/Controllers/Editor/Editor.swift).
+
