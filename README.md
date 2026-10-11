@@ -102,7 +102,7 @@ From that single 2D prompt, the AI builds a full-screen Gradius-style arcade sho
 - **Edit Existing Diagrams In Place**: Open any Markdown or source file containing ASCII/Unicode boxes and modify, resize, move, or rewire them directly in 2D Canvas Mode.
 - **Easy Drawing Commands**: Press `Esc` to invoke Editor LOGO commands like `BOX 30 5`, `BOX "Title" "center" "round"`, `LINE ARROW`, `TABLE 3 4 10 1`, `FILL "wall"`, or turtle graphics (`PD REPEAT 4 [ FD 8 RT 90 ]`).
 - **CJK & Emoji Display-Width Aware**: Fullwidth East Asian characters and emojis (`✅`, `❌`, `⚠️`) are measured by true terminal display column width (`displayWidth = 2`), keeping boxes, tables, and rulers aligned.
-- **Agent IPC & Ghost Text Preview**: AI agents can connect to `zago ipc` or invoke the bundled `zago` skill (`zago install-skill`) to push non-destructive Dim Gray 2D ghost text overlays (`Alt+A` to accept, `Alt+R` to reject).
+- **Agent IPC & Ghost Text Preview**: AI agents can connect to `zago --ipc` or invoke the bundled `zago` skill (`zago --install-skill`) to push non-destructive Dim Gray 2D ghost text overlays (`Alt+A` to accept, `Alt+R` to reject).
 
 ## Quick Start & Installation
 
@@ -116,7 +116,7 @@ From that single 2D prompt, the AI builds a full-screen Gradius-style arcade sho
 
 ```bash
 brew tap zonble/zago
-brew tap trust zonble/zago  # allow this third-party tap
+brew tap --trust zonble/zago  # allow this third-party tap
 brew install zago
 zago notes.md
 ```
@@ -273,13 +273,13 @@ Not only can you write 2D prompts *for* AI agents, AI agents can also draw and p
 1. **Install the AI Skill**:
 
    ```bash
-   zago install-skill
+   zago --install-skill
    ```
 
 2. **Start `zago` with IPC enabled**:
 
    ```bash
-   zago ipc architecture.md
+   zago --ipc architecture.md
    ```
 
 3. **Review Ghost Text Proposals**:
@@ -291,7 +291,7 @@ Not only can you write 2D prompts *for* AI agents, AI agents can also draw and p
 
 ```bash
 # Open a file at line 42, column 10 with an 80-column ruler
-zago +42:10 prompt.md wrap 80 ruler
+zago +42:10 prompt.md --wrap 80 --ruler
 
 # Generate a 3-step flowchart in headless mode and print to stdout
 zago -e 'BOX "Input" "round" AT:DOWN VLINE 2 BOX "Process" "double" AT:DOWN VLINE 2 BOX "Output" "round"'
@@ -304,17 +304,17 @@ zago -s architecture.logo | pbcopy
 ```
 
 | Option | Description |
-| : | : |
+| :--- | :--- |
 | `files` | File(s) to open, `-` for stdin pipe, or `+LINE[:COL]` cursor jump |
-| `-w`, `wrap <col>` | Set softwrap column width (e.g., `80`) |
-| `-r`, `ruler` | Display column ruler bar above the viewport |
-| `-R`, `readonly` | Open file(s) in read-only mode |
-| `-e`, `eval <code>` | Execute inline Editor LOGO code in headless mode and output to `stdout` |
-| `-s`, `run`, `script <file>` | Execute a `.logo` script file in headless mode |
-| `ipc` / `no-ipc` | Enable or disable the JSON-RPC 2.0 IPC socket server |
-| `install-skill` | Install the `zago` AI skill definition to local agent directories |
-| `init` | Generate a starter `~/.zagorc` configuration file |
-| `lang <en/zh_TW>` | Set interface language |
+| `-w`, `--wrap <col>` | Set softwrap column width (e.g., `80`) |
+| `-r`, `--ruler` | Display column ruler bar above the viewport |
+| `-R`, `--readonly` | Open file(s) in read-only mode |
+| `-e`, `--eval <code>` | Execute inline Editor LOGO code in headless mode and output to `stdout` |
+| `-s`, `--run`, `--script <file>` | Execute a `.logo` script file in headless mode |
+| `--ipc` / `--no-ipc` | Enable or disable the JSON-RPC 2.0 IPC socket server |
+| `--install-skill` | Install the `zago` AI skill definition to local agent directories |
+| `--init` | Generate a starter `~/.zagorc` configuration file |
+| `--lang <en/zh_TW>` | Set interface language |
 
 ## Extra: TMD (Timebase Markdown) Music Score Support
 
