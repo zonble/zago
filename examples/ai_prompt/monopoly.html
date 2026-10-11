@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台灣大富翁 — Taiwan Monopoly</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --tile-bg: #1e293b;
+      --border: #94a3b8;
+      --text: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "PingFang TC", "Noto Sans TC", "SF Mono", sans-serif;
+      padding: 8px;
+      user-select: none;
+    }
+    .board-grid {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(11, minmax(0, 1fr));
+      grid-template-rows: repeat(11, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .tile {
+      background: var(--tile-bg);
+      border: 2px solid #475569;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 4px 6px;
+      position: relative;
+      font-size: clamp(11px, 1.05vw, 15px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .tile.has-players {
+      background: #26354d;
+      border-color: #cbd5e1;
+      z-index: 2;
+    }
+    .tile.has-active-player {
+      background: #2e3b28;
+      border: 3px solid #fde047 !important;
+      box-shadow: 0 0 18px rgba(253, 224, 71, 0.75);
+      z-index: 4;
+    }
+    .tile.jail-cell {
+      background: #27272a;
+      border-color: #f97316;
+      border-style: dashed;
+    }
+    .tile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      font-size: clamp(12px, 1.15vw, 16px);
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .city-bar {
+      height: 6px;
+      border-radius: 3px;
+      margin-bottom: 3px;
+    }
+    .tile-sub {
+      font-size: clamp(10px, 0.9vw, 13px);
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+    .tokens {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      z-index: 5;
+    }
+    @keyframes pulseBounce {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.16) translateY(-3px); }
+    }
+    .token {
+      padding: 2px 6px;
+      height: 26px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border: 2px solid #fff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+    .token.active-token {
+      border-color: #fde047;
+      box-shadow: 0 0 12px #fde047, 0 4px 10px rgba(0, 0, 0, 0.9);
+      animation: pulseBounce 0.9s infinite ease-in-out;
+    }
+    .owner-badge {
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    /* Center Dashboard (rows 2..10, cols 2..9) */
+    .center-panel {
+      grid-column: 2 / 10;
+      grid-row: 2 / 11;
+      background: #111827;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+    .score-section h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.1rem, 1.5vw, 1.5rem);
+      color: #fde047;
+      letter-spacing: 1px;
+    }
+    .score-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .score-item {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-left: 6px solid #60a5fa;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: clamp(13px, 1.1vw, 16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .score-item.active-turn {
+      outline: 2px solid #fde047;
+      background: #263346;
+    }
+    .score-item.bankrupt {
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+    .loc-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #334155;
+      color: #fde047;
+      font-weight: 600;
+    }
+
+    .event-card {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 16px 20px;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+    .event-title {
+      font-weight: bold;
+      font-size: clamp(1.05rem, 1.35vw, 1.35rem);
+      color: #38bdf8;
+    }
+    .event-desc {
+      font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+      line-height: 1.45;
+      color: #e2e8f0;
+    }
+
+    .controls-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid #334155;
+      padding-top: 14px;
+    }
+    .dice-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 130px;
+    }
+    @keyframes dieTumble {
+      0%   { transform: rotate(0deg) scale(1) translateY(0); }
+      25%  { transform: rotate(110deg) scale(1.22) translateY(-10px); }
+      50%  { transform: rotate(220deg) scale(0.92) translateY(4px); }
+      75%  { transform: rotate(310deg) scale(1.18) translateY(-6px); }
+      100% { transform: rotate(360deg) scale(1) translateY(0); }
+    }
+    @keyframes dieLandPop {
+      0%   { transform: scale(1.35); box-shadow: 0 0 24px #fde047; }
+      100% { transform: scale(1); }
+    }
+    .die-cube {
+      width: 54px;
+      height: 54px;
+      background: linear-gradient(145deg, #ffffff, #e2e8f0);
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 7px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      place-items: center;
+      box-shadow: inset 0 -3px 6px rgba(0,0,0,0.2), 0 6px 14px rgba(0,0,0,0.5);
+    }
+    .die-cube.rolling {
+      animation: dieTumble 0.24s infinite linear;
+      border-color: #fde047;
+    }
+    .die-cube.landed {
+      animation: dieLandPop 0.3s ease-out;
+      border-color: #fde047;
+      box-shadow: 0 0 16px rgba(253, 224, 71, 0.75), 0 6px 14px rgba(0,0,0,0.5);
+    }
+    .pip {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #1e293b;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .pip.red {
+      background: #dc2626;
+    }
+    .pip.big-one {
+      width: 15px;
+      height: 15px;
+      background: #dc2626;
+    }
+    .dice-num-label {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fde047;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    button:hover:not(:disabled) { background: #1d4ed8; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.secondary { background: #475569; }
+    button.secondary:hover:not(:disabled) { background: #334155; }
+    button.buy-btn { background: #059669; }
+    button.buy-btn:hover:not(:disabled) { background: #047857; }
+
+    /* Setup Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: #1e293b;
+      border: 2px solid #94a3b8;
+      border-radius: 12px;
+      padding: 24px 28px;
+      width: 420px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+    .modal h2 { margin: 0 0 12px; color: #fde047; }
+    .setup-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 15px;
+    }
+    select {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid #64748b;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Player Count Setup Modal at Start -->
+  <div class="modal-backdrop" id="setupModal">
+    <div class="modal">
+      <h2>🎲 台灣大富翁設定</h2>
+      <p style="color:#cbd5e1;font-size:14px;margin-top:0;">
+        設定參賽人數與操作方式（每位玩家起始資金 <strong>$20,000</strong>）：
+      </p>
+      <div class="setup-row">
+        <label for="playerCountSelect">遊戲人數：</label>
+        <select id="playerCountSelect" onchange="updateSetupRows()">
+          <option value="2">2 人對戰</option>
+          <option value="3">3 人對戰</option>
+          <option value="4" selected>4 人對戰</option>
+        </select>
+      </div>
+      <div id="playerModeContainer"></div>
+      <div style="margin-top:20px;text-align:right;">
+        <button onclick="startGameFromModal()">開始遊戲 ($20,000 開局)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="board-grid" id="board"></div>
+
+  <script>
+    const CITY_COLORS = {
+      "台北市": "#ef4444",
+      "新竹市": "#f97316",
+      "台中市": "#eab308",
+      "台南市": "#22c55e",
+      "高雄市": "#06b6d4",
+      "屏東市": "#3b82f6",
+      "花蓮":   "#8b5cf6",
+      "新北市": "#ec4899"
+    };
+
+    // 38 clockwise track tiles starting from bottom-right (10,9) "由此去 <-"
+    const TRACK_TILES = [
+      // Bottom row: col 9 down to col 0 (row 10)
+      { r: 10, c: 9, name: "由此去", sub: "<- 起點", type: "start" },
+      { r: 10, c: 8, name: "台北市", price: 1800, type: "city" },
+      { r: 10, c: 7, name: "台北市", price: 2500, type: "city" },
+      { r: 10, c: 6, name: "台北市", price: 2000, type: "city" },
+      { r: 10, c: 5, name: "再擲一次", sub: "免費重擲", type: "reroll" },
+      { r: 10, c: 4, name: "命運", sub: "抽命運卡", type: "destiny" },
+      { r: 10, c: 3, name: "新竹市", price: 1200, type: "city" },
+      { r: 10, c: 2, name: "新竹市", price: 1500, type: "city" },
+      { r: 10, c: 1, name: "新竹市", price: 1000, type: "city" },
+      { r: 10, c: 0, name: "機會", sub: "抽機會卡", type: "chance" },
+
+      // Left column: row 9 up to row 1 (col 0)
+      { r: 9, c: 0, name: "自來水廠", sub: "公共設施", type: "public", fee: 400 },
+      { r: 8, c: 0, name: "台中市", price: 1800, type: "city" },
+      { r: 7, c: 0, name: "台中市", price: 1800, type: "city" },
+      { r: 6, c: 0, name: "台中市", price: 1600, type: "city" },
+      { r: 5, c: 0, name: "電力公司", sub: "公共設施", type: "public", fee: 600 },
+      { r: 4, c: 0, name: "台南市", price: 1600, type: "city" },
+      { r: 3, c: 0, name: "台南市", price: 1800, type: "city" },
+      { r: 2, c: 0, name: "台南市", price: 1600, type: "city" },
+      { r: 1, c: 0, name: "警察局", sub: "移送監牢", type: "police" },
+
+      // Top row: col 0 to col 9 (row 0)
+      { r: 0, c: 0, name: "命運", sub: "抽命運卡", type: "destiny" },
+      { r: 0, c: 1, name: "高雄市", price: 2000, type: "city" },
+      { r: 0, c: 2, name: "高雄市", price: 2200, type: "city" },
+      { r: 0, c: 3, name: "高雄市", price: 2200, type: "city" },
+      { r: 0, c: 4, name: "機會", sub: "抽機會卡", type: "chance" },
+      { r: 0, c: 5, name: "光榮碼頭", sub: "公共設施", type: "public", fee: 300 },
+      { r: 0, c: 6, name: "屏東市", price: 1600, type: "city" },
+      { r: 0, c: 7, name: "屏東市", price: 1600, type: "city" },
+      { r: 0, c: 8, name: "屏東市", price: 1400, type: "city" },
+      { r: 0, c: 9, name: "墾丁", sub: "國家公園", type: "public", fee: 500 },
+
+      // Right column: row 1 down to row 9 (col 9)
+      { r: 1, c: 9, name: "花蓮", price: 1400, type: "city" },
+      { r: 2, c: 9, name: "花蓮", price: 1200, type: "city" },
+      { r: 3, c: 9, name: "花蓮", price: 1400, type: "city" },
+      { r: 4, c: 9, name: "機會", sub: "抽機會卡", type: "chance" },
+      { r: 5, c: 9, name: "再擲一次", sub: "免費重擲", type: "reroll" },
+      { r: 6, c: 9, name: "休息站", sub: "免費休息", type: "rest" },
+      { r: 7, c: 9, name: "新北市", price: 2200, type: "city" },
+      { r: 8, c: 9, name: "新北市", price: 2000, type: "city" },
+      { r: 9, c: 9, name: "新北市", price: 1600, type: "city" }
+    ];
+
+    const CHANCE_CARDS = [
+      { title: "機會：搭高鐵直達起點", desc: "直達「由此去 <-」並領取薪水 $2,000！", effect: p => { p.pos = 0; p.money += 2000; } },
+      { title: "機會：墾丁春吶音樂祭度假", desc: "前往公共景點「墾丁」，支付門票與度假費 $500。", effect: p => { p.pos = 28; p.money -= 500; } },
+      { title: "機會：高雄港觀光船票補助", desc: "前往公共設施「光榮碼頭」，領取觀光補助 $800！", effect: p => { p.pos = 24; p.money += 800; } },
+      { title: "機會：台積電股利發放", desc: "獲發科技股現金股利，向銀行領取 $1,500！", effect: p => { p.money += 1500; } },
+      {
+        title: "機會：免費蓋屋補助",
+        desc: "名下隨機一處縣市地產免費加蓋 1 級（若無地產則領取 $1,000）！",
+        effect: p => {
+          const owned = TRACK_TILES.filter(t => t.owner === p.id);
+          if (owned.length > 0) {
+            owned[0].level = (owned[0].level || 0) + 1;
+          } else {
+            p.money += 1000;
+          }
+        }
+      },
+      { title: "機會：違規停車被拖吊", desc: "繳納交通罰單 $600。", effect: p => { p.money -= 600; } },
+      { title: "機會：疑似逃漏稅遭約談", desc: "直接移送右下角「監牢」坐牢，出獄後須從「由此去 <-」從頭開始！", effect: p => { p.inJail = 1; p.pos = 0; } },
+      { title: "機會：出差環島補助", desc: "立即獲得一次「再擲一次」的機會！", effect: (p, state) => { state.extraRoll = true; } }
+    ];
+
+    const DESTINY_CARDS = [
+      { title: "命運：統一發票中特獎", desc: "恭喜中獎！向銀行領取獎金 $2,500！", effect: p => { p.money += 2500; } },
+      {
+        title: "命運：颱風過境房屋修繕",
+        desc: "名下每擁有一塊縣市地產，支付 $300 修繕費。",
+        effect: p => {
+          const count = TRACK_TILES.filter(t => t.owner === p.id).length;
+          p.money -= count * 300;
+        }
+      },
+      {
+        title: "命運：普發現金紅包",
+        desc: "全民共享經濟成果，場上每位玩家各領取 $1,000！",
+        effect: () => {
+          players.forEach(pl => { if (!pl.bankrupt) pl.money += 1000; });
+        }
+      },
+      { title: "命運：地價稅與房屋稅開徵", desc: "繳納年度稅金 $1,000。", effect: p => { p.money -= 1000; } },
+      { title: "命運：夜市美食大胃王冠軍", desc: "贏得夜市大胃王比賽，獲得獎金 $1,200！", effect: p => { p.money += 1200; } },
+      {
+        title: "命運：生日請客吃熱炒",
+        desc: "生日大快樂！向其餘每位玩家各收取 $300 禮金！",
+        effect: p => {
+          players.forEach(other => {
+            if (other.id !== p.id && !other.bankrupt) {
+              other.money -= 300;
+              p.money += 300;
+            }
+          });
+        }
+      },
+      { title: "命運：酒駕臨檢被抓包", desc: "直接移送右下角「監牢」坐牢，出獄後須從「由此去 <-」從頭開始！", effect: p => { p.inJail = 1; p.pos = 0; } },
+      { title: "命運：醫療健保退費", desc: "領取健保核退費用 $800。", effect: p => { p.money += 800; } }
+    ];
+
+    const PLAYER_PRESETS = [
+      { id: 0, name: "玩家一", emoji: "🎩", color: "#3b82f6" },
+      { id: 1, name: "玩家二", emoji: "🚗", color: "#ef4444" },
+      { id: 2, name: "玩家三", emoji: "🐕", color: "#10b981" },
+      { id: 3, name: "玩家四", emoji: "🛸", color: "#f59e0b" }
+    ];
+
+    let players = [];
+    let currentTurn = 0;
+    let currentDieValue = 1;
+    let isRollingDie = false;
+    let justLandedDie = false;
+    let eventTitle = "歡迎來到台灣大富翁！";
+    let eventDesc = "請點擊「擲骰子」開始環島置產之旅。";
+    let pendingPurchase = null;
+    let pendingUpgrade = null;
+    let extraRoll = false;
+    let gameOver = false;
+    let isMoving = false;
+
+    const PIP_LAYOUTS = {
+      1: [4],
+      2: [0, 8],
+      3: [0, 4, 8],
+      4: [0, 2, 6, 8],
+      5: [0, 2, 4, 6, 8],
+      6: [0, 2, 3, 5, 6, 8]
+    };
+
+    function renderDieHTML(val, rolling, landed) {
+      const activePips = PIP_LAYOUTS[val] || [4];
+      const cells = [];
+      for (let i = 0; i < 9; i++) {
+        if (activePips.includes(i)) {
+          const cls = val === 1 ? "pip big-one" : (val === 4 ? "pip red" : "pip");
+          cells.push(`<span class="${cls}"></span>`);
+        } else {
+          cells.push(`<span></span>`);
+        }
+      }
+      const stateCls = rolling ? "rolling" : (landed ? "landed" : "");
+      return `
+        <div class="dice-wrap">
+          <div class="die-cube ${stateCls}">${cells.join("")}</div>
+          <span class="dice-num-label">${rolling ? "擲骰中..." : `${val} 點`}</span>
+        </div>
+      `;
+    }
+
+    // --- Web Audio API Sound Effects & Retro BGM Engine ---
+    let audioCtx = null;
+    let soundEnabled = true;
+    let bgmPlaying = false;
+    let bgmTimer = null;
+
+    function getAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "sine", duration = 0.12, delay = 0, vol = 0.16, slideTo = null) {
+      if (!soundEnabled) return;
+      const ctx = getAudio();
+      const t0 = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slideTo) {
+        osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + duration);
+      }
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + duration);
+    }
+
+    const sfx = {
+      diceTick() {
+        playTone(260 + Math.random() * 420, "triangle", 0.04, 0, 0.16);
+      },
+      diceLand() {
+        playTone(587.33, "triangle", 0.11, 0, 0.22);
+        playTone(880, "triangle", 0.16, 0.06, 0.22);
+      },
+      step(i) {
+        playTone(330 + i * 35, "sine", 0.09, 0, 0.18, 480 + i * 40);
+      },
+      coin() {
+        playTone(987.77, "square", 0.09, 0, 0.12);
+        playTone(1318.51, "square", 0.24, 0.09, 0.14);
+      },
+      buy() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+          playTone(f, "triangle", 0.14, idx * 0.07, 0.18);
+        });
+      },
+      pay() {
+        playTone(340, "sawtooth", 0.16, 0, 0.12, 240);
+        playTone(240, "sawtooth", 0.26, 0.16, 0.12, 150);
+      },
+      siren() {
+        for (let i = 0; i < 3; i++) {
+          playTone(650, "sawtooth", 0.16, i * 0.32, 0.13, 920);
+          playTone(920, "sawtooth", 0.16, i * 0.32 + 0.16, 0.13, 650);
+        }
+      },
+      card() {
+        [440, 554.37, 659.25, 880].forEach((f, idx) => {
+          playTone(f, "sine", 0.12, idx * 0.05, 0.15);
+        });
+      },
+      win() {
+        [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((f, idx) => {
+          playTone(f, "square", 0.18, idx * 0.13, 0.15);
+        });
+      }
+    };
+
+    const BGM_NOTES = [
+      261.63, 329.63, 392.00, 523.25, 392.00, 329.63,
+      293.66, 369.99, 440.00, 587.33, 440.00, 369.99,
+      329.63, 392.00, 493.88, 659.25, 587.33, 493.88,
+      523.25, 392.00, 329.63, 261.63, 392.00, 523.25
+    ];
+    let bgmStep = 0;
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      if (!soundEnabled && bgmTimer) {
+        clearInterval(bgmTimer);
+        bgmTimer = null;
+        bgmPlaying = false;
+      } else if (soundEnabled && !bgmPlaying) {
+        startBGM();
+      }
+      renderBoard();
+    }
+
+    function startBGM() {
+      if (bgmTimer || !soundEnabled) return;
+      bgmPlaying = true;
+      bgmTimer = setInterval(() => {
+        if (!soundEnabled || gameOver) return;
+        const note = BGM_NOTES[bgmStep % BGM_NOTES.length];
+        playTone(note, "triangle", 0.18, 0, 0.035);
+        bgmStep++;
+      }, 240);
+    }
+
+    function updateSetupRows() {
+      const count = parseInt(document.getElementById("playerCountSelect").value, 10);
+      const container = document.getElementById("playerModeContainer");
+      container.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        const preset = PLAYER_PRESETS[i];
+        const row = document.createElement("div");
+        row.className = "setup-row";
+        row.innerHTML = `
+          <span>${preset.emoji} <strong>${preset.name}</strong></span>
+          <select id="pMode_${i}">
+            <option value="human" ${i === 0 ? "selected" : ""}>真人操作</option>
+            <option value="ai" ${i > 0 ? "selected" : ""}>電腦 AI</option>
+          </select>
+        `;
+        container.appendChild(row);
+      }
+    }
+
+    function startGameFromModal() {
+      getAudio();
+      startBGM();
+      sfx.buy();
+      const count = parseInt(document.getElementById("playerCountSelect").value, 10);
+      players = [];
+      for (let i = 0; i < count; i++) {
+        const mode = document.getElementById(`pMode_${i}`).value;
+        players.push({
+          ...PLAYER_PRESETS[i],
+          money: 20000,
+          pos: 0,
+          inJail: 0,
+          isAI: mode === "ai",
+          bankrupt: false
+        });
+      }
+      TRACK_TILES.forEach(t => {
+        delete t.owner;
+        t.level = 0;
+      });
+      currentTurn = 0;
+      currentDieValue = 1;
+      isRollingDie = false;
+      justLandedDie = false;
+      pendingPurchase = null;
+      pendingUpgrade = null;
+      extraRoll = false;
+      gameOver = false;
+      isMoving = false;
+      document.getElementById("setupModal").style.display = "none";
+      eventTitle = `遊戲開始！共 ${count} 位玩家參賽`;
+      eventDesc = `每位玩家起始資金 $20,000。輪到 ${players[0].emoji} ${players[0].name} 擲骰子！`;
+      renderBoard();
+      maybeRunAI();
+    }
+
+    function openSetupModal() {
+      document.getElementById("setupModal").style.display = "flex";
+      updateSetupRows();
+    }
+
+    function calcRent(tile) {
+      const base = Math.round(tile.price * 0.35);
+      const levelBonus = (tile.level || 0) * Math.round(tile.price * 0.45);
+      const sameCity = TRACK_TILES.filter(t => t.type === "city" && t.name === tile.name);
+      const monopoly = sameCity.every(t => t.owner === tile.owner);
+      return (base + levelBonus) * (monopoly ? 2 : 1);
+    }
+
+    function rollDice() {
+      if (gameOver || isMoving || isRollingDie || pendingPurchase || pendingUpgrade) return;
+      const p = players[currentTurn];
+
+      if (p.inJail > 0) {
+        p.inJail = 0;
+        p.pos = 0; // Step out of 監牢 (col 11) onto adjacent 由此去 <- (col 10) to start from the beginning!
+        sfx.coin();
+        eventTitle = `🔓 ${p.emoji} ${p.name} 從【監牢】出獄回到起點！`;
+        eventDesc = `${p.name} 坐牢結束，從右下角「監牢」跨出到隔壁的「由此去 <-」，下次將從頭開始前進！`;
+        renderBoard();
+        setTimeout(() => endTurn(), p.isAI ? 900 : 400);
+        return;
+      }
+
+      isMoving = true;
+      isRollingDie = true;
+      justLandedDie = false;
+      const finalD = Math.floor(Math.random() * 6) + 1;
+      eventTitle = `🎲 ${p.emoji} ${p.name} 正在擲骰子...`;
+      eventDesc = `骰子滾動中...`;
+      renderBoard();
+
+      let rollTicks = 9;
+      const tumbleTimer = setInterval(() => {
+        rollTicks--;
+        if (rollTicks > 0) {
+          currentDieValue = Math.floor(Math.random() * 6) + 1;
+          sfx.diceTick();
+          renderBoard();
+        } else {
+          clearInterval(tumbleTimer);
+          currentDieValue = finalD;
+          isRollingDie = false;
+          justLandedDie = true;
+          sfx.diceLand();
+          eventTitle = `🎲 ${p.emoji} ${p.name} 擲出了 ${finalD} 點！`;
+          eventDesc = `往前移動 ${finalD} 步...`;
+          renderBoard();
+
+          // Start stepping after a brief pause so player sees the landed die face
+          let stepsLeft = finalD;
+          let stepIdx = 0;
+          let passedGo = false;
+
+          setTimeout(() => {
+            justLandedDie = false;
+            const hopTimer = setInterval(() => {
+              p.pos = (p.pos + 1) % TRACK_TILES.length;
+              sfx.step(stepIdx++);
+              if (p.pos === 0) {
+                passedGo = true;
+                p.money += 2000;
+                sfx.coin();
+              }
+              stepsLeft--;
+              renderBoard();
+
+              if (stepsLeft <= 0) {
+                clearInterval(hopTimer);
+                isMoving = false;
+                const tile = TRACK_TILES[p.pos];
+                const goMsg = passedGo ? "（經過起點「由此去」領取 $2,000！）" : "";
+                handleLanding(p, tile, goMsg);
+              }
+            }, 150);
+          }, 280);
+        }
+      }, 70);
+    }
+
+    function handleLanding(p, tile, goMsg) {
+      pendingPurchase = null;
+      pendingUpgrade = null;
+      extraRoll = false;
+
+      if (tile.type === "start") {
+        sfx.coin();
+        eventTitle = `${p.emoji} ${p.name} 抵達【由此去 <-】`;
+        eventDesc = `回到起點！${goMsg}`;
+      } else if (tile.type === "city") {
+        if (tile.owner === undefined) {
+          eventTitle = `${p.emoji} ${p.name} 抵達無主地產【${tile.name} ($${tile.price})】`;
+          eventDesc = `${goMsg} 要花費 $${tile.price} 購買這塊縣市地產嗎？`;
+          if (p.money >= tile.price) {
+            if (p.isAI) {
+              p.money -= tile.price;
+              tile.owner = p.id;
+              sfx.buy();
+              eventDesc = `${goMsg} 電腦 AI 決定花費 $${tile.price} 買下【${tile.name}】！`;
+            } else {
+              pendingPurchase = tile;
+            }
+          } else {
+            eventDesc = `${goMsg} 現金不足，無法購買【${tile.name}】。`;
+          }
+        } else if (tile.owner === p.id) {
+          const upCost = Math.round(tile.price * 0.5);
+          eventTitle = `${p.emoji} ${p.name} 回到自家地產【${tile.name}】`;
+          if (p.money >= upCost && (tile.level || 0) < 3) {
+            if (p.isAI && p.money >= upCost + 2000) {
+              p.money -= upCost;
+              tile.level = (tile.level || 0) + 1;
+              sfx.buy();
+              eventDesc = `${goMsg} 電腦 AI 花費 $${upCost} 將【${tile.name}】加蓋至 Lv.${tile.level}！`;
+            } else if (!p.isAI) {
+              pendingUpgrade = { tile, cost: upCost };
+              eventDesc = `${goMsg} 要花費 $${upCost} 加蓋房屋（提升過路費）嗎？`;
+            } else {
+              eventDesc = `${goMsg} 在自家土地休息。`;
+            }
+          } else {
+            eventDesc = `${goMsg} 在自家土地巡視。`;
+          }
+        } else {
+          const owner = players[tile.owner];
+          if (owner.inJail > 0) {
+            eventTitle = `⛓️ ${p.emoji} ${p.name} 經過 ${owner.name} 的【${tile.name}】`;
+            eventDesc = `${goMsg} 地主 ${owner.name} 目前正在「監牢」坐牢，免收過路費！`;
+          } else {
+            const rent = calcRent(tile);
+            p.money -= rent;
+            owner.money += rent;
+            sfx.pay();
+            eventTitle = `💸 ${p.emoji} ${p.name} 踩到 ${owner.name} 的【${tile.name}】`;
+            eventDesc = `${goMsg} 支付過路費 $${rent} 給 ${owner.emoji} ${owner.name}！`;
+          }
+        }
+      } else if (tile.type === "public") {
+        p.money -= tile.fee;
+        sfx.pay();
+        eventTitle = `🏛️ ${p.emoji} ${p.name} 抵達公共設施【${tile.name}】`;
+        eventDesc = `${goMsg} 此格為公共設施不可購買，繳納公共規費 $${tile.fee}。`;
+      } else if (tile.type === "police") {
+        p.inJail = 1;
+        p.pos = 0;
+        sfx.siren();
+        eventTitle = `🚓 ${p.emoji} ${p.name} 踩到【警察局】被抓去坐牢！`;
+        eventDesc = `立刻移送到右下角第 11 格獨立的【監牢】！出獄後必須從隔壁的「由此去 <-」從頭開始！`;
+      } else if (tile.type === "reroll") {
+        extraRoll = true;
+        sfx.coin();
+        eventTitle = `🎲 ${p.emoji} ${p.name} 踩到【再擲一次】！`;
+        eventDesc = `${goMsg} 獲得免費再擲一次骰子的機會！`;
+      } else if (tile.type === "rest") {
+        eventTitle = `☕ ${p.emoji} ${p.name} 抵達公共【休息站】`;
+        eventDesc = `${goMsg} 公共休息區（不可購買），免費喝杯咖啡休息一下！`;
+      } else if (tile.type === "chance") {
+        sfx.card();
+        const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
+        const stateRef = { extraRoll: false };
+        card.effect(p, stateRef);
+        if (p.inJail > 0) sfx.siren();
+        if (stateRef.extraRoll) extraRoll = true;
+        eventTitle = `❓ ${p.emoji} ${p.name} 抽中【${card.title}】`;
+        eventDesc = `${goMsg} ${card.desc}`;
+      } else if (tile.type === "destiny") {
+        sfx.card();
+        const card = DESTINY_CARDS[Math.floor(Math.random() * DESTINY_CARDS.length)];
+        card.effect(p);
+        if (p.inJail > 0) sfx.siren();
+        eventTitle = `🔮 ${p.emoji} ${p.name} 抽中【${card.title}】`;
+        eventDesc = `${goMsg} ${card.desc}`;
+      }
+
+      checkBankruptcy(p);
+      renderBoard();
+
+      if (!pendingPurchase && !pendingUpgrade && !gameOver) {
+        if (extraRoll && p.inJail === 0) {
+          if (p.isAI) setTimeout(rollDice, 900);
+        } else {
+          endTurn();
+        }
+      }
+    }
+
+    function confirmBuy(buy) {
+      const p = players[currentTurn];
+      if (pendingPurchase && buy) {
+        p.money -= pendingPurchase.price;
+        pendingPurchase.owner = p.id;
+        sfx.buy();
+        eventDesc = `${p.emoji} ${p.name} 花費 $${pendingPurchase.price} 買下了【${pendingPurchase.name}】！`;
+      } else if (pendingUpgrade && buy) {
+        p.money -= pendingUpgrade.cost;
+        pendingUpgrade.tile.level = (pendingUpgrade.tile.level || 0) + 1;
+        sfx.buy();
+        eventDesc = `${p.emoji} ${p.name} 花費 $${pendingUpgrade.cost} 將【${pendingUpgrade.tile.name}】升至 Lv.${pendingUpgrade.tile.level}！`;
+      }
+      pendingPurchase = null;
+      pendingUpgrade = null;
+      renderBoard();
+      endTurn();
+    }
+
+    function checkBankruptcy(p) {
+      if (p.money < 0) {
+        p.bankrupt = true;
+        sfx.pay();
+        TRACK_TILES.forEach(t => {
+          if (t.owner === p.id) {
+            delete t.owner;
+            t.level = 0;
+          }
+        });
+        eventDesc += ` 💥 ${p.name} 資金見底破產出局，名下地產充公！`;
+      }
+      const alive = players.filter(pl => !pl.bankrupt);
+      if (alive.length === 1) {
+        gameOver = true;
+        sfx.win();
+        eventTitle = `🏆 遊戲結束！${alive[0].emoji} ${alive[0].name} 稱霸全台灣！`;
+      }
+    }
+
+    function endTurn() {
+      if (gameOver) return;
+      let next = currentTurn;
+      for (let i = 0; i < players.length; i++) {
+        next = (next + 1) % players.length;
+        if (!players[next].bankrupt) break;
+      }
+      currentTurn = next;
+      renderBoard();
+      maybeRunAI();
+    }
+
+    function maybeRunAI() {
+      if (gameOver) return;
+      const p = players[currentTurn];
+      if (p && p.isAI) {
+        setTimeout(() => {
+          if (players[currentTurn] === p && !gameOver) {
+            rollDice();
+          }
+        }, 850);
+      }
+    }
+
+    function renderBoard() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+
+      // Render 38 track tiles
+      TRACK_TILES.forEach((t, idx) => {
+        const el = document.createElement("div");
+        const herePlayers = players.filter(p => !p.bankrupt && p.inJail === 0 && p.pos === idx);
+        const hasActive = herePlayers.some(p => p.id === currentTurn && !gameOver);
+
+        el.className = "tile" +
+          (herePlayers.length > 0 ? " has-players" : "") +
+          (hasActive ? " has-active-player" : "");
+        el.style.gridRow = t.r + 1;
+        el.style.gridColumn = t.c + 1;
+
+        let colorBar = "";
+        if (t.type === "city") {
+          colorBar = `<div class="city-bar" style="background:${CITY_COLORS[t.name] || "#94a3b8"}"></div>`;
+        }
+
+        let ownerTag = "";
+        if (t.owner !== undefined) {
+          const owner = players[t.owner];
+          const stars = "🏠".repeat(t.level || 0);
+          ownerTag = `<span class="owner-badge" style="background:${owner.color}">${owner.name.slice(-1)}${stars}</span>`;
+        }
+
+        const subText = t.type === "city" ? `$${t.price}` : (t.sub || "");
+        const tokensHtml = herePlayers
+          .map(p => {
+            const isAct = p.id === currentTurn && !gameOver;
+            return `<span class="token ${isAct ? "active-token" : ""}" style="background:${p.color}" title="${p.name}">${p.emoji}${p.id + 1}</span>`;
+          })
+          .join("");
+
+        el.innerHTML = `
+          <div>
+            ${colorBar}
+            <div class="tile-header">
+              <span>${t.name}</span>
+              ${ownerTag}
+            </div>
+          </div>
+          <div class="tokens">${tokensHtml}</div>
+          <div class="tile-sub">
+            <span>${subText}</span>
+          </div>
+        `;
+        board.appendChild(el);
+      });
+
+      // Render the 11th bottom-right isolated "監牢" box at (row 11, col 11)
+      const jailEl = document.createElement("div");
+      const jailedPlayers = players.filter(p => !p.bankrupt && p.inJail > 0);
+      const jailHasActive = jailedPlayers.some(p => p.id === currentTurn && !gameOver);
+      jailEl.className = "tile jail-cell" +
+        (jailedPlayers.length > 0 ? " has-players" : "") +
+        (jailHasActive ? " has-active-player" : "");
+      jailEl.style.gridRow = 11;
+      jailEl.style.gridColumn = 11;
+      jailEl.innerHTML = `
+        <div class="tile-header" style="color:#fb923c;">
+          <span>監牢</span>
+          <span>⛓️</span>
+        </div>
+        <div class="tokens">
+          ${jailedPlayers.map(p => {
+            const isAct = p.id === currentTurn && !gameOver;
+            return `<span class="token ${isAct ? "active-token" : ""}" style="background:${p.color}">${p.emoji}${p.id + 1}</span>`;
+          }).join("")}
+        </div>
+        <div class="tile-sub"><span>禁閉室</span></div>
+      `;
+      board.appendChild(jailEl);
+
+      // Render Center Panel
+      const center = document.createElement("div");
+      center.className = "center-panel";
+
+      const scoreItems = players.map((p, idx) => {
+        const propCount = TRACK_TILES.filter(t => t.owner === p.id).length;
+        const activeCls = idx === currentTurn && !gameOver ? "active-turn" : "";
+        const bankCls = p.bankrupt ? "bankrupt" : "";
+        const locName = p.bankrupt ? "已破產" : (p.inJail > 0 ? "⛓️ 監牢" : `📍 ${TRACK_TILES[p.pos].name}`);
+        return `
+          <li class="score-item ${activeCls} ${bankCls}" style="border-left-color:${p.color}">
+            <span>
+              <span class="token" style="background:${p.color};height:22px;font-size:12px;margin-right:4px;">${p.emoji}${p.id + 1}</span>
+              <strong>${p.name}</strong> ${p.isAI ? "(AI)" : ""}
+              <span class="loc-tag">${locName}</span>
+            </span>
+            <span><strong>$${p.money.toLocaleString()}</strong> <small style="color:#94a3b8">(${propCount}地)</small></span>
+          </li>
+        `;
+      }).join("");
+
+      const activePlayer = players[currentTurn];
+      const canRoll = activePlayer && !activePlayer.isAI && !isMoving && !pendingPurchase && !pendingUpgrade && !gameOver;
+
+      let actionButtons = "";
+      if (pendingPurchase) {
+        actionButtons = `
+          <button class="buy-btn" onclick="confirmBuy(true)">買下 ${pendingPurchase.name} ($${pendingPurchase.price})</button>
+          <button class="secondary" onclick="confirmBuy(false)">放棄購買</button>
+        `;
+      } else if (pendingUpgrade) {
+        actionButtons = `
+          <button class="buy-btn" onclick="confirmBuy(true)">加蓋房屋 ($${pendingUpgrade.cost})</button>
+          <button class="secondary" onclick="confirmBuy(false)">不加蓋</button>
+        `;
+      } else {
+        const btnLabel = activePlayer && activePlayer.inJail > 0
+          ? `🔓 服刑出獄 → 回到由此去 (${activePlayer.name})`
+          : `🎲 擲骰子 (${activePlayer ? activePlayer.name : ""})`;
+        actionButtons = `
+          <button onclick="rollDice()" ${canRoll ? "" : "disabled"}>
+            ${btnLabel}
+          </button>
+        `;
+      }
+
+      center.innerHTML = `
+        <div class="score-section">
+          <h2>目前分數</h2>
+          <ul class="score-list">${scoreItems}</ul>
+        </div>
+
+        <div class="event-card">
+          <div class="event-title">${eventTitle}</div>
+          <div class="event-desc">${eventDesc}</div>
+        </div>
+
+        <div class="controls-area">
+          ${renderDieHTML(currentDieValue, isRollingDie, justLandedDie)}
+          <div class="btn-group">
+            ${actionButtons}
+            <button class="secondary" onclick="toggleSound()">${soundEnabled ? "🔊 音效開" : "🔇 靜音"}</button>
+            <button class="secondary" onclick="openSetupModal()">重新設定人數</button>
+          </div>
+        </div>
+      `;
+      board.appendChild(center);
+    }
+
+    updateSetupRows();
+  </script>
+</body>
+</html>
