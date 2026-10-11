@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+## [1.5.1] - 2026-10-11
+
+Maintenance and bugfix release upgrading `TmdSwift` to `0.2.5`, resolving missing localization keys and status message translations, unifying Unicode wide-character classification into `TextMetrics`, and improving CI stability across platforms.
+
+### Changed
+
+- **TmdSwift 0.2.5 Upgrade**:
+  - Upgraded `TmdSwift` dependency to `0.2.5` and migrated TMD exporter, measure checker, inspector, and refactor integration to unified `Tmd*` type prefixes.
+- **Unicode Classification Single Source of Truth**:
+  - Consolidated CJK script/punctuation and Emoji scalar classification into `TextMetrics` (`DisplayWidth.swift`) as the single source of truth, and removed the `LocalEditorFileIOStrategy.shared` singleton in favor of explicit dependency injection.
+- **Documentation & Architecture Guide**:
+  - Synchronized `AGENT.md` directory structure map and converted all documentation links to relative paths.
+
+### Fixed
+
+- **Localization (i18n) Completeness**:
+  - Added missing `describe_command.general_category` localization key, added the category placeholder (`%@`) to `describe_command.editor_command`, and localized Fill and IPC status messages in English and Traditional Chinese.
+- **Windows CI Test Isolation**:
+  - Appended `UUID().uuidString` to temporary file paths in `TMDExportTests` to prevent file-sharing collisions during concurrent test runs on Windows CI.
+- **CI & WebAssembly Build Pipeline**:
+  - Configured Git submodule policies across GitHub Actions workflows and Docker WebAssembly builds, and enabled CI verification across all branches.
+
 ## [1.5.0] - 2026-09-20
 
 Major feature release introducing full Timebase Mark Down (TMD) music score editing and audio playback, interactive score export workflows, expanded Symbol Picker with 240+ specialized Unicode arrows, Directory Browser multi-criteria sorting, cross-platform file URL support, and enhanced mouse/scrollbar interactions.
